@@ -30,7 +30,6 @@ function errorExit {
 	done
 	echo -e "************************************************\033[0m"
 }
-
 trap errorExit ERR
 
 #includes
@@ -52,16 +51,48 @@ if [[ $# -ne 3 ]]; then
 	usage
 	exit ${errInvocation}
 fi
-declare -r TTRO_inputDirCase="$1"; shift
-declare -r TTRO_workDirCase="$1"; shift
-declare -r TTRO_caseVariant="$1"
 
+#setup case values
+declare -rx TTRO_inputDirCase="$1"; shift
+declare -rx TTRO_workDirCase="$1"; shift
+declare -rx TTRO_caseVariant="$1"
 #more values to setup
 declare -r suite="${TTRO_inputDirSuite##*/}"
-declare -r TTRO_case="${TTRO_inputDirCase##*/}"
+declare -rx TTRO_case="${TTRO_inputDirCase##*/}"
 declare -i executedTestSteps=0
 declare -i executedTestPrepSteps=0
 declare -i executedTestFinSteps=0
+
+#test finalization function
+function caseFinalization {
+	if [[ -z $caseFinalized ]]; then
+		isDebug && printDebug "execute caseFinalization case $TTRO_case variant '$TTRO_caseVariant'"
+		if isExisting 'TTRO_caseFin'; then
+			declare result=0
+			local x
+			for x in $TTRO_caseFin; do
+				isVerbose && echo "Execute Case Finalization: $x"
+				executedTestFinSteps=$((executedTestFinSteps+1))
+				eval "${x}"
+				#if eval "${x}"; then result=0; else result=$?; fi
+				#if [[ $result -ne 0 ]]; then
+				#	printError "Execution of Case Preparation: ${x} failed with return code=$result"
+				#fi
+			done
+		fi
+		caseFinalized='true'
+		isVerbose && echo "$executedTestFinSteps Case Test Finalization steps executed"
+	else
+		isDebug && printDebug "No execution caseFinalization case $TTRO_case variant '$TTRO_caseVariant'"
+	fi
+}
+declare caseFinalized=''
+
+function caseExitFunction {
+	isDebug && printDebug "caseExitFunction"
+	caseFinalization
+}
+trap caseExitFunction EXIT
 
 isVerbose && echo "START: execution Suite $TTRO_suite variant '$TTRO_suiteVariant' Case $TTRO_case variant '$TTRO_caseVariant'"
 
@@ -71,6 +102,7 @@ isVerbose && echo "START: execution Suite $TTRO_suite variant '$TTRO_suiteVarian
 function succex {
 	isVerbose && echo "**** END Case case=${TTRO_case} variant='${TTRO_caseVariant}' SUCCESS *****"
 	echo "SUCCESS" > "${TTRO_workDirCase}/RESULT"
+	caseFinalization
 	exit 0
 }
 function skipex {
@@ -81,11 +113,13 @@ function skipex {
 function failex {
 	isVerbose && echo "**** END Case case=${TTRO_case} variant='${TTRO_caseVariant}' FAILURE ********" >&2
 	echo "FAILURE" > "${TTRO_workDirCase}/RESULT"
-	exit ${errTestFail}
+	caseFinalization
+	exit 0
 }
 function errex {
 	isVerbose && echo "END Case case=${TTRO_case} variant='${TTRO_caseVariant}' ERROR ***************" >&2
 	echo "ERROR" > "${TTRO_workDirCase}/RESULT"
+	caseFinalization
 	exit ${errTestError}
 }
 
@@ -162,11 +196,12 @@ if isExisting 'TTRO_casePrep'; then
 	for x in $TTRO_casePrep; do
 		isVerbose && echo "Execute Case Preparation: $x"
 		executedTestPrepSteps=$((executedTestPrepSteps+1))
-		if eval "${x}"; then result=0; else result=$?; fi
-		if [[ $result -ne 0 ]]; then
-			printError "Execution of Case Preparation: ${x} failed with return code=$result"
-			errex
-		fi
+		#if eval "${x}"; then result=0; else result=$?; fi
+		eval "${x}"
+		#if [[ $result -ne 0 ]]; then
+		#	printError "Execution of Case Preparation: ${x} failed with return code=$result"
+		#	errex
+		#fi
 	done
 fi
 isVerbose && echo "$executedTestPrepSteps Case Test Preparation steps executed"
@@ -175,23 +210,23 @@ isVerbose && echo "$executedTestPrepSteps Case Test Preparation steps executed"
 declare errorOccurred=""
 declare failureOccurred=''
 if isExisting 'TTRO_caseStep'; then
-	echo "TTRO_caseStep=$TTRO_caseStep"
+	isDebug && printDebug "TTRO_caseStep=$TTRO_caseStep"
 	for x in $TTRO_caseStep; do
-		echo "x=$x"
 		isVerbose && echo "Execute Case Test Step: $x"
 		executedTestSteps=$((executedTestSteps+1))
+		#set -o
 		#result=0
-		#eval "${x}"
-		if eval "${x}"; then result=0; else result=$?; fi
-		if [[ $result -eq $errTestFail ]]; then
-			printError "Execution of Case Test: ${x} failed with return code=$result"
-			failureOccurred="true"
-			break
-		elif [[ $result -ne 0 ]]; then
-			printError "Execution of Case Test: ${x} error with return code=$result"
-			errorOccurred="true"
-			break
-		fi
+		eval "${x}"
+		#if eval "${x}"; then result=0; else result=$?; fi
+		#if [[ $result -eq $errTestFail ]]; then
+		#	printError "Execution of Case Test: ${x} failed with return code=$result"
+		#	failureOccurred="true"
+		#	break
+		#elif [[ $result -ne 0 ]]; then
+		#	printError "Execution of Case Test: ${x} error with return code=$result"
+		#	errorOccurred="true"
+		#	break
+		#fi
 	done
 fi
 if [[ $executedTestSteps -eq 0 ]]; then
@@ -200,20 +235,6 @@ if [[ $executedTestSteps -eq 0 ]]; then
 else
 	isVerbose && echo "$TTRO_case:$TTRO_caseVariant - $executedTestSteps Case test steps executed"
 fi
-
-#test finalization
-if isExisting 'TTRO_caseFin'; then
-	declare result=0
-	for x in $TTRO_caseFin; do
-		isVerbose && echo "Execute Case Finalization: $x"
-		executedTestFinSteps=$((executedTestFinSteps+1))
-		if eval "${x}"; then result=0; else result=$?; fi
-		if [[ $result -ne 0 ]]; then
-			printError "Execution of Case Preparation: ${x} failed with return code=$result"
-		fi
-	done
-fi
-isVerbose && echo "$executedTestFinSteps Case Test Finalization steps executed"
 
 if [[ -n $errorOccurred ]]; then
 	errex
