@@ -326,7 +326,9 @@ while [[ -z $allJobsGone ]]; do
 		fi
 		#check for timed out jobs
 		isDebug && printDebug "check for timed out jobs"
-		now="$(date +'%-s')"
+		while ! now="$(date +'%-s')"; do #guard external command if sigint is received
+			:
+		done
 		for ((i=0; i<maxParralelJobs; i++)); do
 			if [[ -n ${tpid[$i]} ]]; then
 				if [[ -z ${killed[$i]} ]]; then
