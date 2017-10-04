@@ -7,7 +7,7 @@ function myTestStep {
 		success)
 			return 0 ;;
 		failure)
-			return $errTestFail ;;
+			failex ;;
 		error)
 			return 1 ;;
 		scripterror)

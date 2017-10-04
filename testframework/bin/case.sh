@@ -122,11 +122,13 @@ function caseFinalization {
 	else
 		isDebug && printDebug "No execution caseFinalization case $TTRO_case variant '$TTRO_caseVariant'"
 	fi
+	return 0
 }
 declare caseFinalized=''
 
 function caseExitFunction {
-	isDebug && printDebug "caseExitFunction"
+	#isDebug && printDebug "caseExitFunction"
+	#:
 	caseFinalization
 }
 trap caseExitFunction EXIT

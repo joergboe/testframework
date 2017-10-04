@@ -16,7 +16,6 @@ echo "********************************"
 #Function definitions for test collections
 function mySpecialCasePreparation {
 	echo "**** $FUNCNAME ****"
-	asasasas
 	echo "TTPN_myProperty =$TTPN_myProperty"
 	echo "TTPN_myProperty2=$TTPN_myProperty2"
 	echo "TTPN_mySuiteProperty=$TTPN_mySuiteProperty"
@@ -33,13 +32,12 @@ function mySpecialCaseFinalization {
 
 function myTestStep {
 	echo " **** $FUNCNAME ****"
-	sssss
 	if [[ $TTRO_caseVariant -eq 0 ]]; then
 		echo "Variant 0 returns with success"
 		return 0
 	elif [[ $TTRO_caseVariant -eq 1 ]]; then
-		echo "Variant 1 returns with test failure"
-		return $errTestFail
+		echo "Variant 1 calls failure exit"
+		failex
 	elif [[ $TTRO_caseVariant -eq 2 ]]; then
 		echo "Variant 2 returns with another failure return code"
 		return 1
