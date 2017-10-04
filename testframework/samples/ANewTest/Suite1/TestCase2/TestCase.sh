@@ -3,10 +3,11 @@
 #--TTPN_myCaseProperty:=This is a sample case property
 
 #Case definition
+#demonstrate the usage of array test definitions
 #--variantCount=5
-#--TTRO_casePrep=mySpecialCasePreparation
-#--TTRO_caseFin=mySpecialCaseFinalization
-#--TTRO_caseStep:=myTestStep
+TTRO_casePrepArr=( mySpecialCasePreparation )
+TTRO_caseFinArr=( mySpecialCaseFinalization )
+TTRO_caseStepArr=( 'myTestStep 5' )
 
 # Put here the global initialization steps
 echo "********************************"
@@ -15,6 +16,7 @@ echo "********************************"
 if [[ $TTRO_caseVariant -eq 4 ]]; then
 	setVar 'TTPN_skip' 'true'
 fi
+
 
 #Function definitions for test collections
 function mySpecialCasePreparation {
@@ -34,7 +36,7 @@ function mySpecialCaseFinalization {
 }
 
 function myTestStep {
-	echo " **** $FUNCNAME ****"
+	echo " **** $FUNCNAME $1 ****"
 	if [[ $TTRO_caseVariant -eq 0 ]]; then
 		echo "Variant 0 returns with success"
 		return 0

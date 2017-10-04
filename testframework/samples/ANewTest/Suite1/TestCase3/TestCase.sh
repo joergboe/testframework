@@ -3,10 +3,8 @@
 #--TTPN_myCaseProperty:=This is a sample case property
 
 #Case definition
+#demonstrate the usage of test definitions with functions
 #--variantCount=5
-#--TTRO_casePrep=mySpecialCasePreparation
-#--TTRO_caseFin=mySpecialCaseFinalization
-#--TTRO_caseStep:=myTestStep
 
 # Put here the global initialization steps
 echo "********************************"
@@ -16,8 +14,9 @@ if [[ $TTRO_caseVariant -eq 4 ]]; then
 	setVar 'TTPN_skip' 'true'
 fi
 
+
 #Function definitions for test collections
-function mySpecialCasePreparation {
+function casePrep {
 	echo "**** $FUNCNAME ****"
 	echo "TTPN_myProperty =$TTPN_myProperty"
 	echo "TTPN_myProperty2=$TTPN_myProperty2"
@@ -25,7 +24,7 @@ function mySpecialCasePreparation {
 	echo "TTPN_myCaseProperty=$TTPN_myCaseProperty"
 }
 
-function mySpecialCaseFinalization {
+function caseFin {
 	echo " **** $FUNCNAME ****"
 	echo "TTPN_myProperty=$TTPN_myProperty"
 	echo "TTPN_myProperty2=$TTPN_myProperty2"
@@ -33,7 +32,7 @@ function mySpecialCaseFinalization {
 	echo "TTPN_myCaseProperty=$TTPN_myCaseProperty"
 }
 
-function myTestStep {
+function caseStep {
 	echo " **** $FUNCNAME ****"
 	if [[ $TTRO_caseVariant -eq 0 ]]; then
 		echo "Variant 0 returns with success"

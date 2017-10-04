@@ -198,17 +198,51 @@ export >> "${TTRO_workDirSuite}/${TEST_ENVIRONMET_LOG}"
 
 #------------------------------------------------
 #execute test suite preparation
-declare -i executedTestPrepSteps=0
+declare listFound=''
+declare arrayFound=''
+declare functionFound=''
+declare -i numberOfArtifacts=0
 if isExisting 'TTRO_suitePrep'; then
-	declare result=0
+	listFound='true'
+	numberOfArtifacts=$((numberOfArtifacts + 1))
+fi
+if isExisting 'TTRO_suitePrepArr'; then
+	arrayFound='true'
+	numberOfArtifacts=$((numberOfArtifacts + 1))
+fi
+if declare -F suitePrep &> /dev/null; then
+	functionFound='true'
+	numberOfArtifacts=$((numberOfArtifacts + 1))
+fi
+if [[ $numberOfArtifacts -gt 1 ]]; then
+	printErrorAndExit "More than one test suite preparation artifact found use only one of TTRO_suitePrep TTRO_suitePrepArr or suitePrep function" $errTestError
+fi
+
+declare -i executedTestPrepSteps=0
+
+if [[ -n $listFound ]]; then
+	isDebug && printDebug "TTRO_suitePrep=$TTRO_suitePrep"
 	for x in $TTRO_suitePrep; do
-		isVerbose && echo "Execute Test Suite Preparation: $x"
+		isVerbose && echo "Execute Suite Preparation: $x"
 		executedTestPrepSteps=$((executedTestPrepSteps+1))
-		if eval "${x}"; then result=0; else result=$?; fi
-		if [[ $result -ne 0 ]]; then
-			printErrorAndExit "Execution of Test Suite Preparation: ${x} failed with return code=$result" $errRt
-		fi
+		eval "${x}"
 	done
+fi
+if [[ -n $arrayFound ]]; then
+	if isDebug; then
+		v=$(declare -p TTRO_suitePrepArr)
+		printDebug "$v"
+	fi
+	for (( i=0; i<${#TTRO_suitePrepArr[@]}; i++)); do
+		isVerbose && echo "Execute Suite Preparation: ${TTRO_suitePrepArr[$i]}"
+		executedTestPrepSteps=$((executedTestPrepSteps+1))
+		eval "${TTRO_suitePrepArr[$i]}"
+	done
+fi
+if [[ -n $functionFound ]]; then
+	isVerbose && echo "Execute Suite Preparation function suitePrep"
+	executedTestPrepSteps=$((executedTestPrepSteps+1))
+	suitePrep
 fi
 isVerbose && echo "$executedTestPrepSteps Test Suite Preparation steps executed"
 
@@ -487,17 +521,51 @@ while [[ -z $allJobsGone ]]; do
 done
 
 #test suite finalisation
-declare -i executedTestFinSteps=0
+listFound=''
+arrayFound=''
+functionFound=''
+numberOfArtifacts=0
 if isExisting 'TTRO_suiteFin'; then
-	declare result=0
+	listFound='true'
+	numberOfArtifacts=$((numberOfArtifacts + 1))
+fi
+if isExisting 'TTRO_suiteFinArr'; then
+	arrayFound='true'
+	numberOfArtifacts=$((numberOfArtifacts + 1))
+fi
+if declare -F suiteFin &> /dev/null; then
+	functionFound='true'
+	numberOfArtifacts=$((numberOfArtifacts + 1))
+fi
+if [[ $numberOfArtifacts -gt 1 ]]; then
+	printErrorAndExit "More than one test suite finalization artifact found use only one of TTRO_suiteFin TTRO_suiteFinArr or suiteFin function" $errTestError
+fi
+
+declare -i executedTestFinSteps=0
+
+if [[ -n $listFound ]]; then
+	isDebug && printDebug "TTRO_suiteFin=$TTRO_suiteFin"
 	for x in $TTRO_suiteFin; do
-		isVerbose && echo "Execute Test Suite Finalisation: $x"
+		isVerbose && echo "Execute Suite Finalization: $x"
 		executedTestFinSteps=$((executedTestFinSteps+1))
-		if eval "${x}"; then result=0; else result=$?; fi
-		if [[ $result -ne 0 ]]; then
-			printError "Execution of Test Suite Finalisation: ${x} failed with return code=$result"
-		fi
+		eval "${x}"
 	done
+fi
+if [[ -n $arrayFound ]]; then
+	if isDebug; then
+		v=$(declare -p TTRO_suiteFinArr)
+		printDebug "$v"
+	fi
+	for (( i=0; i<${#TTRO_suiteFinArr[@]}; i++)); do
+		isVerbose && echo "Execute Suite Finalization: ${TTRO_suiteFinArr[$i]}"
+		executedTestFinSteps=$((executedTestFinSteps+1))
+		eval "${TTRO_suiteFinArr[$i]}"
+	done
+fi
+if [[ -n $functionFound ]]; then
+	isVerbose && echo "Execute Suite Finalization function suiteFin"
+	executedTestFinSteps=$((executedTestFinSteps+1))
+	suiteFin
 fi
 isVerbose && echo "$executedTestFinSteps Test Suite Finalisation steps executed"
 

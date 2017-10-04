@@ -588,17 +588,51 @@ touch "$tmp"
 
 #-------------------------------------------------
 # execute global test preparation
-declare -i executedTestPrepSteps=0
-declare result=0
+declare listFound=''
+declare arrayFound=''
+declare functionFound=''
+declare -i numberOfArtifacts=0
 if isExisting 'TTRO_testPrep'; then
+	listFound='true'
+	numberOfArtifacts=$((numberOfArtifacts + 1))
+fi
+if isExisting 'TTRO_testPrepArr'; then
+	arrayFound='true'
+	numberOfArtifacts=$((numberOfArtifacts + 1))
+fi
+if declare -F testPrep &> /dev/null; then
+	functionFound='true'
+	numberOfArtifacts=$((numberOfArtifacts + 1))
+fi
+if [[ $numberOfArtifacts -gt 1 ]]; then
+	printErrorAndExit "More than one test preparation artifact found use only one of TTRO_testPrep TTRO_testPrepArr or testPrep function" $errTestError
+fi
+
+declare -i executedTestPrepSteps=0
+
+if [[ -n $listFound ]]; then
+	isDebug && printDebug "TTRO_testPrep=$TTRO_testPrep"
 	for x in $TTRO_testPrep; do
-		isVerbose && echo "Execute global Test Preparation: $x"
+		isVerbose && echo "Execute Test Preparation: $x"
 		executedTestPrepSteps=$((executedTestPrepSteps+1))
-		if eval "${x}"; then result=0; else result=$?; fi
-		if [[ $result -ne 0 ]]; then
-			printErrorAndExit "Execution of global Test Preparation: ${x} failed with return code=$result" $errRt
-		fi
+		eval "${x}"
 	done
+fi
+if [[ -n $arrayFound ]]; then
+	if isDebug; then
+		v=$(declare -p TTRO_testPrepArr)
+		printDebug "$v"
+	fi
+	for (( i=0; i<${#TTRO_testPrepArr[@]}; i++)); do
+		isVerbose && echo "Execute Test Preparation: ${TTRO_testPrepArr[$i]}"
+		executedTestPrepSteps=$((executedTestPrepSteps+1))
+		eval "${TTRO_testPrepArr[$i]}"
+	done
+fi
+if [[ -n $functionFound ]]; then
+	isVerbose && echo "Execute Test Preparation function testPrep"
+	executedTestPrepSteps=$((executedTestPrepSteps+1))
+	testPrep
 fi
 isVerbose && echo "$executedTestPrepSteps global Test Preparation steps executed"
 
@@ -651,18 +685,53 @@ unset i
 
 #-------------------------------------------------
 # execute global test finalization
-declare -i executedTestFinSteps=0
-declare result=0
+listFound=''
+arrayFound=''
+functionFound=''
+numberOfArtifacts=0
 if isExisting 'TTRO_testFin'; then
+	listFound='true'
+	numberOfArtifacts=$((numberOfArtifacts + 1))
+fi
+if isExisting 'TTRO_testFinArr'; then
+	arrayFound='true'
+	numberOfArtifacts=$((numberOfArtifacts + 1))
+fi
+if declare -F testFin &> /dev/null; then
+	functionFound='true'
+	numberOfArtifacts=$((numberOfArtifacts + 1))
+fi
+if [[ $numberOfArtifacts -gt 1 ]]; then
+	printErrorAndExit "More than one test finalization artifact found use only one of TTRO_testFin TTRO_testFinArr or testFin function" $errTestError
+fi
+
+declare -i executedTestFinSteps=0
+
+if [[ -n $listFound ]]; then
+	isDebug && printDebug "TTRO_testFin=$TTRO_testFin"
 	for x in $TTRO_testFin; do
-		isVerbose && echo "Execute global Test Finalization: $x"
+		isVerbose && echo "Execute Test Finalization: $x"
 		executedTestFinSteps=$((executedTestFinSteps+1))
-		if eval "${x}"; then result=0; else result=$?; fi
-		if [[ $result -ne 0 ]]; then
-			printError "Execution of global Test PFinalization: ${x} failed with return code=$result"
-		fi
+		eval "${x}"
 	done
 fi
+if [[ -n $arrayFound ]]; then
+	if isDebug; then
+		v=$(declare -p TTRO_testFinArr)
+		printDebug "$v"
+	fi
+	for (( i=0; i<${#TTRO_testFinArr[@]}; i++)); do
+		isVerbose && echo "Execute Test Finalization: ${TTRO_testFinArr[$i]}"
+		executedTestFinSteps=$((executedTestFinSteps+1))
+		eval "${TTRO_testFinArr[$i]}"
+	done
+fi
+if [[ -n $functionFound ]]; then
+	isVerbose && echo "Execute Test Finalization function testFin"
+	executedTestFinSteps=$((executedTestFinSteps+1))
+	testFin
+fi
+
 isVerbose && echo "$executedTestFinSteps global Test Finalization steps executed"
 
 #print result lists

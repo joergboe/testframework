@@ -85,7 +85,7 @@ function caseFinalization {
 			numberOfArtifacts=$((numberOfArtifacts + 1))
 		fi
 		if [[ $numberOfArtifacts -gt 1 ]]; then
-			printErrorAndExit "More than one test finalization artifact found use only one of TTRO_caseFin TTRO_caseFinArr or caseFin function" $errexit
+			printErrorAndExit "More than one test finalization artifact found use only one of TTRO_caseFin TTRO_caseFinArr or caseFin function" $errTestError
 		fi
 		
 		isDebug && printDebug "execute caseFinalization case $TTRO_case variant '$TTRO_caseVariant'"
@@ -105,7 +105,7 @@ function caseFinalization {
 				printDebug "$v"
 			fi
 			local i
-			for (( i=0; i<${#TTRO_caseFinArr[$@]}; i++)); do
+			for (( i=0; i<${#TTRO_caseFinArr[@]}; i++)); do
 				isVerbose && echo "Execute Case Finalization: ${TTRO_caseFinArr[$i]}"
 				executedTestFinSteps=$((executedTestFinSteps+1))
 				eval "${TTRO_caseFinArr[$i]}"
@@ -127,9 +127,10 @@ function caseFinalization {
 declare caseFinalized=''
 
 function caseExitFunction {
-	#isDebug && printDebug "caseExitFunction"
-	#:
-	caseFinalization
+	isDebug && printDebug "caseExitFunction"
+	if [[ -z skipcase ]]; then
+		caseFinalization
+	fi
 }
 trap caseExitFunction EXIT
 
@@ -138,24 +139,24 @@ isVerbose && echo "START: execution Suite $TTRO_suite variant '$TTRO_suiteVarian
 #
 # success exit / failure exit and error exit
 #
-function succex {
+function successExit {
 	isVerbose && echo "**** END Case case=${TTRO_case} variant='${TTRO_caseVariant}' SUCCESS *****"
 	echo "SUCCESS" > "${TTRO_workDirCase}/RESULT"
 	caseFinalization
 	exit 0
 }
-function skipex {
+function skipExit {
 	isVerbose && echo "**** END Case case=${TTRO_case} variant='${TTRO_caseVariant}' SKIP **********"
 	echo "SKIP" > "${TTRO_workDirCase}/RESULT"
 	exit 0
 }
-function failex {
+function failureExit {
 	isVerbose && echo "**** END Case case=${TTRO_case} variant='${TTRO_caseVariant}' FAILURE ********" >&2
 	echo "FAILURE" > "${TTRO_workDirCase}/RESULT"
 	caseFinalization
 	exit 0
 }
-function errex {
+function errorExit {
 	isVerbose && echo "END Case case=${TTRO_case} variant='${TTRO_caseVariant}' ERROR ***************" >&2
 	echo "ERROR" > "${TTRO_workDirCase}/RESULT"
 	caseFinalization
@@ -226,7 +227,7 @@ if declare -p TTPN_skipIgnore &> /dev/null; then
 fi
 if [[ -n $skipcase ]]; then
 	isVerbose && echo "SKIP variable set; Skip execution case=$TTRO_case variant=$TTRO_caseVariant"
-	skipex
+	skipExit
 fi
 
 #test preparation
@@ -247,7 +248,7 @@ if declare -F casePrep &> /dev/null; then
 	numberOfArtifacts=$((numberOfArtifacts + 1))
 fi
 if [[ $numberOfArtifacts -gt 1 ]]; then
-	printErrorAndExit "More than one test preparation artifact found use only one of TTRO_casePrep TTRO_casePrepArr or casePrep function" $errexit
+	printErrorAndExit "More than one test preparation artifact found use only one of TTRO_casePrep TTRO_casePrepArr or casePrep function" $errTestError
 fi
 if [[ -n $listFound ]]; then
 	isDebug && printDebug "TTRO_casePrep=$TTRO_casePrep"
@@ -262,7 +263,7 @@ if [[ -n $arrayFound ]]; then
 		v=$(declare -p TTRO_casePrepArr)
 		printDebug "$v"
 	fi
-	for (( i=0; i<${#TTRO_casePrepArr[$@]}; i++)); do
+	for (( i=0; i<${#TTRO_casePrepArr[@]}; i++)); do
 		isVerbose && echo "Execute Case Preparation: ${TTRO_casePrepArr[$i]}"
 		executedTestPrepSteps=$((executedTestPrepSteps+1))
 		eval "${TTRO_casePrepArr[$i]}"
@@ -293,7 +294,7 @@ if declare -F caseStep &> /dev/null; then
 	numberOfArtifacts=$((numberOfArtifacts + 1))
 fi
 if [[ $numberOfArtifacts -gt 1 ]]; then
-	printErrorAndExit "More than one test step artifact found use only one of TTRO_caseStep TTRO_caseStepArr or caseStep function" $errexit
+	printErrorAndExit "More than one test step artifact found use only one of TTRO_caseStep TTRO_caseStepArr or caseStep function" $errTestError
 fi
 if [[ -n $listFound ]]; then
 	isDebug && printDebug "TTRO_caseStep=$TTRO_caseStep"
@@ -308,7 +309,7 @@ if [[ -n $arrayFound ]]; then
 		v=$(declare -p TTRO_caseStepArr)
 		printDebug "$v"
 	fi
-	for (( i=0; i<${#TTRO_caseStepArr[$@]}; i++)); do
+	for (( i=0; i<${#TTRO_caseStepArr[@]}; i++)); do
 		isVerbose && echo "Execute Case Step: ${TTRO_caseStepArr[$i]}"
 		executedTestSteps=$((executedTestSteps+1))
 		eval "${TTRO_caseStepArr[$i]}"
@@ -327,11 +328,11 @@ else
 fi
 
 if [[ -n $errorOccurred ]]; then
-	errex
+	errorExit
 elif [[ -n $failureOccurred ]]; then
-	failex
+	failureExit
 else
-	succex
+	successExit
 fi
 
 :
