@@ -16,7 +16,7 @@ set -o posix;
 set -o errexit; set -o errtrace; set -o nounset; set -o pipefail
 shopt -s globstar nullglob
 
-# Shutdown and interrut vars and functions
+# Shutdown and interrupt vars and functions
 declare interruptReceived=""
 declare -r commandname="${0##*/}"
 
@@ -62,24 +62,61 @@ declare -rx TTRO_case="${TTRO_inputDirCase##*/}"
 declare -i executedTestSteps=0
 declare -i executedTestPrepSteps=0
 declare -i executedTestFinSteps=0
+declare errorOccurred=''
+declare failureOccurred=''
 
 #test finalization function
 function caseFinalization {
 	if [[ -z $caseFinalized ]]; then
-		isDebug && printDebug "execute caseFinalization case $TTRO_case variant '$TTRO_caseVariant'"
+		listFound=''
+		arrayFound=''
+		functionFound=''
+		numberOfArtifacts=0
 		if isExisting 'TTRO_caseFin'; then
-			declare result=0
+			listFound='true'
+			numberOfArtifacts=$((numberOfArtifacts + 1))
+		fi
+		if isExisting 'TTRO_caseFinArr'; then
+			arrayFound='true'
+			numberOfArtifacts=$((numberOfArtifacts + 1))
+		fi
+		if declare -F caseFin &> /dev/null; then
+			functionFound='true'
+			numberOfArtifacts=$((numberOfArtifacts + 1))
+		fi
+		if [[ $numberOfArtifacts -gt 1 ]]; then
+			printErrorAndExit "More than one test finalization artifact found use only one of TTRO_caseFin TTRO_caseFinArr or caseFin function" $errexit
+		fi
+		
+		isDebug && printDebug "execute caseFinalization case $TTRO_case variant '$TTRO_caseVariant'"
+		
+		if [[ -n $listFound ]]; then
+			isDebug && printDebug "TTRO_caseFin=$TTRO_caseFin"
 			local x
 			for x in $TTRO_caseFin; do
 				isVerbose && echo "Execute Case Finalization: $x"
 				executedTestFinSteps=$((executedTestFinSteps+1))
 				eval "${x}"
-				#if eval "${x}"; then result=0; else result=$?; fi
-				#if [[ $result -ne 0 ]]; then
-				#	printError "Execution of Case Preparation: ${x} failed with return code=$result"
-				#fi
 			done
 		fi
+		if [[ -n $arrayFound ]]; then
+			if isDebug; then
+				local v=$(declare -p TTRO_caseFinArr)
+				printDebug "$v"
+			fi
+			local i
+			for (( i=0; i<${#TTRO_caseFinArr[$@]}; i++)); do
+				isVerbose && echo "Execute Case Finalization: ${TTRO_caseFinArr[$i]}"
+				executedTestFinSteps=$((executedTestFinSteps+1))
+				eval "${TTRO_caseFinArr[$i]}"
+			done
+		fi
+		if [[ -n $functionFound ]]; then
+			isVerbose && echo "Execute Case Finalization function caseFin"
+			executedTestFinSteps=$((executedTestFinSteps+1))
+			caseFin
+		fi
+
 		caseFinalized='true'
 		isVerbose && echo "$executedTestFinSteps Case Test Finalization steps executed"
 	else
@@ -191,43 +228,94 @@ if [[ -n $skipcase ]]; then
 fi
 
 #test preparation
+declare listFound=''
+declare arrayFound=''
+declare functionFound=''
+declare -i numberOfArtifacts=0
 if isExisting 'TTRO_casePrep'; then
-	declare result=0
+	listFound='true'
+	numberOfArtifacts=$((numberOfArtifacts + 1))
+fi
+if isExisting 'TTRO_casePrepArr'; then
+	arrayFound='true'
+	numberOfArtifacts=$((numberOfArtifacts + 1))
+fi
+if declare -F casePrep &> /dev/null; then
+	functionFound='true'
+	numberOfArtifacts=$((numberOfArtifacts + 1))
+fi
+if [[ $numberOfArtifacts -gt 1 ]]; then
+	printErrorAndExit "More than one test preparation artifact found use only one of TTRO_casePrep TTRO_casePrepArr or casePrep function" $errexit
+fi
+if [[ -n $listFound ]]; then
+	isDebug && printDebug "TTRO_casePrep=$TTRO_casePrep"
 	for x in $TTRO_casePrep; do
 		isVerbose && echo "Execute Case Preparation: $x"
 		executedTestPrepSteps=$((executedTestPrepSteps+1))
-		#if eval "${x}"; then result=0; else result=$?; fi
 		eval "${x}"
-		#if [[ $result -ne 0 ]]; then
-		#	printError "Execution of Case Preparation: ${x} failed with return code=$result"
-		#	errex
-		#fi
 	done
+fi
+if [[ -n $arrayFound ]]; then
+	if isDebug; then
+		v=$(declare -p TTRO_casePrepArr)
+		printDebug "$v"
+	fi
+	for (( i=0; i<${#TTRO_casePrepArr[$@]}; i++)); do
+		isVerbose && echo "Execute Case Preparation: ${TTRO_casePrepArr[$i]}"
+		executedTestPrepSteps=$((executedTestPrepSteps+1))
+		eval "${TTRO_casePrepArr[$i]}"
+	done
+fi
+if [[ -n $functionFound ]]; then
+	isVerbose && echo "Execute Case Preparation function casePrep"
+	executedTestPrepSteps=$((executedTestPrepSteps+1))
+	casePrep
 fi
 isVerbose && echo "$executedTestPrepSteps Case Test Preparation steps executed"
 
 #test execution
-declare errorOccurred=""
-declare failureOccurred=''
+listFound=''
+arrayFound=''
+functionFound=''
+numberOfArtifacts=0
 if isExisting 'TTRO_caseStep'; then
+	listFound='true'
+	numberOfArtifacts=$((numberOfArtifacts + 1))
+fi
+if isExisting 'TTRO_caseStepArr'; then
+	arrayFound='true'
+	numberOfArtifacts=$((numberOfArtifacts + 1))
+fi
+if declare -F caseStep &> /dev/null; then
+	functionFound='true'
+	numberOfArtifacts=$((numberOfArtifacts + 1))
+fi
+if [[ $numberOfArtifacts -gt 1 ]]; then
+	printErrorAndExit "More than one test step artifact found use only one of TTRO_caseStep TTRO_caseStepArr or caseStep function" $errexit
+fi
+if [[ -n $listFound ]]; then
 	isDebug && printDebug "TTRO_caseStep=$TTRO_caseStep"
 	for x in $TTRO_caseStep; do
 		isVerbose && echo "Execute Case Test Step: $x"
 		executedTestSteps=$((executedTestSteps+1))
-		#set -o
-		#result=0
 		eval "${x}"
-		#if eval "${x}"; then result=0; else result=$?; fi
-		#if [[ $result -eq $errTestFail ]]; then
-		#	printError "Execution of Case Test: ${x} failed with return code=$result"
-		#	failureOccurred="true"
-		#	break
-		#elif [[ $result -ne 0 ]]; then
-		#	printError "Execution of Case Test: ${x} error with return code=$result"
-		#	errorOccurred="true"
-		#	break
-		#fi
 	done
+fi
+if [[ -n $arrayFound ]]; then
+	if isDebug; then
+		v=$(declare -p TTRO_caseStepArr)
+		printDebug "$v"
+	fi
+	for (( i=0; i<${#TTRO_caseStepArr[$@]}; i++)); do
+		isVerbose && echo "Execute Case Step: ${TTRO_caseStepArr[$i]}"
+		executedTestSteps=$((executedTestSteps+1))
+		eval "${TTRO_caseStepArr[$i]}"
+	done
+fi
+if [[ -n $functionFound ]]; then
+	isVerbose && echo "Execute Case Step function caseStep"
+	executedTestSteps=$((executedTestSteps+1))
+	caseStep
 fi
 if [[ $executedTestSteps -eq 0 ]]; then
 	printError "No test Case step defined"

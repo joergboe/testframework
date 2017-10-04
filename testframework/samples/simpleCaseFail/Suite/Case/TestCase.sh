@@ -2,5 +2,5 @@
 
 function myTestStep {
 	echo "Execute test"
-	return $errTestFail
+	failureOccurred="true"
 }
