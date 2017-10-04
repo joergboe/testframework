@@ -306,7 +306,7 @@ function exeSuite {
 		local outputFileName="${TTRO_workDir}/${x}_LIST"
 		if [[ -e ${inputFileName} ]]; then
 			{ while read; do
-				echo "${suite}:$REPLY" >> "$outputFileName"
+				echo "${suite}::$REPLY" >> "$outputFileName"
 			done } < "${inputFileName}"
 		else
 			printError "No result list $inputFileName in suite $sworkdir"

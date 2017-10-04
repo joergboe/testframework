@@ -761,6 +761,8 @@ printf "***** case variants=%i skipped=%i failures=%i errors=%i\n" $VARIANTCount
 printf "***** used workdir: %s\n" "$TTRO_workDir"
 printf "*******************************************************************************************************\n"
 
+touch "$TTRO_workDir/DONE"
+
 if [ $ERRORCount -gt 0 ]; then
 	exit $errTestError
 elif [ $FAILURECount -gt 0 ]; then
