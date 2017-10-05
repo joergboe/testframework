@@ -2,16 +2,14 @@
 # Streams utilities for testframework
 
 ####################################################
-# Initializatio section
+# Initialization section
 
 TTRO_help_streamsutilsInitialization='
 # Module initialization
-#	check streams environment
-#	set required properties and variables
-#	this section is guarded with propertie TTP_streamsutilsInitialized'
-if isNotExisting 'TTP_streamsutilsInitialized'; then
-	setVar 'TTP_streamsutilsInitialized' 'true'
-	isDebug && printDebug "streamsutilsInitialization"
+#	check streams environment exits if no streams environment found
+#	set required properties and variables'
+function streamsutilsInitialization {
+	isDebug && printDebug "$FUNCNAME"
 	#environment check
 	if ! declare -p STREAMS_INSTALL > /dev/null; then
 		printErrorAndExit "Missing environment: STREAMS_INSTALL must be set" ${errEnv}
@@ -31,14 +29,14 @@ if isNotExisting 'TTP_streamsutilsInitialized'; then
 	else
 		setVar TTPN_streamsZkConnect ""
 	fi
-	echo "streamsutilsInitialization: TTPN_streamsZkConnect=$TTPN_streamsZkConnect"
+	echo "$FUNCNAME: TTPN_streamsZkConnect=$TTPN_streamsZkConnect"
 	if declare -p STREAMS_DOMAIN_ID &> /dev/null && [[ -n $STREAMS_DOMAIN_ID ]]; then
 		setVar TTPN_streamsDomainId "$STREAMS_DOMAIN_ID"
-		echo "streamsutilsInitialization: TTPN_streamsDomainId=$TTPN_streamsDomainId"
+		echo "$FUNCNAME: TTPN_streamsDomainId=$TTPN_streamsDomainId"
 	fi
 	if declare -p STREAMS_INSTANCE_ID &> /dev/null && [[ -n $STREAMS_INSTANCE_ID ]]; then
 		setVar TTPN_streamsInstanceId "$STREAMS_INSTANCE_ID"
-		echo "streamsutilsInitialization: TTPN_streamsInstanceId=$TTPN_streamsInstanceId"
+		echo "$FUNCNAME: TTPN_streamsInstanceId=$TTPN_streamsInstanceId"
 	fi
 	# test var to check duplicate init
 	setVar 'TTRO_ttt' '55'
@@ -47,9 +45,7 @@ if isNotExisting 'TTP_streamsutilsInitialized'; then
 	setVar 'TT_evaluationFile' './EVALUATION.log'
 	setVar 'TT_sabFile' './output/Main.sab' 
 	setVar 'TT_jobFile' './jobno.log'
-fi
-# the variable runtime dependent globals
-# ...
+}
 
 #########################################################
 # Functions section

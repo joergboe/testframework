@@ -1,8 +1,10 @@
 # Translation compile test for InetSource
 
-#--TTRO_casePrep:=copyOnly
-##--TTRO_caseStep:=TT_mainComposite='com.ibm.streamsx.inet.sample::GetWeather' compile submitJob mycheckJobFile
-#--TTRO_caseStep:=compile submitJob myCheckJobFile
+testPrep='copyOnly'
+#testStep="TT_mainComposite='Main' compile submitJob myCheckJobFile"
+function testStep {
+	compile; submitJob; myCheckJobFile;
+}
 
 function myCheckJobFile {
 	if [[ -e $TT_jobFile ]]; then
@@ -10,6 +12,6 @@ function myCheckJobFile {
 		cat "$TT_jobFile"
 		return 0
 	else
-		return $errTestFail
+		failureExit
 	fi
 }

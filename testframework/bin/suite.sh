@@ -99,30 +99,28 @@ isDebug && printDebug "noCases=$noCases"
 #-------------------------
 #setup properties and vars
 if [[ $TTRO_suite != '--' ]]; then
-	setProperties "${TTRO_inputDirSuite}/${TEST_SUITE_FILE}"
+	tmp="${TTRO_inputDirSuite}/${TEST_SUITE_FILE}"
+	isVerbose && echo "Set properties from Suite file $tmp"
+	setProperties "$tmp"
 fi
 fixPropsVars
 
-#-------------------------------------------
-#include global and suite custom definitions
-tmp="$TTRO_inputDir/$TEST_COLLECTION_FILE"
-if [[ -r $tmp ]]; then
-	isVerbose && echo "Include global test tools $tmp"
-	source "$tmp"
-else
-	printErrorAndExit "Can nor read test collection file ${tmp}" $errScript
-fi
-#for x in $TTRO_tools; do
-#	isVerbose && echo "Source global tools file: $x"
-#	source "$x"
-#done
+#-------------------------------------
+# include tools
+for x in $TTRO_tools; do
+	isVerbose && echo "Source global tools file: $x"
+	source "$x"
+	fixPropsVars
+done
+
 if [[ $TTRO_suite != '--' ]]; then
 	tmp="${TTRO_inputDirSuite}/${TEST_SUITE_FILE}"
 	if [[ -e "$tmp" ]]; then
-		isVerbose && echo  "Source Suite test tools file $tmp"
+		isVerbose && echo  "Source Suite file $tmp"
 		source "$tmp"
+		fixPropsVars
 	else
-		printErrorAndExit "No Suite test tools file $tmp" $errScript
+		printErrorAndExit "No Suite file $tmp" $errScript
 	fi
 fi
 

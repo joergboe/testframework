@@ -526,26 +526,30 @@ fixPropsVars # fix global properties and vars
 #--------------------------------------
 # Global includes
 tmp="$TTRO_inputDir/$TEST_COLLECTION_FILE"
-isVerbose && echo "Include global test tools $tmp"
+isVerbose && echo "Set properties from global Collection file $tmp"
 setProperties "${tmp}"
-fixPropsVars
+fixPropsVars # fix global properties and vars
+
+if isNotExisting 'TTRO_tools'; then
+	declare -rx TTRO_tools=''
+fi
+if [[ -n $TTRO_tools ]]; then
+	for x in $TTRO_tools; do
+		isVerbose && echo "Source global tools file: $x"
+		if [[ -r $x ]]; then
+			source "$x"
+		else
+			printErrorAndExit "Tools file $x is required but this file is not readable" $errRt
+		fi
+	done
+else
+	isDebug && printDebug "No additional global test tools files defined"
+fi
+fixPropsVars # fix global properties and var
+tmp="$TTRO_inputDir/$TEST_COLLECTION_FILE"
+isVerbose && echo "Source global Collection file $tmp"
 source "$tmp"
 fixPropsVars # fix global properties and vars
-#if [[ -n $TTRO_tools ]]; then
-#	for x in $TTRO_tools; do
-#		isVerbose && echo "Source global tools file: $x"
-#		if [[ -r $x ]]; then
-#			setProperties "$x"
-#			fixPropsVars # fix global properties and vars
-#			source "$x"
-#		else
-#			printErrorAndExit "Tools file $x is required but this file is not readable" $errRt
-#		fi
-#	done
-#else
-#	isDebug && printDebug "No additional global test tools files defined"
-#fi
-#fixPropsVars # fix global properties and var
 
 #------------------------------------------------
 # enter working dir
