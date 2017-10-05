@@ -588,53 +588,46 @@ touch "$tmp"
 
 #-------------------------------------------------
 # execute global test preparation
-declare listFound=''
-declare arrayFound=''
-declare functionFound=''
-declare -i numberOfArtifacts=0
-if isExisting 'TTRO_testPrep'; then
-	listFound='true'
-	numberOfArtifacts=$((numberOfArtifacts + 1))
-fi
-if isExisting 'TTRO_testPrepArr'; then
-	arrayFound='true'
-	numberOfArtifacts=$((numberOfArtifacts + 1))
-fi
-if declare -F testPrep &> /dev/null; then
-	functionFound='true'
-	numberOfArtifacts=$((numberOfArtifacts + 1))
-fi
-if [[ $numberOfArtifacts -gt 1 ]]; then
-	printErrorAndExit "More than one test preparation artifact found use only one of TTRO_testPrep TTRO_testPrepArr or testPrep function" $errTestError
-fi
-
 declare -i executedTestPrepSteps=0
-
-if [[ -n $listFound ]]; then
-	isDebug && printDebug "TTRO_testPrep=$TTRO_testPrep"
-	for x in $TTRO_testPrep; do
-		isVerbose && echo "Execute Test Preparation: $x"
-		executedTestPrepSteps=$((executedTestPrepSteps+1))
-		eval "${x}"
-	done
-fi
-if [[ -n $arrayFound ]]; then
-	if isDebug; then
-		v=$(declare -p TTRO_testPrepArr)
-		printDebug "$v"
+if isExisting 'TTRO_testPrep'; then
+	printWarning "Deprecated usage of TTRO_testPrep. Use simply variable testPrep='step1 step2 ..'"
+	if isExisting 'testPrep'; then
+		printErrorAndExit "You must not use TTRO_testPrep together with testPrep" $errRt
+	else
+		declare -r testPrep="$TTRO_testPrep"
 	fi
-	for (( i=0; i<${#TTRO_testPrepArr[@]}; i++)); do
-		isVerbose && echo "Execute Test Preparation: ${TTRO_testPrepArr[$i]}"
+fi
+if isExisting 'testPrep'; then
+	if isFunction 'testPrep'; then
+		printErrorAndExit "You must not use testPrep variable together with testPrep function" $errRt
+	else
+		if isArray 'testPrep'; then
+			if isDebug; then
+				v=$(declare -p testPrep)
+				printDebug "$v"
+			fi
+			for (( i=0; i<${#testPrep[@]}; i++)); do
+				isVerbose && echo "Execute Collection Preparation: ${testPrep[$i]}"
+				executedTestPrepSteps=$((executedTestPrepSteps+1))
+				eval "${testPrep[$i]}"
+			done
+		else
+			isDebug && printDebug "testPrep=$testPrep"
+			for x in $testPrep; do
+				isVerbose && echo "Execute Collection Preparation: $x"
+				executedTestPrepSteps=$((executedTestPrepSteps+1))
+				eval "${x}"
+			done
+		fi
+	fi
+else
+	if isFunction 'testPrep'; then
+		isVerbose && echo "Execute Collection Preparation function testPrep"
 		executedTestPrepSteps=$((executedTestPrepSteps+1))
-		eval "${TTRO_testPrepArr[$i]}"
-	done
+		testPrep
+	fi
 fi
-if [[ -n $functionFound ]]; then
-	isVerbose && echo "Execute Test Preparation function testPrep"
-	executedTestPrepSteps=$((executedTestPrepSteps+1))
-	testPrep
-fi
-isVerbose && echo "$executedTestPrepSteps global Test Preparation steps executed"
+isVerbose && echo "$executedTestPrepSteps Collection Preparation steps executed"
 
 #--------------------------------------------
 #execution loop over suites and variants
@@ -685,54 +678,46 @@ unset i
 
 #-------------------------------------------------
 # execute global test finalization
-listFound=''
-arrayFound=''
-functionFound=''
-numberOfArtifacts=0
-if isExisting 'TTRO_testFin'; then
-	listFound='true'
-	numberOfArtifacts=$((numberOfArtifacts + 1))
-fi
-if isExisting 'TTRO_testFinArr'; then
-	arrayFound='true'
-	numberOfArtifacts=$((numberOfArtifacts + 1))
-fi
-if declare -F testFin &> /dev/null; then
-	functionFound='true'
-	numberOfArtifacts=$((numberOfArtifacts + 1))
-fi
-if [[ $numberOfArtifacts -gt 1 ]]; then
-	printErrorAndExit "More than one test finalization artifact found use only one of TTRO_testFin TTRO_testFinArr or testFin function" $errTestError
-fi
-
 declare -i executedTestFinSteps=0
-
-if [[ -n $listFound ]]; then
-	isDebug && printDebug "TTRO_testFin=$TTRO_testFin"
-	for x in $TTRO_testFin; do
-		isVerbose && echo "Execute Test Finalization: $x"
-		executedTestFinSteps=$((executedTestFinSteps+1))
-		eval "${x}"
-	done
-fi
-if [[ -n $arrayFound ]]; then
-	if isDebug; then
-		v=$(declare -p TTRO_testFinArr)
-		printDebug "$v"
+if isExisting 'TTRO_testFin'; then
+	printWarning "Deprecated usage of TTRO_testFin. Use simply variable testFin='step1 step2 ..'"
+	if isExisting 'testFin'; then
+		printErrorAndExit "You must not use TTRO_testFin together with testFin" $errRt
+	else
+		declare -r testFin="$TTRO_testFin"
 	fi
-	for (( i=0; i<${#TTRO_testFinArr[@]}; i++)); do
-		isVerbose && echo "Execute Test Finalization: ${TTRO_testFinArr[$i]}"
+fi
+if isExisting 'testFin'; then
+	if isFunction 'testFin'; then
+		printErrorAndExit "You must not use testFin variable together with testFin function" $errRt
+	else
+		if isArray 'testFin'; then
+			if isDebug; then
+				v=$(declare -p testFin)
+				printDebug "$v"
+			fi
+			for (( i=0; i<${#testFin[@]}; i++)); do
+				isVerbose && echo "Execute Collection Finalization: ${testFin[$i]}"
+				executedTestFinSteps=$((executedTestFinSteps+1))
+				eval "${testFin[$i]}"
+			done
+		else
+			isDebug && printDebug "testFin=$testFin"
+			for x in $testFin; do
+				isVerbose && echo "Execute Collection Finalization: $x"
+				executedTestFinSteps=$((executedTestFinSteps+1))
+				eval "${x}"
+			done
+		fi
+	fi
+else
+	if isFunction 'testFin'; then
+		isVerbose && echo "Execute Collection Finalization function testFin"
 		executedTestFinSteps=$((executedTestFinSteps+1))
-		eval "${TTRO_testFinArr[$i]}"
-	done
+		testFin
+	fi
 fi
-if [[ -n $functionFound ]]; then
-	isVerbose && echo "Execute Test Finalization function testFin"
-	executedTestFinSteps=$((executedTestFinSteps+1))
-	testFin
-fi
-
-isVerbose && echo "$executedTestFinSteps global Test Finalization steps executed"
+isVerbose && echo "$executedTestFinSteps Collection Finalization steps executed"
 
 #print result lists
 echo  "**** END Test execution *******************************************************************************"

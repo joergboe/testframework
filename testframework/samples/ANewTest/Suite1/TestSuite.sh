@@ -2,18 +2,21 @@
 #--TTPN_myProperty:=This is a sample property set in suite
 #--TTPN_mySuiteProperty:=This is a sample suite property
 
-#Suite test collection preparation steps
-#--TTRO_suitePrep=mySpecialSuitePreparation
-#--TTRO_suiteFin=mySpecialSuiteFinalization
-
 # Put here the suite initialization steps
 echo "*********************************"
 echo "global Suite initialization steps"
 echo "*********************************"
 
+#Suite test preparation steps
+testPrep=(\
+	'mySpecialSuitePreparation "$TTRO_suiteVariant"' )
+
+testFin=mySpecialSuiteFinalization
+
+
 #Function definitions for test collections
 function mySpecialSuitePreparation {
-	echo "**** $FUNCNAME ****"
+	echo "**** $FUNCNAME preparing variant '$1' ****"
 	echo "TTPN_myProperty =$TTPN_myProperty"
 	echo "TTPN_myProperty2=$TTPN_myProperty2"
 	echo "TTPN_mySuiteProperty=$TTPN_mySuiteProperty"

@@ -455,6 +455,40 @@ function isNotExisting {
 	fi
 }
 
+TTRO_help_isArray='
+# Function isArray
+#	checks whether an variable exists and is a indexed array
+#	$1 var name to be checked'
+function isArray {
+	local v
+	if v=$(declare -p "${1}"); then
+		if [[ $v == declare\ -a* ]]; then
+			isDebug && printDebug "$FUNCNAME $1 return 0"
+			return 0
+		else
+			isDebug && printDebug "$FUNCNAME $1 return 1"
+			return 1
+		fi
+	else
+		isDebug && printDebug "$FUNCNAME $1 return 1"
+		return 1
+	fi
+}
+
+TTRO_help_isFunction='
+# Function isFunction
+#	checks whether an given name is defined as function
+#	$1 name to be checked'
+function isFunction {
+	if declare -F "$1" &> /dev/null; then
+		isDebug && printDebug "$FUNCNAME $1 return 0"
+		return 0
+	else
+		isDebug && printDebug "$FUNCNAME $1 return 1"
+		return 1
+	fi
+}
+
 TTRO_help_arrayHasKey='
 # Function arrayHasKey
 #	check is an associative array has key

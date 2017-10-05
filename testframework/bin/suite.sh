@@ -198,51 +198,44 @@ export >> "${TTRO_workDirSuite}/${TEST_ENVIRONMET_LOG}"
 
 #------------------------------------------------
 #execute test suite preparation
-declare listFound=''
-declare arrayFound=''
-declare functionFound=''
-declare -i numberOfArtifacts=0
-if isExisting 'TTRO_suitePrep'; then
-	listFound='true'
-	numberOfArtifacts=$((numberOfArtifacts + 1))
-fi
-if isExisting 'TTRO_suitePrepArr'; then
-	arrayFound='true'
-	numberOfArtifacts=$((numberOfArtifacts + 1))
-fi
-if declare -F suitePrep &> /dev/null; then
-	functionFound='true'
-	numberOfArtifacts=$((numberOfArtifacts + 1))
-fi
-if [[ $numberOfArtifacts -gt 1 ]]; then
-	printErrorAndExit "More than one test suite preparation artifact found use only one of TTRO_suitePrep TTRO_suitePrepArr or suitePrep function" $errTestError
-fi
-
 declare -i executedTestPrepSteps=0
-
-if [[ -n $listFound ]]; then
-	isDebug && printDebug "TTRO_suitePrep=$TTRO_suitePrep"
-	for x in $TTRO_suitePrep; do
-		isVerbose && echo "Execute Suite Preparation: $x"
-		executedTestPrepSteps=$((executedTestPrepSteps+1))
-		eval "${x}"
-	done
-fi
-if [[ -n $arrayFound ]]; then
-	if isDebug; then
-		v=$(declare -p TTRO_suitePrepArr)
-		printDebug "$v"
+if isExisting 'TTRO_suitePrep'; then
+	printWarning "Deprecated usage of TTRO_suitePrep. Use simply variable testPrep='step1 step2 ..'"
+	if isExisting 'testPrep'; then
+		printErrorAndExit "You must not use TTRO_suitePrep together with testPrep" $errRt
+	else
+		declare -r testPrep="$TTRO_suitePrep"
 	fi
-	for (( i=0; i<${#TTRO_suitePrepArr[@]}; i++)); do
-		isVerbose && echo "Execute Suite Preparation: ${TTRO_suitePrepArr[$i]}"
-		executedTestPrepSteps=$((executedTestPrepSteps+1))
-		eval "${TTRO_suitePrepArr[$i]}"
-	done
 fi
-if [[ -n $functionFound ]]; then
-	isVerbose && echo "Execute Suite Preparation function suitePrep"
-	executedTestPrepSteps=$((executedTestPrepSteps+1))
-	suitePrep
+if isExisting 'testPrep'; then
+	if isFunction 'testPrep'; then
+		printErrorAndExit "You must not use testPrep variable together with testPrep function" $errRt
+	else
+		if isArray 'testPrep'; then
+			if isDebug; then
+				v=$(declare -p testPrep)
+				printDebug "$v"
+			fi
+			for (( i=0; i<${#testPrep[@]}; i++)); do
+				isVerbose && echo "Execute Suite Preparation: ${testPrep[$i]}"
+				executedTestPrepSteps=$((executedTestPrepSteps+1))
+				eval "${testPrep[$i]}"
+			done
+		else
+			isDebug && printDebug "testPrep=$testPrep"
+			for x in $testPrep; do
+				isVerbose && echo "Execute Suite Preparation: $x"
+				executedTestPrepSteps=$((executedTestPrepSteps+1))
+				eval "${x}"
+			done
+		fi
+	fi
+else
+	if isFunction 'testPrep'; then
+		isVerbose && echo "Execute Suite Preparation function testPrep"
+		executedTestPrepSteps=$((executedTestPrepSteps+1))
+		testPrep
+	fi
 fi
 isVerbose && echo "$executedTestPrepSteps Test Suite Preparation steps executed"
 
@@ -522,52 +515,45 @@ while [[ -z $allJobsGone ]]; do
 	fi
 done
 
-#test suite finalisation
-listFound=''
-arrayFound=''
-functionFound=''
-numberOfArtifacts=0
-if isExisting 'TTRO_suiteFin'; then
-	listFound='true'
-	numberOfArtifacts=$((numberOfArtifacts + 1))
-fi
-if isExisting 'TTRO_suiteFinArr'; then
-	arrayFound='true'
-	numberOfArtifacts=$((numberOfArtifacts + 1))
-fi
-if declare -F suiteFin &> /dev/null; then
-	functionFound='true'
-	numberOfArtifacts=$((numberOfArtifacts + 1))
-fi
-if [[ $numberOfArtifacts -gt 1 ]]; then
-	printErrorAndExit "More than one test suite finalization artifact found use only one of TTRO_suiteFin TTRO_suiteFinArr or suiteFin function" $errTestError
-fi
-
+#test suite finalization
 declare -i executedTestFinSteps=0
-
-if [[ -n $listFound ]]; then
-	isDebug && printDebug "TTRO_suiteFin=$TTRO_suiteFin"
-	for x in $TTRO_suiteFin; do
-		isVerbose && echo "Execute Suite Finalization: $x"
-		executedTestFinSteps=$((executedTestFinSteps+1))
-		eval "${x}"
-	done
-fi
-if [[ -n $arrayFound ]]; then
-	if isDebug; then
-		v=$(declare -p TTRO_suiteFinArr)
-		printDebug "$v"
+if isExisting 'TTRO_suiteFin'; then
+	printWarning "Deprecated usage of TTRO_suiteFin. Use simply variable testFin='step1 step2 ..'"
+	if isExisting 'testFin'; then
+		printErrorAndExit "You must not use TTRO_suiteFin together with testFin" $errRt
+	else
+		declare -r testFin="$TTRO_suiteFin"
 	fi
-	for (( i=0; i<${#TTRO_suiteFinArr[@]}; i++)); do
-		isVerbose && echo "Execute Suite Finalization: ${TTRO_suiteFinArr[$i]}"
-		executedTestFinSteps=$((executedTestFinSteps+1))
-		eval "${TTRO_suiteFinArr[$i]}"
-	done
 fi
-if [[ -n $functionFound ]]; then
-	isVerbose && echo "Execute Suite Finalization function suiteFin"
-	executedTestFinSteps=$((executedTestFinSteps+1))
-	suiteFin
+if isExisting 'testFin'; then
+	if isFunction 'testFin'; then
+		printErrorAndExit "You must not use testFin variable together with testFin function" $errRt
+	else
+		if isArray 'testFin'; then
+			if isDebug; then
+				v=$(declare -p testFin)
+				printDebug "$v"
+			fi
+			for (( i=0; i<${#testFin[@]}; i++)); do
+				isVerbose && echo "Execute Suite Finalization: ${testFin[$i]}"
+				executedTestFinSteps=$((executedTestFinSteps+1))
+				eval "${testFin[$i]}"
+			done
+		else
+			isDebug && printDebug "testFin=$testFin"
+			for x in $testFin; do
+				isVerbose && echo "Execute Suite Finalization: $x"
+				executedTestFinSteps=$((executedTestFinSteps+1))
+				eval "${x}"
+			done
+		fi
+	fi
+else
+	if isFunction 'testFin'; then
+		isVerbose && echo "Execute Suite Finalization function testFin"
+		executedTestFinSteps=$((executedTestFinSteps+1))
+		testFin
+	fi
 fi
 isVerbose && echo "$executedTestFinSteps Test Suite Finalisation steps executed"
 

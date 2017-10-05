@@ -4,9 +4,9 @@
 
 #Case definition
 #--variantCount=5
-#--TTRO_casePrep=mySpecialCasePreparation
-#--TTRO_caseFin=mySpecialCaseFinalization
-#--TTRO_caseStep:=myTestStep
+testPrep=mySpecialCasePreparation
+testFin=mySpecialCaseFinalization
+testStep=myTestStep
 
 # Put here the global initialization steps
 echo "********************************"

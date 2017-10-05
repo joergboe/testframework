@@ -1,6 +1,11 @@
-#--TTRO_caseStep:=myTestStep
+# Demonstrate an failed test case
+# The failure is signalled with the function failureExit
+function testStep {
+	echo "----- Execute test -----"
+	failureExit
+}
 
-function myTestStep {
-	echo "Execute test"
-	failureOccurred="true"
+# Demonstrate the execution of the finalization function
+function testFin {
+	echo "----- $FUNCNAME Execute finalization of the test step -----"
 }

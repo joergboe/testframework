@@ -68,56 +68,47 @@ declare failureOccurred=''
 #test finalization function
 function caseFinalization {
 	if [[ -z $caseFinalized ]]; then
-		listFound=''
-		arrayFound=''
-		functionFound=''
-		numberOfArtifacts=0
-		if isExisting 'TTRO_caseFin'; then
-			listFound='true'
-			numberOfArtifacts=$((numberOfArtifacts + 1))
-		fi
-		if isExisting 'TTRO_caseFinArr'; then
-			arrayFound='true'
-			numberOfArtifacts=$((numberOfArtifacts + 1))
-		fi
-		if declare -F caseFin &> /dev/null; then
-			functionFound='true'
-			numberOfArtifacts=$((numberOfArtifacts + 1))
-		fi
-		if [[ $numberOfArtifacts -gt 1 ]]; then
-			printErrorAndExit "More than one test finalization artifact found use only one of TTRO_caseFin TTRO_caseFinArr or caseFin function" $errTestError
-		fi
-		
-		isDebug && printDebug "execute caseFinalization case $TTRO_case variant '$TTRO_caseVariant'"
-		
-		if [[ -n $listFound ]]; then
-			isDebug && printDebug "TTRO_caseFin=$TTRO_caseFin"
-			local x
-			for x in $TTRO_caseFin; do
-				isVerbose && echo "Execute Case Finalization: $x"
-				executedTestFinSteps=$((executedTestFinSteps+1))
-				eval "${x}"
-			done
-		fi
-		if [[ -n $arrayFound ]]; then
-			if isDebug; then
-				local v=$(declare -p TTRO_caseFinArr)
-				printDebug "$v"
-			fi
-			local i
-			for (( i=0; i<${#TTRO_caseFinArr[@]}; i++)); do
-				isVerbose && echo "Execute Case Finalization: ${TTRO_caseFinArr[$i]}"
-				executedTestFinSteps=$((executedTestFinSteps+1))
-				eval "${TTRO_caseFinArr[$i]}"
-			done
-		fi
-		if [[ -n $functionFound ]]; then
-			isVerbose && echo "Execute Case Finalization function caseFin"
-			executedTestFinSteps=$((executedTestFinSteps+1))
-			caseFin
-		fi
-
 		caseFinalized='true'
+		if isExisting 'TTRO_caseFin'; then
+			printWarning "Deprecated usage of TTRO_caseFin. Use simply variable testFin='step1 step2 ..'"
+			if isExisting 'testFin'; then
+				printErrorAndExit "You must not use TTRO_caseFin together with testFin" $errRt
+			else
+				declare -r testFin="$TTRO_caseFin"
+			fi
+		fi
+		if isExisting 'testFin'; then
+			if isFunction 'testFin'; then
+				printErrorAndExit "You must not use testFin variable together with testFin function" $errRt
+			else
+				if isArray 'testFin'; then
+					if isDebug; then
+						local v=$(declare -p testFin)
+						printDebug "$v"
+					fi
+					local i
+					for (( i=0; i<${#testFin[@]}; i++)); do
+						isVerbose && echo "Execute Case Finalization: ${testFin[$i]}"
+						executedTestFinSteps=$((executedTestFinSteps+1))
+						eval "${testFin[$i]}"
+					done
+				else
+					isDebug && printDebug "testFin=$testFin"
+					local x
+					for x in $testFin; do
+						isVerbose && echo "Execute Case Finalization: $x"
+						executedTestFinSteps=$((executedTestFinSteps+1))
+						eval "${x}"
+					done
+				fi
+			fi
+		else
+			if isFunction 'testFin'; then
+				isVerbose && echo "Execute Case Finalization function testFin"
+				executedTestFinSteps=$((executedTestFinSteps+1))
+				testFin
+			fi
+		fi
 		isVerbose && echo "$executedTestFinSteps Case Test Finalization steps executed"
 	else
 		isDebug && printDebug "No execution caseFinalization case $TTRO_case variant '$TTRO_caseVariant'"
@@ -140,29 +131,30 @@ isVerbose && echo "START: execution Suite $TTRO_suite variant '$TTRO_suiteVarian
 # success exit / failure exit and error exit
 #
 function successExit {
-	isVerbose && echo "**** END Case case=${TTRO_case} variant='${TTRO_caseVariant}' SUCCESS *****"
 	echo "SUCCESS" > "${TTRO_workDirCase}/RESULT"
 	caseFinalization
+	isVerbose && echo "**** END Case case=${TTRO_case} variant='${TTRO_caseVariant}' SUCCESS *****"
 	exit 0
 }
 function skipExit {
-	isVerbose && echo "**** END Case case=${TTRO_case} variant='${TTRO_caseVariant}' SKIP **********"
 	echo "SKIP" > "${TTRO_workDirCase}/RESULT"
+	isVerbose && echo "**** END Case case=${TTRO_case} variant='${TTRO_caseVariant}' SKIP **********"
 	exit 0
 }
 function failureExit {
-	isVerbose && echo "**** END Case case=${TTRO_case} variant='${TTRO_caseVariant}' FAILURE ********" >&2
 	echo "FAILURE" > "${TTRO_workDirCase}/RESULT"
 	caseFinalization
+	isVerbose && echo "**** END Case case=${TTRO_case} variant='${TTRO_caseVariant}' FAILURE ********" >&2
 	exit 0
 }
 function errorExit {
-	isVerbose && echo "END Case case=${TTRO_case} variant='${TTRO_caseVariant}' ERROR ***************" >&2
 	echo "ERROR" > "${TTRO_workDirCase}/RESULT"
 	caseFinalization
+	isVerbose && echo "END Case case=${TTRO_case} variant='${TTRO_caseVariant}' ERROR ***************" >&2
 	exit ${errTestError}
 }
 
+#Start of main testcase body
 isVerbose && echo "**** START Case $TTRO_case variant $TTRO_caseVariant in workdir $TTRO_workDirCase ********************"
 
 #-----------------------------------
@@ -231,100 +223,90 @@ if [[ -n $skipcase ]]; then
 fi
 
 #test preparation
-declare listFound=''
-declare arrayFound=''
-declare functionFound=''
-declare -i numberOfArtifacts=0
 if isExisting 'TTRO_casePrep'; then
-	listFound='true'
-	numberOfArtifacts=$((numberOfArtifacts + 1))
-fi
-if isExisting 'TTRO_casePrepArr'; then
-	arrayFound='true'
-	numberOfArtifacts=$((numberOfArtifacts + 1))
-fi
-if declare -F casePrep &> /dev/null; then
-	functionFound='true'
-	numberOfArtifacts=$((numberOfArtifacts + 1))
-fi
-if [[ $numberOfArtifacts -gt 1 ]]; then
-	printErrorAndExit "More than one test preparation artifact found use only one of TTRO_casePrep TTRO_casePrepArr or casePrep function" $errTestError
-fi
-if [[ -n $listFound ]]; then
-	isDebug && printDebug "TTRO_casePrep=$TTRO_casePrep"
-	for x in $TTRO_casePrep; do
-		isVerbose && echo "Execute Case Preparation: $x"
-		executedTestPrepSteps=$((executedTestPrepSteps+1))
-		eval "${x}"
-	done
-fi
-if [[ -n $arrayFound ]]; then
-	if isDebug; then
-		v=$(declare -p TTRO_casePrepArr)
-		printDebug "$v"
+	printWarning "Deprecated usage of TTRO_casePrep. Use simply variable testPrep='step1 step2 ..'"
+	if isExisting 'testPrep'; then
+		printErrorAndExit "You must not use TTRO_casePrep together with testPrep" $errRt
+	else
+		declare -r testPrep="$TTRO_casePrep"
 	fi
-	for (( i=0; i<${#TTRO_casePrepArr[@]}; i++)); do
-		isVerbose && echo "Execute Case Preparation: ${TTRO_casePrepArr[$i]}"
-		executedTestPrepSteps=$((executedTestPrepSteps+1))
-		eval "${TTRO_casePrepArr[$i]}"
-	done
 fi
-if [[ -n $functionFound ]]; then
-	isVerbose && echo "Execute Case Preparation function casePrep"
-	executedTestPrepSteps=$((executedTestPrepSteps+1))
-	casePrep
+if isExisting 'testPrep'; then
+	if isFunction 'testPrep'; then
+		printErrorAndExit "You must not use testPrep variable together with testPrep function" $errRt
+	else
+		if isArray 'testPrep'; then
+			if isDebug; then
+				v=$(declare -p testPrep)
+				printDebug "$v"
+			fi
+			for (( i=0; i<${#testPrep[@]}; i++)); do
+				isVerbose && echo "Execute Case Preparation: ${testPrep[$i]}"
+				executedTestPrepSteps=$((executedTestPrepSteps+1))
+				eval "${testPrep[$i]}"
+			done
+		else
+			isDebug && printDebug "testPrep=$testPrep"
+			for x in $testPrep; do
+				isVerbose && echo "Execute Case Preparation: $x"
+				executedTestPrepSteps=$((executedTestPrepSteps+1))
+				eval "${x}"
+			done
+		fi
+	fi
+else
+	if isFunction 'testPrep'; then
+		isVerbose && echo "Execute Case Preparation function testPrep"
+		executedTestPrepSteps=$((executedTestPrepSteps+1))
+		testPrep
+	fi
 fi
 isVerbose && echo "$executedTestPrepSteps Case Test Preparation steps executed"
 
 #test execution
-listFound=''
-arrayFound=''
-functionFound=''
-numberOfArtifacts=0
 if isExisting 'TTRO_caseStep'; then
-	listFound='true'
-	numberOfArtifacts=$((numberOfArtifacts + 1))
-fi
-if isExisting 'TTRO_caseStepArr'; then
-	arrayFound='true'
-	numberOfArtifacts=$((numberOfArtifacts + 1))
-fi
-if declare -F caseStep &> /dev/null; then
-	functionFound='true'
-	numberOfArtifacts=$((numberOfArtifacts + 1))
-fi
-if [[ $numberOfArtifacts -gt 1 ]]; then
-	printErrorAndExit "More than one test step artifact found use only one of TTRO_caseStep TTRO_caseStepArr or caseStep function" $errTestError
-fi
-if [[ -n $listFound ]]; then
-	isDebug && printDebug "TTRO_caseStep=$TTRO_caseStep"
-	for x in $TTRO_caseStep; do
-		isVerbose && echo "Execute Case Test Step: $x"
-		executedTestSteps=$((executedTestSteps+1))
-		eval "${x}"
-	done
-fi
-if [[ -n $arrayFound ]]; then
-	if isDebug; then
-		v=$(declare -p TTRO_caseStepArr)
-		printDebug "$v"
+	printWarning "Deprecated usage of TTRO_caseStep. Use simply variable testStep='step1 step2 ..'"
+	if isExisting 'testStep'; then
+		printErrorAndExit "You must not use TTRO_caseStep together with testStep" $errRt
+	else
+		declare -r testStep="$TTRO_caseStep"
 	fi
-	for (( i=0; i<${#TTRO_caseStepArr[@]}; i++)); do
-		isVerbose && echo "Execute Case Step: ${TTRO_caseStepArr[$i]}"
-		executedTestSteps=$((executedTestSteps+1))
-		eval "${TTRO_caseStepArr[$i]}"
-	done
 fi
-if [[ -n $functionFound ]]; then
-	isVerbose && echo "Execute Case Step function caseStep"
-	executedTestSteps=$((executedTestSteps+1))
-	caseStep
+if isExisting 'testStep'; then
+	if isFunction 'testStep'; then
+		printErrorAndExit "You must not use testStep variable together with testStep function" $errRt
+	else
+		if isArray 'testStep'; then
+			if isDebug; then
+				v=$(declare -p testStep)
+				printDebug "$v"
+			fi
+			for (( i=0; i<${#testStep[@]}; i++)); do
+				isVerbose && echo "Execute Case Test Step: ${testStep[$i]}"
+				executedTestSteps=$((executedTestSteps+1))
+				eval "${testStep[$i]}"
+			done
+		else
+			isDebug && printDebug "testStep=$testStep"
+			for x in $testStep; do
+				isVerbose && echo "Execute Case Test Step: $x"
+				executedTestSteps=$((executedTestSteps+1))
+				eval "${x}"
+			done
+		fi
+	fi
+else
+	if isFunction 'testStep'; then
+		isVerbose && echo "Execute Case Test Step function testStep"
+		executedTestSteps=$((executedTestSteps+1))
+		testStep
+	fi
 fi
 if [[ $executedTestSteps -eq 0 ]]; then
 	printError "No test Case step defined"
 	errorOccurred="true"
 else
-	isVerbose && echo "$TTRO_case:$TTRO_caseVariant - $executedTestSteps Case test steps executed"
+	isVerbose && echo "$executedTestSteps Case test steps executed"
 fi
 
 if [[ -n $errorOccurred ]]; then
