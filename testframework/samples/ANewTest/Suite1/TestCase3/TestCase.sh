@@ -1,10 +1,12 @@
-# Put here more fixed variables and properties for test suite
-#--TTPN_myProperty:=This is a sample property set in case
-#--TTPN_myCaseProperty:=This is a sample case property
+#Case preamble
+#--variantCount=5
 
 #Case definition
-#demonstrate the usage of test definitions with functions
-#--variantCount=5
+#demonstrate the usage of test definitions with functions in case body
+
+# Put here more fixed variables and properties for test suite
+setVar 'TTPN_myProperty' "This is a sample property set in case"
+setVar 'TTPN_myCaseProperty' "This is a sample case property"
 
 # Put here the global initialization steps
 echo "********************************"
@@ -13,7 +15,6 @@ echo "********************************"
 if [[ $TTRO_caseVariant -eq 4 ]]; then
 	setVar 'TTPN_skip' 'true'
 fi
-
 
 #Function definitions for test collections
 function testPreparation {

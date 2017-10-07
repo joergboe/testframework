@@ -1,8 +1,10 @@
 # Translation compile test for InetSource
+#Case preamble
 #--variantCount=2
 
-#--TTRO_prepsCase:=copyAndTransformSpl
-#--TTRO_stepsCase:=myCompile myEvaluate
+#Case definition
+setVar 'TTRO_prepsCase' 'copyAndTransformSpl'
+setVar 'TTRO_stepsCase' 'myCompile myEvaluate'
 
 # A customized compiler step expects that the compilation
 # is successfully for the firs run

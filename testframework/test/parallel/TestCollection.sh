@@ -1,5 +1,5 @@
-#--TTRO_preps:="testPreparation"
-#--TTRO_fins:=testFinalization
+setVar 'TTRO_preps' "testPreparation"
+setVar 'TTRO_fins' 'testFinalization'
 
 registerTool "$TTRO_scriptDir/testutils.sh"
 

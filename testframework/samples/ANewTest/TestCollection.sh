@@ -1,5 +1,5 @@
 # Put here more fixed variables and properties
-#--TTPN_myProperty2:=This is a sample property #2
+setVar 'TTPN_myProperty2' "This is a sample property #2"
 
 # Put here the immediate global test collection initialization steps
 echo "********************************"

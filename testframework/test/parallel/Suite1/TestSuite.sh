@@ -1,4 +1,4 @@
-#--TTRO_prepsSuite:=myFunc
+setVar 'TTRO_prepsSuite' 'myFunc'
 
 TT_timeout=90
 TT_extraTime=10

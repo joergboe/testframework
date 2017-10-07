@@ -1,12 +1,15 @@
-# Put here more fixed variables and properties for test suite
-#--TTPN_myProperty:=This is a sample property set in case
-#--TTPN_myCaseProperty:=This is a sample case property
-
-#Case definition
+#Case preamble
 #--variantCount=5
+
+#Case defintion
+#Use list variables
 PREPS=mySpecialCasePreparation
 FINS=mySpecialCaseFinalization
 STEPS=myTestStep
+
+# Put here more fixed variables and properties for test case
+setVar 'TTPN_myProperty' "This is a sample property set in case"
+setVar 'TTPN_myCaseProperty' 'This is a sample case property'
 
 # Put here the global initialization steps
 echo "********************************"

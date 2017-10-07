@@ -513,15 +513,22 @@ if [[ -e $TTRO_workDir ]]; then
 fi
 mkdir -p "$TTRO_workDir"
 echo "TTRO_workDir=$TTRO_workDir"
+
+#------------------------------------------------
+# enter working dir
+cd "$TTRO_workDir"
+
 #{
 #-----------------------------------------------------------
 #check if properties file exists - read properties and fixup
 if [[ -n $properties ]]; then
 	isVerbose && echo "Include global properties $properties"
-	setProperties "${properties}"
+	#setProperties "${properties}"
+	source "${properties}"
 elif [[ -e "$TTRO_inputDir/$TEST_PROPERTIES" ]]; then
 	isVerbose && echo "Include global properties $TTRO_inputDir/$TEST_PROPERTIES"
-	setProperties "$TTRO_inputDir/$TEST_PROPERTIES"
+	#setProperties "$TTRO_inputDir/$TEST_PROPERTIES"
+	source "$TTRO_inputDir/$TEST_PROPERTIES"
 else
 	isVerbose && echo "No global properies file to evaluate"
 fi
@@ -529,10 +536,10 @@ fixPropsVars # fix global properties and vars
 
 #--------------------------------------
 # Global includes
-tmp="$TTRO_inputDir/$TEST_COLLECTION_FILE"
-isVerbose && echo "Set properties from global Collection file $tmp"
-setProperties "${tmp}"
-fixPropsVars # fix global properties and vars
+#tmp="$TTRO_inputDir/$TEST_COLLECTION_FILE"
+#isVerbose && echo "Set properties from global Collection file $tmp"
+#setProperties "${tmp}"
+#fixPropsVars # fix global properties and vars
 
 #if isNotExisting 'TT_tools'; then
 	declare -x TT_tools=''
@@ -555,10 +562,6 @@ isVerbose && echo "Source global Collection file $tmp"
 source "$tmp"
 fixPropsVars # fix global properties and vars
 
-#------------------------------------------------
-# enter working dir
-cd "$TTRO_workDir"
-
 #-----------------------------------------------
 if [[ -n $TTRO_reference ]]; then
 	list=$(echo "${!TTRO_help@} " | sort)
@@ -578,8 +581,9 @@ fi
 #------------------------------------------------
 # diagnostics
 isVerbose && printTestframeEnvironment
-printTestframeEnvironment > "${TTRO_workDir}/${TEST_ENVIRONMET_LOG}"
-export >> "${TTRO_workDir}/${TEST_ENVIRONMET_LOG}"
+tmp="${TTRO_workDir}/${TEST_ENVIRONMET_LOG}"
+printTestframeEnvironment > "$tmp"
+export >> "$tmp"
 
 #-----------------------------------
 #prepare result files

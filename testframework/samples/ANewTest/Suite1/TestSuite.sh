@@ -1,6 +1,6 @@
 # Put here more fixed variables and properties for test suite
-#--TTPN_myProperty:=This is a sample property set in suite
-#--TTPN_mySuiteProperty:=This is a sample suite property
+setVar 'TTPN_myProperty' "This is a sample property set in suite"
+setVar 'TTPN_mySuiteProperty' "This is a sample suite property"
 
 # Put here the suite initialization steps
 echo "*********************************"

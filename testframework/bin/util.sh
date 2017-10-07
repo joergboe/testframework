@@ -90,6 +90,11 @@ TTRO_help_printTestframeEnvironment="
 function printTestframeEnvironment {
 	echo "**** Testframe Environment ****"
 	local x
+	for x in 'PREPS' 'STEPS' 'FINS'; do
+		if declare -p "$x" &> /dev/null; then
+			echo "${x}='${!x}'"
+		fi
+	done
 	for x in "${!TT_@}"; do
 		echo "${x}='${!x}'"
 	done

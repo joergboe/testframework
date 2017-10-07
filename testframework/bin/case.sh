@@ -163,12 +163,16 @@ function errorExit {
 #Start of main testcase body
 isVerbose && echo "**** START Case $TTRO_case variant $TTRO_caseVariant in workdir $TTRO_workDirCase ********************"
 
+#----------------------------------
+# enter working dir
+cd "$TTRO_workDirCase"
+
 #-----------------------------------
 #setup properties and vars
-tmp="${TTRO_inputDirCase}/${TEST_CASE_FILE}"
-isVerbose && echo "Set properties from Case file $tmp"
-setProperties "$tmp"
-fixPropsVars
+#tmp="${TTRO_inputDirCase}/${TEST_CASE_FILE}"
+#isVerbose && echo "Set properties from Case file $tmp"
+#setProperties "$tmp"
+#fixPropsVars
 
 #-----------------------------------
 # tools
@@ -189,15 +193,12 @@ else
 	printErrorAndExit "No Case test tools file $tmp" $errScript
 fi
 
-#----------------------------------
-# enter working dir
-cd "$TTRO_workDirCase"
-
 #------------------------------------------------
 # diagnostics
 isVerbose && printTestframeEnvironment
-printTestframeEnvironment > "${TTRO_workDirCase}/${TEST_ENVIRONMET_LOG}"
-export >> "${TTRO_workDirCase}/${TEST_ENVIRONMET_LOG}"
+tmp="${TTRO_workDirCase}/${TEST_ENVIRONMET_LOG}"
+printTestframeEnvironment > "$tmp"
+export >> "$tmp"
 
 #check skip
 declare skipcase=""

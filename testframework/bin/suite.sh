@@ -82,10 +82,10 @@ if [[ $# -lt 4 ]]; then
 	exit ${errInvocation}
 fi
 #move all parameters into named variables
-declare -r TTRO_suite="$1"; shift
-declare -r TTRO_inputDirSuite="$1"; shift
-declare -r TTRO_workDirSuite="$1"; shift
-declare -r TTRO_suiteVariant="$1"; shift
+declare -rx TTRO_suite="$1"; shift
+declare -rx TTRO_inputDirSuite="$1"; shift
+declare -rx TTRO_workDirSuite="$1"; shift
+declare -rx TTRO_suiteVariant="$1"; shift
 declare -a cases=() # case pathes
 declare -i noCases=0
 while [[ $# -ge 1 ]]; do
@@ -96,14 +96,18 @@ done
 readonly cases noCases
 isDebug && printDebug "noCases=$noCases"
 
+#--------------------------------------------------
+# enter working dir
+cd "$TTRO_workDirSuite"
+
 #-------------------------
 #setup properties and vars
-if [[ $TTRO_suite != '--' ]]; then
-	tmp="${TTRO_inputDirSuite}/${TEST_SUITE_FILE}"
-	isVerbose && echo "Set properties from Suite file $tmp"
-	setProperties "$tmp"
-fi
-fixPropsVars
+#if [[ $TTRO_suite != '--' ]]; then
+#	tmp="${TTRO_inputDirSuite}/${TEST_SUITE_FILE}"
+#	isVerbose && echo "Set properties from Suite file $tmp"
+#	setProperties "$tmp"
+#fi
+#fixPropsVars
 
 #-------------------------------------
 # include tools
@@ -124,9 +128,12 @@ if [[ $TTRO_suite != '--' ]]; then
 	fi
 fi
 
-#--------------------------------------------------
-# enter working dir
-cd "$TTRO_workDirSuite"
+#------------------------------------------------
+# diagnostics
+isVerbose && printTestframeEnvironment
+tmp="${TTRO_workDirSuite}/${TEST_ENVIRONMET_LOG}"
+printTestframeEnvironment > "$tmp"
+export >> "$tmp"
 
 #--------------------------------------------------
 # prepare output lists
