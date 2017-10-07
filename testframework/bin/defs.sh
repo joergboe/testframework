@@ -8,7 +8,7 @@ declare -r errTestFail=20 errTestError=25 errVersion=30 errInvocation=40 errScri
 declare -r errSigint=130
 
 #constants
-declare -r DEFAULT_WORKDIR='runTTWorkdir'
+declare -r DEFAULT_WORKDIR='runTTFWorkdir'
 declare -r TEST_PROPERTIES="TestProperties"
 declare -r TEST_COLLECTION_FILE="TestCollection.sh"
 declare -r TEST_SUITE_FILE="TestSuite.sh"
