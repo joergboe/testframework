@@ -369,7 +369,8 @@ function fixPropsVars {
 
 TTRO_help_setVar='
 # Function setVar
-#	Set framework variable at runtime
+#	Set framework variable or property at runtime
+#	The name of the variable must startg with TT_, TTRO_, TTP_ or TTPN_
 #	$1 - the name of the variable to set
 #	$2 - the value'
 function setVar {
@@ -455,13 +456,60 @@ function isNotExisting {
 	fi
 }
 
+TTRO_help_isExistingAndTrue='
+# Function isExistingAndTrue
+#	check if variable exists and has a non empty value
+#	$1 var name to be checked'
+function isExistingAndTrue {
+	if declare -p "${1}" &> /dev/null; then
+		if [[ -n ${!1} ]]; then
+			isDebug && printDebug "$FUNCNAME $1 return 0"
+			return 0
+		else
+			isDebug && printDebug "$FUNCNAME $1 return 1"
+			return 1
+		fi
+	else
+		isDebug && printDebug "$FUNCNAME $1 return 1"
+		return 1
+	fi
+}
+
+TTRO_help_isTrue='
+# Function isTrue
+#	check if a variable has a non empty value
+#	$1 var name to be checked'
+function isTrue {
+	if [[ -n ${!1} ]]; then
+		isDebug && printDebug "$FUNCNAME $1 return 0"
+		return 0
+	else
+		isDebug && printDebug "$FUNCNAME $1 return 1"
+		return 1
+	fi
+}
+
+TTRO_help_isFalse='
+# Function isFalse
+#	check if a variable has an empty value
+#	$1 var name to be checked'
+function isTrue {
+	if [[ -z ${!1} ]]; then
+		isDebug && printDebug "$FUNCNAME $1 return 0"
+		return 0
+	else
+		isDebug && printDebug "$FUNCNAME $1 return 1"
+		return 1
+	fi
+}
+
 TTRO_help_isArray='
 # Function isArray
 #	checks whether an variable exists and is a indexed array
 #	$1 var name to be checked'
 function isArray {
 	local v
-	if v=$(declare -p "${1}"); then
+	if v=$(declare -p "${1}" 2> /dev/null); then
 		if [[ $v == declare\ -a* ]]; then
 			isDebug && printDebug "$FUNCNAME $1 return 0"
 			return 0
@@ -493,7 +541,7 @@ TTRO_help_arrayHasKey='
 # Function arrayHasKey
 #	check is an associative array has key
 #	$1 the array name
-#	$2 the key value
+#	$2 the key value to search
 #	returns true if key exists in array'
 function arrayHasKey {
 	if [[ $# -ne 2 ]]; then printErrorAndExit "$FUNCNAME must have 2 aruments" $errRt; fi
@@ -761,5 +809,51 @@ function renameInSubdirs {
 	return 0
 }
 
-#Guard for the last statement because source testutils will fail if TTPN_debug is not set ??
+TTRO_help_isInList='
+# check whether a token is in a space separated list of tokens
+#	$1 the token to search. It must not contain whitespaces
+#	$2 the space separated list
+#	returns true if the token was in the list; false otherwise'
+function isInList {
+	if [[ $# -ne 2 ]]; then printErrorAndExit "$FUNCNAME invalid no of params. Number of Params is $#" $errRt; fi
+	isDebug && printDebug "$FUNCNAME $*"
+	if [[ $1 == *[[:space:]]* ]]; then
+		printErrorAndExit "The token \$1 must not be empty and must not have spaces \$1='$1'" $errRt
+	else
+		local x
+		local isFound=''
+		for x in $2; do
+			if [[ $x == $1 ]]; then
+				isFound="true"
+				break
+			fi
+		done
+		if [[ -n $isFound ]]; then
+			isDebug && printDebug "$FUNCNAME return 0"
+			return 0
+		else
+			isDebug && printDebug "$FUNCNAME return 1"
+			return 1
+		fi
+	fi
+}
+
+TTRO_help_registerTool='
+# Function registerTool
+#	Treats the input as filename and adds it to TT_tools if not already there
+#	sources the file if it was not in TT_tools
+#	return false if filename is already in TT_tools'
+function registerTool {
+	isDebug && printDebug "$FUNCNAME $*"
+	if isInList "$1" "$TT_tools"; then
+		printError "file $1 is already registerd in TT_tools=$TT_tools"
+		return 1
+	else
+		TT_tools="$TT_tools $1"
+		export TT_tools
+		source "$1"
+	fi
+}
+
+#Guard for the last statement - make returncode always 0
 :

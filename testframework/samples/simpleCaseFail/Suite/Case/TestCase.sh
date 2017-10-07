@@ -1,11 +1,11 @@
 # Demonstrate an failed test case
 # The failure is signalled with the function failureExit
-function testStep {
+function step {
 	echo "----- Execute test -----"
 	failureExit
 }
 
 # Demonstrate the execution of the finalization function
-function testFin {
+function fin {
 	echo "----- $FUNCNAME Execute finalization of the test step -----"
 }

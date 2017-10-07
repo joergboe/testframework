@@ -80,7 +80,7 @@ source "${TTRO_scriptDir}/util.sh"
 #The export check - checks whethere there are already vaiables exported with TT prefix
 declare exportCheckFailed=""
 for x in "${!TTRO_@}"; do
-	if [[ $x != TTRO_scriptDir && $x != TTRO_tools && $x != TTRO_version && $x != TTRO_help* ]]; then
+	if [[ $x != TTRO_scriptDir && $x != TT_tools && $x != TTRO_version && $x != TTRO_help* ]]; then
 		exportCheckFailed="true"
 		printWarning "In environment there are TT scoped identifier: ${x}"
 	fi
@@ -319,9 +319,13 @@ declare TTRO_noStart=""
 declare TTRO_noStop=""
 if [[ $noStart == "true" ]]; then
 	TTRO_noStart="true"
+	TTRO_noPrep="true"
+	TTRO_noPrepSuite="true"
 fi
 if [[ $noStop == "true" ]]; then
 	TTRO_noStop="true"
+	TTRO_noFin="true"
+	TTRO_noFinSuite="true"
 fi
 fixPropsVars
 
@@ -333,13 +337,13 @@ printParams
 # Check test collection files and properies file if properties parameter was given
 tmp="$TTRO_inputDir/$TEST_COLLECTION_FILE"
 if [[ -r "$tmp" ]]; then
-	isVerbose && echo "Found radable test collection file $tmp"
+	isVerbose && echo "Found readable test collection file $tmp"
 else
 	printErrorAndExit "No test collection file $tmp found" $errRt
 fi
 if [[ -n "$properties" ]]; then
 	if [[ -r "$properties" ]]; then
-		isVerbose && echo "Found radable test properties file $properties"
+		isVerbose && echo "Found readable test properties file $properties"
 	else
 		printErrorAndExit "No test properties file $properties found"
 	fi
@@ -530,11 +534,11 @@ isVerbose && echo "Set properties from global Collection file $tmp"
 setProperties "${tmp}"
 fixPropsVars # fix global properties and vars
 
-if isNotExisting 'TTRO_tools'; then
-	declare -rx TTRO_tools=''
-fi
-if [[ -n $TTRO_tools ]]; then
-	for x in $TTRO_tools; do
+#if isNotExisting 'TT_tools'; then
+	declare -x TT_tools=''
+#fi
+if [[ -n $TT_tools ]]; then
+	for x in $TT_tools; do
 		isVerbose && echo "Source global tools file: $x"
 		if [[ -r $x ]]; then
 			source "$x"
@@ -560,7 +564,11 @@ if [[ -n $TTRO_reference ]]; then
 	list=$(echo "${!TTRO_help@} " | sort)
 	{
 		for x in $list; do
+			name="${x#TTRO_help_}"
+			echo "#######################################"
+			echo -n "#		$name"
 			echo "${!x}"
+			echo
 			echo
 		done
 	} | less
@@ -593,39 +601,48 @@ touch "$tmp"
 #-------------------------------------------------
 # execute global test preparation
 declare -i executedTestPrepSteps=0
-if isExisting 'TTRO_testPrep'; then
-	printWarning "Deprecated usage of TTRO_testPrep. Use simply variable testPrep='step1 step2 ..'"
-	if isExisting 'testPrep'; then
-		printErrorAndExit "You must not use TTRO_testPrep together with testPrep" $errRt
-	else
-		declare -r testPrep="$TTRO_testPrep"
+if isFunction 'prep'; then
+	if isExisting 'prep' || isExisting 'TTRO_prep'; then
+		printErrorAndExit "You must not use prep or TTRO_prep variable together with prep function" $errRt
 	fi
 fi
-if isExisting 'testPrep'; then
-	if isFunction 'testPrep'; then
-		printErrorAndExit "You must not use testPrep variable together with testPrep function" $errRt
-	else
-		if isArray 'testPrep'; then
+#use special vars in loop varaiables
+for name_xyza in 'prep' 'TTRO_prep'; do
+	if isExisting "$name_xyza"; then
+		if isArray "$name_xyza"; then
 			if isDebug; then
-				v=$(declare -p testPrep)
+				v=$(eval declare -p "$name_xyza")
 				printDebug "$v"
 			fi
-			for (( i=0; i<${#testPrep[@]}; i++)); do
-				isVerbose && echo "Execute Collection Preparation: ${testPrep[$i]}"
-				executedTestPrepSteps=$((executedTestPrepSteps+1))
-				eval "${testPrep[$i]}"
+			eval "l_xyza=\${#$name_xyza[@]}"
+			for (( i_xyza=0; i_xyza<l_xyza; i_xyza++)); do
+				eval "step=\${$name_xyza[$i_xyza]}"
+				if isExistingAndTrue 'TTRO_noPrep'; then
+					isVerbose && echo "Suppress Collection Preparation: $step"
+				else
+					isVerbose && echo "Execute Collection Preparation: $step"
+					executedTestPrepSteps=$((executedTestPrepSteps+1))
+					eval "$step"
+				fi
 			done
 		else
-			isDebug && printDebug "testPrep=$testPrep"
-			for x in $testPrep; do
-				isVerbose && echo "Execute Collection Preparation: $x"
-				executedTestPrepSteps=$((executedTestPrepSteps+1))
-				eval "${x}"
+			isDebug && printDebug "$name_xyza=${!name_xyza}"
+			for x_xyza in ${!name_xyza}; do
+				if isExistingAndTrue 'TTRO_noPrep'; then
+					isVerbose && echo "Suppress Collection Preparation: $x_xyza"
+				else
+					isVerbose && echo "Execute Collection Preparation: $x_xyza"
+					executedTestPrepSteps=$((executedTestPrepSteps+1))
+					eval "${x_xyza}"
+				fi
 			done
 		fi
 	fi
-else
-	if isFunction 'testPrep'; then
+done
+if isFunction 'prep'; then
+	if isExistingAndTrue 'TTRO_noPrep'; then
+		isVerbose && echo "Suppress Collection Preparation function testPrep"
+	else
 		isVerbose && echo "Execute Collection Preparation function testPrep"
 		executedTestPrepSteps=$((executedTestPrepSteps+1))
 		testPrep
@@ -683,42 +700,50 @@ unset i
 #-------------------------------------------------
 # execute global test finalization
 declare -i executedTestFinSteps=0
-if isExisting 'TTRO_testFin'; then
-	printWarning "Deprecated usage of TTRO_testFin. Use simply variable testFin='step1 step2 ..'"
-	if isExisting 'testFin'; then
-		printErrorAndExit "You must not use TTRO_testFin together with testFin" $errRt
-	else
-		declare -r testFin="$TTRO_testFin"
+if isFunction 'fin'; then
+	if isExisting 'fin' || isExisting 'TTRO_fin'; then
+		printErrorAndExit "You must not use fin or TTRO_fin variable together with fin function" $errRt
 	fi
 fi
-if isExisting 'testFin'; then
-	if isFunction 'testFin'; then
-		printErrorAndExit "You must not use testFin variable together with testFin function" $errRt
-	else
-		if isArray 'testFin'; then
+for name_xyza in 'TTRO_fin' 'fin'; do
+	if isExisting "$name_xyza"; then
+		if isArray "$name_xyza"; then
 			if isDebug; then
-				v=$(declare -p testFin)
+				v=$(declare -p "$name_xyza")
 				printDebug "$v"
 			fi
-			for (( i=0; i<${#testFin[@]}; i++)); do
-				isVerbose && echo "Execute Collection Finalization: ${testFin[$i]}"
-				executedTestFinSteps=$((executedTestFinSteps+1))
-				eval "${testFin[$i]}"
+			eval "l_xyza=\${#$name_xyza[@]}"
+			for (( i_xyza=0; i_xyza<l_xyza; i_xyza++)); do
+				eval "step=\${$name_xyza[$i_xyza]}"
+				if isExistingAndTrue 'TTRO_noFin'; then
+					isVerbose && echo "Suppress Collection Finalization: $step_xyza"
+				else
+					isVerbose && echo "Execute Collection Finalization: $step_xyza"
+					executedTestFinSteps=$((executedTestFinSteps+1))
+					eval "$step_xyza"
+				fi
 			done
 		else
-			isDebug && printDebug "testFin=$testFin"
-			for x in $testFin; do
-				isVerbose && echo "Execute Collection Finalization: $x"
-				executedTestFinSteps=$((executedTestFinSteps+1))
-				eval "${x}"
+			isDebug && printDebug "$name_xyza=${!name_xyza}"
+			for x_xyza in ${!name_xyza}; do
+				if isExistingAndTrue 'TTRO_noFin'; then
+					isVerbose && echo "Suppress Collection Finalization: $x_xyza"
+				else
+					isVerbose && echo "Execute Collection Finalization: $x_xyza"
+					executedTestFinSteps=$((executedTestFinSteps+1))
+					eval "${x_xyza}"
+				fi
 			done
 		fi
 	fi
-else
-	if isFunction 'testFin'; then
-		isVerbose && echo "Execute Collection Finalization function testFin"
+done
+if isFunction 'fin'; then
+	if isExistingAndTrue 'TTRO_noFin'; then
+		isVerbose && echo "Suppress Collection Finalization function fin"
+	else
+		isVerbose && echo "Execute Collection Finalization function fin"
 		executedTestFinSteps=$((executedTestFinSteps+1))
-		testFin
+		fin
 	fi
 fi
 isVerbose && echo "$executedTestFinSteps Collection Finalization steps executed"

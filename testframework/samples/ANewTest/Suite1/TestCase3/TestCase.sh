@@ -16,7 +16,7 @@ fi
 
 
 #Function definitions for test collections
-function testPrep {
+function prep {
 	echo "**** $FUNCNAME ****"
 	echo "TTPN_myProperty =$TTPN_myProperty"
 	echo "TTPN_myProperty2=$TTPN_myProperty2"
@@ -24,7 +24,7 @@ function testPrep {
 	echo "TTPN_myCaseProperty=$TTPN_myCaseProperty"
 }
 
-function testFin {
+function fin {
 	echo " **** $FUNCNAME ****"
 	echo "TTPN_myProperty=$TTPN_myProperty"
 	echo "TTPN_myProperty2=$TTPN_myProperty2"
@@ -32,7 +32,7 @@ function testFin {
 	echo "TTPN_myCaseProperty=$TTPN_myCaseProperty"
 }
 
-function testStep {
+function step {
 	echo " **** $FUNCNAME ****"
 	if [[ $TTRO_caseVariant -eq 0 ]]; then
 		echo "Variant 0 returns with success"

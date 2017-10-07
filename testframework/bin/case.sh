@@ -69,47 +69,57 @@ declare failureOccurred=''
 function caseFinalization {
 	if [[ -z $caseFinalized ]]; then
 		caseFinalized='true'
-		if isExisting 'TTRO_caseFin'; then
-			printWarning "Deprecated usage of TTRO_caseFin. Use simply variable testFin='step1 step2 ..'"
-			if isExisting 'testFin'; then
-				printErrorAndExit "You must not use TTRO_caseFin together with testFin" $errRt
-			else
-				declare -r testFin="$TTRO_caseFin"
+		if isFunction 'fin'; then
+			if isExisting 'fin' || isExisting 'TTRO_finCase'; then
+				printErrorAndExit "You must not use fin or TTRO_finCase variable together with fin function" $errRt
 			fi
 		fi
-		if isExisting 'testFin'; then
-			if isFunction 'testFin'; then
-				printErrorAndExit "You must not use testFin variable together with testFin function" $errRt
-			else
-				if isArray 'testFin'; then
+		local name_xyza
+		for name_xyza in 'TTRO_finCase' 'fin'; do
+			if isExisting "$name_xyza"; then
+				if isArray "$name_xyza"; then
 					if isDebug; then
-						local v=$(declare -p testFin)
+						local v=$(declare -p "$name_xyza")
 						printDebug "$v"
 					fi
-					local i
-					for (( i=0; i<${#testFin[@]}; i++)); do
-						isVerbose && echo "Execute Case Finalization: ${testFin[$i]}"
-						executedTestFinSteps=$((executedTestFinSteps+1))
-						eval "${testFin[$i]}"
+					local l_xyza i_xyza
+					eval "l_xyza=\${#$name_xyza[@]}"
+					for (( i_xyza=0; i_xyza<l_xyza; i_xyza++)); do
+						eval "step=\${$name_xyza[$i_xyza]}"
+						if isExistingAndTrue 'TTRO_noFinCase'; then
+							isVerbose && echo "Suppress Case Finalization: $step"
+						else
+							isVerbose && echo "Execute Case Finalization: $step"
+							executedTestFinSteps=$((executedTestFinSteps+1))
+							eval "${step}"
+						fi
 					done
 				else
-					isDebug && printDebug "testFin=$testFin"
-					local x
-					for x in $testFin; do
-						isVerbose && echo "Execute Case Finalization: $x"
-						executedTestFinSteps=$((executedTestFinSteps+1))
-						eval "${x}"
+					isDebug && printDebug "$name_xyza=${!name_xyza}"
+					local x_xyza
+					for x_xyza in ${!name_xyza}; do
+						if isExistingAndTrue 'TTRO_noFinCase'; then
+							isVerbose && echo "Suppress Case Finalization: $x_xyza"
+						else
+							isVerbose && echo "Execute Case Finalization: $x_xyza"
+							executedTestFinSteps=$((executedTestFinSteps+1))
+							eval "${x_xyza}"
+						fi
 					done
 				fi
 			fi
-		else
-			if isFunction 'testFin'; then
-				isVerbose && echo "Execute Case Finalization function testFin"
+		done
+		if isFunction 'fin'; then
+			if isExistingAndTrue 'TTRO_noFinCase'; then
+				isVerbose && echo "Suppress Case Finalization function fin"
+			else
+				isVerbose && echo "Execute Case Finalization function fin"
 				executedTestFinSteps=$((executedTestFinSteps+1))
-				testFin
+				fin
 			fi
 		fi
 		isVerbose && echo "$executedTestFinSteps Case Test Finalization steps executed"
+		#return 55
 	else
 		isDebug && printDebug "No execution caseFinalization case $TTRO_case variant '$TTRO_caseVariant'"
 	fi
@@ -124,7 +134,7 @@ function caseExitFunction {
 	fi
 }
 trap caseExitFunction EXIT
-
+#trap -p
 isVerbose && echo "START: execution Suite $TTRO_suite variant '$TTRO_suiteVariant' Case $TTRO_case variant '$TTRO_caseVariant'"
 
 #
@@ -166,7 +176,7 @@ fixPropsVars
 
 #-----------------------------------
 # tools
-for x in $TTRO_tools; do
+for x in $TT_tools; do
 	isVerbose && echo "Source global tools file: $x"
 	source "$x"
 	fixPropsVars
@@ -214,84 +224,88 @@ if [[ -n $skipcase ]]; then
 fi
 
 #test preparation
-if isExisting 'TTRO_casePrep'; then
-	printWarning "Deprecated usage of TTRO_casePrep. Use simply variable testPrep='step1 step2 ..'"
-	if isExisting 'testPrep'; then
-		printErrorAndExit "You must not use TTRO_casePrep together with testPrep" $errRt
-	else
-		declare -r testPrep="$TTRO_casePrep"
+if isFunction 'prep'; then
+	if isExisting 'TTRO_prepCase' || isExisting 'prep'; then
+		printErrorAndExit "You must not use prep or TTRO_prepCase variable together with prep function" $errRt
 	fi
 fi
-if isExisting 'testPrep'; then
-	if isFunction 'testPrep'; then
-		printErrorAndExit "You must not use testPrep variable together with testPrep function" $errRt
-	else
-		if isArray 'testPrep'; then
+for name_xyza in 'TTRO_prepCase' 'prep'; do
+	if isExisting "$name_xyza"; then
+		if isArray "$name_xyza"; then
 			if isDebug; then
-				v=$(declare -p testPrep)
+				v=$(declare -p "$name_xyza")
 				printDebug "$v"
 			fi
-			for (( i=0; i<${#testPrep[@]}; i++)); do
-				isVerbose && echo "Execute Case Preparation: ${testPrep[$i]}"
-				executedTestPrepSteps=$((executedTestPrepSteps+1))
-				eval "${testPrep[$i]}"
+			eval "l_xyza=\${#$name_xyza[@]}"
+			for (( i_xyza=0; i_xyza<l_xyza; i_xyza++)); do
+				eval "step=\${$name_xyza[$i_xyza]}"
+				if isExistingAndTrue 'TTRO_noPrepCase'; then
+					isVerbose && echo "Suppress Case Preparation: $step"
+				else
+					isVerbose && echo "Execute Case Preparation: $step"
+					executedTestPrepSteps=$((executedTestPrepSteps+1))
+					eval "$step"
+				fi
 			done
 		else
-			isDebug && printDebug "testPrep=$testPrep"
-			for x in $testPrep; do
-				isVerbose && echo "Execute Case Preparation: $x"
-				executedTestPrepSteps=$((executedTestPrepSteps+1))
-				eval "${x}"
+			isDebug && printDebug "$name_xyza=${!name_xyza}"
+			for x_xyza in ${!name_xyza}; do
+				if isExistingAndTrue 'TTRO_noPrepCase'; then
+					isVerbose && echo "Suppress Case Preparation: $x_xyza"
+				else
+					isVerbose && echo "Execute Case Preparation: $x_xyza"
+					executedTestPrepSteps=$((executedTestPrepSteps+1))
+					eval "${x_xyza}"
+				fi
 			done
 		fi
 	fi
-else
-	if isFunction 'testPrep'; then
-		isVerbose && echo "Execute Case Preparation function testPrep"
+done
+if isFunction 'prep'; then
+	if isExistingAndTrue 'TTRO_noPrepCase'; then
+		isVerbose && echo "Suppress Case Preparation function prep"
+	else
+		isVerbose && echo "Execute Case Preparation function prep"
 		executedTestPrepSteps=$((executedTestPrepSteps+1))
-		testPrep
+		prep
 	fi
 fi
 isVerbose && echo "$executedTestPrepSteps Case Test Preparation steps executed"
 
 #test execution
-if isExisting 'TTRO_caseStep'; then
-	printWarning "Deprecated usage of TTRO_caseStep. Use simply variable testStep='step1 step2 ..'"
-	if isExisting 'testStep'; then
-		printErrorAndExit "You must not use TTRO_caseStep together with testStep" $errRt
-	else
-		declare -r testStep="$TTRO_caseStep"
+if isFunction 'step'; then
+	if isExisting 'step' || isExisting 'TTRO_stepCase'; then
+		printErrorAndExit "You must not use step or TTRO_stepCase variable together with step function" $errRt
 	fi
 fi
-if isExisting 'testStep'; then
-	if isFunction 'testStep'; then
-		printErrorAndExit "You must not use testStep variable together with testStep function" $errRt
-	else
-		if isArray 'testStep'; then
+for name_xyza in 'TTRO_stepCase' 'step'; do
+	if isExisting "$name_xyza"; then
+		if isArray "$name_xyza"; then
 			if isDebug; then
-				v=$(declare -p testStep)
+				v=$(declare -p "$name_xyza")
 				printDebug "$v"
-			fi
-			for (( i=0; i<${#testStep[@]}; i++)); do
-				isVerbose && echo "Execute Case Test Step: ${testStep[$i]}"
+			fi 
+			eval "l_xyza=\${#$name_xyza[@]}"
+			for (( i_xyza=0; i_xyza<l_xyza; i_xyza++)); do
+				eval "step=\${$name_xyza[$i_xyza]}"
+				isVerbose && echo "Execute Case Test Step: $step"
 				executedTestSteps=$((executedTestSteps+1))
-				eval "${testStep[$i]}"
+				eval "$step"
 			done
 		else
-			isDebug && printDebug "testStep=$testStep"
-			for x in $testStep; do
-				isVerbose && echo "Execute Case Test Step: $x"
+			isDebug && printDebug "$name_xyza=${!name_xyza}"
+			for x_xyza in ${!name_xyza}; do
+				isVerbose && echo "Execute Case Test Step: $x_xyza"
 				executedTestSteps=$((executedTestSteps+1))
-				eval "${x}"
+				eval "${x_xyza}"
 			done
 		fi
 	fi
-else
-	if isFunction 'testStep'; then
-		isVerbose && echo "Execute Case Test Step function testStep"
-		executedTestSteps=$((executedTestSteps+1))
-		testStep
-	fi
+done
+if isFunction 'step'; then
+	isVerbose && echo "Execute Case Test Step function step"
+	executedTestSteps=$((executedTestSteps+1))
+	step
 fi
 if [[ $executedTestSteps -eq 0 ]]; then
 	printError "No test Case step defined"

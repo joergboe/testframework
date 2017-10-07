@@ -1,14 +1,14 @@
 #--variantList:=success failure error scripterror
 
 #Declare test finalization array and call function with parameter
-testFin=( "myTestFin $TTRO_caseVariant" )
+fin=( "myTestFin $TTRO_caseVariant" )
 
 # Demonstrates an testcase which produces an
 # - success
 # - failure (set the variable failureOccurred)
 # - error the function returns 1
 # - error there is a script error
-function testStep {
+function step {
 	echo "----- Excecute $FUNCNAME variant is : $TTRO_caseVariant -----"
 	case $TTRO_caseVariant in
 		success)
