@@ -214,27 +214,27 @@ function startInstVariable {
 }
 
 TTRO_help_cleanUpInstAndDomainAtStart='
-# Function cleanUpInstAndDomainAtStart
+# Function cleanUpInstAndDomainAtStart deprecated
 #	stop and clean instance and domain'
 function cleanUpInstAndDomainAtStart {
-	cleanUpInstAndDomainVariable "start" "$TTPN_streamsZkConnect" "$TTPN_streamsDomainId" "$TTPN_streamsInstanceId"
+	cleanUpInstAndDomainVariableOld "start" "$TTPN_streamsZkConnect" "$TTPN_streamsDomainId" "$TTPN_streamsInstanceId"
 }
 
 TTRO_help_cleanUpInstAndDomainAtStop='
-# Function cleanUpInstAndDomainAtStop
+# Function cleanUpInstAndDomainAtStop deprecated
 #	stop and clean instance and domain'
 function cleanUpInstAndDomainAtStop {
-	cleanUpInstAndDomainVariable "stop" "$TTPN_streamsZkConnect" "$TTPN_streamsDomainId" "$TTPN_streamsInstanceId"
+	cleanUpInstAndDomainVariableOld "stop" "$TTPN_streamsZkConnect" "$TTPN_streamsDomainId" "$TTPN_streamsInstanceId"
 }
 
-TTRO_help_cleanUpInstAndDomainVariable='
-# Function cleanUpInstAndDomainVariable
+TTRO_help_cleanUpInstAndDomainVariableOld='
+# Function cleanUpInstAndDomainVariableOld deprecated
 #	stop and clean instance and domain from variable params
 #	$1 start or stop determines the if TTRO_noStart or TTRO_noStop is evaluated
 #	$2 zk string
 #	$3 domain id
 #	$4 instance id'
-function cleanUpInstAndDomainVariable {
+function cleanUpInstAndDomainVariableOld {
 	isDebug && printDebug "$FUNCNAME $*"
 	if [[ $1 == start ]]; then
 		if [[ -n $TTRO_noStart ]]; then
@@ -277,6 +277,52 @@ function cleanUpInstAndDomainVariable {
 		echoAndExecute $TTPN_st rmdomain "$zkParam" --noprompt --domain-id "$3"
 	else
 		isVerbose && echo "$FUNCNAME : no domain $3 found"
+	fi
+	return 0
+}
+
+TTRO_help_cleanUpInstAndDomain='
+# Function cleanUpInstAndDomain
+#	stop instance and domain if running and clean instance and domain'
+function cleanUpInstAndDomain {
+	cleanUpInstAndDomainVariable "$TTPN_streamsZkConnect" "$TTPN_streamsDomainId" "$TTPN_streamsInstanceId"
+}
+
+TTRO_help_cleanUpInstAndDomainVariable='
+# Function cleanUpInstAndDomainVariable
+#	stop and clean instance and domain from variable params
+#	$1 zk string
+#	$2 domain id
+#	$3 instance id'
+function cleanUpInstAndDomainVariable {
+	isDebug && printDebug "$FUNCNAME $*"
+	local zkParam
+	makeZkParameter "$1"
+	
+	echo "streamtool lsdomain $zkParam $2"
+	local response
+	if response=$(echoAndExecute $TTPN_st lsdomain "$zkParam" "$2"); then # domain exists
+		if [[ $response =~ $2\ Started ]]; then # domain is running
+			#Running domain found check instance
+			if echoAndExecute $TTPN_st lsinst "$zkParam" --domain-id "$2" "$3"; then
+				if echoAndExecute $TTPN_st lsinst "$zkParam" --started --domain-id "$2" "$3"; then
+					#TODO: check whether the retun code is fine here
+					echoAndExecute $TTPN_st stopinst "$zkParam" --force --domain-id "$2" --instance-id "$3"
+				else
+					isVerbose && echo "$FUNCNAME : no running instance $3 found in domain $2"
+				fi
+				echoAndExecute $TTPN_st rminst "$zkParam" --noprompt --domain-id "$2" --instance-id "$3"
+			else
+				isVerbose && echo "$FUNCNAME : no instance $3 found in domain $2"
+			fi
+			#End Running domain found check instance
+			echoAndExecute $TTPN_st stopdomain "$zkParam" --force --domain-id "$2"
+		else
+			isVerbose && echo "$FUNCNAME : no running domain $2 found"
+		fi
+		echoAndExecute $TTPN_st rmdomain "$zkParam" --noprompt --domain-id "$2"
+	else
+		isVerbose && echo "$FUNCNAME : no domain $2 found"
 	fi
 	return 0
 }

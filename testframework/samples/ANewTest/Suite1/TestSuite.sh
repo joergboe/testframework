@@ -8,10 +8,10 @@ echo "global Suite initialization steps"
 echo "*********************************"
 
 #Suite test preparation steps
-prep=(\
+PREPS=(\
 	'mySpecialSuitePreparation "$TTRO_suiteVariant"' )
 
-fin=mySpecialSuiteFinalization
+FINS=mySpecialSuiteFinalization
 
 
 #Function definitions for test collections

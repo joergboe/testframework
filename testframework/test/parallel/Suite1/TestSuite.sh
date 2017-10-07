@@ -1,6 +1,5 @@
-#--TTRO_suitePrep:=myFunc
+#--TTRO_prepsSuite:=myFunc
 
-source "$TTRO_scriptDir/testutils.sh"
 TT_timeout=90
 TT_extraTime=10
 

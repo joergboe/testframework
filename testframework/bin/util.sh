@@ -365,6 +365,12 @@ function fixPropsVars {
 		fi
 		export "${var}"
 	done
+	#fix special local vars
+	for var in 'STEPS' 'PREPS' 'FINS'; do
+		if declare -p "$var" &> /dev/null; then
+			declare -r "$var"
+		fi
+	done
 }
 
 TTRO_help_setVar='

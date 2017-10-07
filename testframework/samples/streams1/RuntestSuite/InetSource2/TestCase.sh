@@ -1,6 +1,6 @@
 # Translation compile test for InetSource
 
-testPrep='copyOnly'
+PREPS='copyOnly'
 #testStep="TT_mainComposite='Main' compile submitJob myCheckJobFile"
 function testStep {
 	compile; submitJob; myCheckJobFile;

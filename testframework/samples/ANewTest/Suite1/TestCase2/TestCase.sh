@@ -13,9 +13,9 @@ fi
 #Case definition
 #demonstrate the usage of array test definitions
 #--variantCount=5
-prep=( mySpecialCasePreparation )
-fin=( mySpecialCaseFinalization )
-step=( 'myTestStep 5' )
+PREPS=( mySpecialCasePreparation )
+FINS=( mySpecialCaseFinalization )
+STEPS=( 'myTestStep 5' )
 
 
 #Function definitions for test collections

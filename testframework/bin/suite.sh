@@ -197,12 +197,7 @@ export >> "${TTRO_workDirSuite}/${TEST_ENVIRONMET_LOG}"
 #------------------------------------------------
 #execute test suite preparation
 declare -i executedTestPrepSteps=0
-if isFunction 'prep'; then
-	if isExisting 'prep' || isExisting 'TTRO_prepSuite'; then
-		printErrorAndExit "You must not use prep or TTRO_suitePrep variable together with prep function" $errRt
-	fi
-fi
-for name_xyza in 'TTRO_noPrepSuite' 'prep'; do
+for name_xyza in 'TTRO_prepsSuite' 'PREPS'; do
 	if isExisting "$name_xyza"; then
 		if isArray "$name_xyza"; then
 			if isDebug; then
@@ -211,19 +206,19 @@ for name_xyza in 'TTRO_noPrepSuite' 'prep'; do
 			fi
 			eval "l_xyza=\${#$name_xyza[@]}"
 			for (( i_xyza=0; i_xyza<l_xyza; i_xyza++)); do
-				eval "step=\${$name_xyza[$i_xyza]}"
-				if isExistingAndTrue 'TTRO_noPrepSuite'; then
-					isVerbose && echo "Suppress Suite Preparation: $step"
+				eval "step_xyza=\${$name_xyza[$i_xyza]}"
+				if isExistingAndTrue 'TTRO_noPrepsSuite'; then
+					isVerbose && echo "Suppress Suite Preparation: $step_xyza"
 				else
-					isVerbose && echo "Execute Suite Preparation: $step"
+					isVerbose && echo "Execute Suite Preparation: $step_xyza"
 					executedTestPrepSteps=$((executedTestPrepSteps+1))
-					eval "$step"
+					eval "$step_xyza"
 				fi
 			done
 		else
 			isDebug && printDebug "$name_xyza=${!name_xyza}"
 			for x_xyza in ${!name_xyza}; do
-				if isExistingAndTrue 'TTRO_noPrepSuite'; then
+				if isExistingAndTrue 'TTRO_noPrepsSuite'; then
 					isVerbose && echo "Suppress Suite Preparation: $x_xyza"
 				else
 					isVerbose && echo "Execute Suite Preparation: $x_xyza"
@@ -234,13 +229,13 @@ for name_xyza in 'TTRO_noPrepSuite' 'prep'; do
 		fi
 	fi
 done
-if isFunction 'prep'; then
-	if isExistingAndTrue 'TTRO_noPrepSuite'; then
-		isVerbose && echo "Suppress Suite Preparation function prep"
+if isFunction 'testPreparation'; then
+	if isExistingAndTrue 'TTRO_noPrepsSuite'; then
+		isVerbose && echo "Suppress Suite Preparation function testPreparation"
 	else
-		isVerbose && echo "Execute Suite Preparation function prep"
+		isVerbose && echo "Execute Suite Preparation function testPreparation"
 		executedTestPrepSteps=$((executedTestPrepSteps+1))
-		prep
+		testPreparation
 	fi
 fi
 isVerbose && echo "$executedTestPrepSteps Test Suite Preparation steps executed"
@@ -523,12 +518,12 @@ done
 
 #test suite finalization
 declare -i executedTestFinSteps=0
-if isFunction 'fin'; then
-	if isExisting 'fin' || isExisting 'TTRO_finSuite'; then
-		printErrorAndExit "You must not use testFin or TTRO_finSuite variable together with fin function" $errRt
+if isFunction 'testFinalization'; then
+	if isExisting 'FINS' || isExisting 'TTRO_finSuite'; then
+		printErrorAndExit "You must not use FINS or TTRO_finSuite variable together with testFinalization function" $errRt
 	fi
 fi
-for name_xyza in 'TTRO_finSuite' 'fin'; do
+for name_xyza in 'TTRO_finSuite' 'FINS'; do
 	if isExisting "$name_xyza"; then
 		if isArray "$name_xyza"; then
 			if isDebug; then
@@ -538,7 +533,7 @@ for name_xyza in 'TTRO_finSuite' 'fin'; do
 			eval "l_xyza=\${#$name_xyza[@]}"
 			for (( i_xyza=0; i_xyza<l_xyza; i_xyza++)); do
 				eval "step=\${$name_xyza[$i_xyza]}"
-				if isExistingAndTrue 'TTRO_noFinSuite'; then
+				if isExistingAndTrue 'TTRO_noFinsSuite'; then
 					isVerbose && echo "Suppress Suite Finalization: $step"
 				else
 					isVerbose && echo "Execute Suite Finalization: $step"
@@ -549,7 +544,7 @@ for name_xyza in 'TTRO_finSuite' 'fin'; do
 		else
 			isDebug && printDebug "$name_xyza=${!name_xyza}"
 			for x_xyza in ${!name_xyza}; do
-				if isExistingAndTrue 'TTRO_noFinSuite'; then
+				if isExistingAndTrue 'TTRO_noFinsSuite'; then
 					isVerbose && echo "Suppress Suite Finalization: $x_xyza"
 				else
 					isVerbose && echo "Execute Suite Finalization: $x_xyza"
@@ -560,13 +555,13 @@ for name_xyza in 'TTRO_finSuite' 'fin'; do
 		fi
 	fi
 done
-if isFunction 'fin'; then
-	if isExistingAndTrue 'TTRO_noFinSuite'; then
-		isVerbose && echo "Suppress Suite Finalization function fin"
+if isFunction 'testFinalization'; then
+	if isExistingAndTrue 'TTRO_noFinsSuite'; then
+		isVerbose && echo "Suppress Suite Finalization function testFinalization"
 	else
-		isVerbose && echo "Execute Suite Finalization function fin"
+		isVerbose && echo "Execute Suite Finalization function testFinalization"
 		executedTestFinSteps=$((executedTestFinSteps+1))
-		fin
+		testFinalization
 	fi
 fi
 isVerbose && echo "$executedTestFinSteps Test Suite Finalisation steps executed"

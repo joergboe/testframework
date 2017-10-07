@@ -1,7 +1,7 @@
-#--TTRO_testPrep:="testPreparation"
-#--TTRO_testFin:=testFinalization
+#--TTRO_preps:="testPreparation"
+#--TTRO_fins:=testFinalization
 
-source "$TTRO_scriptDir/testutils.sh"
+registerTool "$TTRO_scriptDir/testutils.sh"
 
 function testPreparation {
 	echo "$FUNCNAME : Running global test preparation"

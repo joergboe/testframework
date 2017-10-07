@@ -171,20 +171,22 @@ function manpage () {
 	TTPN_skip             - Skips the execution of test case preparation, test case execution and test case finalization steps
 	TTPN_skipIgnore       - If set to true, the skip variable is ignored.
 	
-	step                  - The list or an XXXXXof test step commands.  If one command returns an failure (return code != 0), the test execution is stopped
-	TTRO_stepCase         - This variable is designed to store the list of test commands.
+	STEPS                 - The list or an XXXXXof test step commands.  If one command returns an failure (return code != 0), the test execution is stopped
+	TTRO_stepsCase        - This variable is designed to store the list of test commands.
 	                         and the test is considered a failure. When the execution of all test commands return success the test case is
 	                         considered a success.
-	TTRO_prepCase         - This variable is designed to store the list of test case preparation commands. If one command returns an failure (return code != 0), the test execution is stopped
+	PREPS
+	TTRO_prepsCase         - This variable is designed to store the list of test case preparation commands. If one command returns an failure (return code != 0), the test execution is stopped
 	                         and the test is considered an error.
-	TTRO_finCase          - This variable is designed to store the list of test case finalization commands. If one command returns an failure (return code != 0), the error is logged and the execution
+	FINS
+	TTRO_finsCase          - This variable is designed to store the list of test case finalization commands. If one command returns an failure (return code != 0), the error is logged and the execution
 	                         is continued
 	                         and the test is considered an error.
-	TTRO_prepSuite         - This variable stores the list of test suite preparation commands. If one command returns an failure (return code != 0), the test execution is stopped.
-	TTRO_finSuite          - This variables stores the list of test suite finalization commands. If one command returns an failure (return code != 0), the error is logged and the execution
+	TTRO_prepsSuite         - This variable stores the list of test suite preparation commands. If one command returns an failure (return code != 0), the test execution is stopped.
+	TTRO_finsSuite          - This variables stores the list of test suite finalization commands. If one command returns an failure (return code != 0), the error is logged and the execution
 	                        is continued
-	TTRO_prep             - This variable stores the list of global test preparation commands. If one command returns an failure (return code != 0), the test execution is stopped.
-	TTRO_fin              - This variable stores the list of global test finalization commands. If one command returns an failure (return code != 0), the error is logged and the execution
+	TTRO_preps             - This variable stores the list of global test preparation commands. If one command returns an failure (return code != 0), the test execution is stopped.
+	TTRO_fins              - This variable stores the list of global test finalization commands. If one command returns an failure (return code != 0), the error is logged and the execution
 	                        is continued
 	                         
 	TT_timeout            - The test case timeout in seconds. default is 120 sec. This variable must be defined in the 
@@ -218,17 +220,17 @@ function manpage () {
 	TTRO_noStart         - This property is provided with value "true" if the --no-start command line option is used. It is empty otherwise
 	TTRO_noStop          - This  property is provided with value "true" if the --no-stop command line option is used. It is empty otherwise
 	TTPN_link            - This  property is provided with value "true" if the --link command line option is used. It is empty otherwise
-	TTRO_noPrep          - This property is provided with value "true" if the --no-start command line option is used. It is empty otherwise
+	TTRO_noPreps         - This property is provided with value "true" if the --no-start command line option is used. It is empty otherwise
 	                       If the property is true no Test Collection preparation is called
-	TTRO_noPrepSuite     - This property is provided with value "true" if the --no-start command line option is used. It is empty otherwise
+	TTRO_noPrepsSuite    - This property is provided with value "true" if the --no-start command line option is used. It is empty otherwise
 	                       If the property is true no Test Suite preparation is called
-	TTRO_noPrepCase      - This property is not provided.
+	TTRO_noPrepsCase     - This property is not provided.
 	                       If the property is true no Test Case preparation is called
-	TTRO_noFin           - This property is provided with value "true" if the --no-stop command line option is used. It is empty otherwise
+	TTRO_noFins          - This property is provided with value "true" if the --no-stop command line option is used. It is empty otherwise
 	                       If the property is true no Test Collection finalization is called
-	TTRO_noFinSuite      - This property is provided with value "true" if the --no-stop command line option is used. It is empty otherwise
+	TTRO_noFinsSuite     - This property is provided with value "true" if the --no-stop command line option is used. It is empty otherwise
 	                       If the property is true no Test Suite finalization is called
-	TTRO_noFinCase       - This property is not provided.
+	TTRO_noFinsCase      - This property is not provided.
 	                       If the property is true no Test Case finalization is called
 
 

@@ -1,9 +1,10 @@
 ##-----------the required tools ---------------------
-#--TTRO_tools=$TTRO_scriptDir/streamsutils.sh
+registerTool "$TTRO_scriptDir/streamsutils.sh"
 
 ##-----------the script part -----------------------------------------------------
 # The initialization section should contain all
 # actions which are imediately executed during test collection initialization
+
 
 streamsutilsInitialization
 setVar 'TTPN_streamsInetToolkit' "$STREAMS_INSTALL/toolkits/com.ibm.streamsx.inet"

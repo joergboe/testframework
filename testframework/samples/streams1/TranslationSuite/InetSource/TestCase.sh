@@ -1,8 +1,8 @@
 # Translation compile test for InetSource
 #--variantCount=2
 
-#--TTRO_casePrep:=copyAndTransformSpl
-#--TTRO_caseStep:=myCompile myEvaluate
+#--TTRO_prepsCase:=copyAndTransformSpl
+#--TTRO_stepsCase:=myCompile myEvaluate
 
 # A customized compiler step expects that the compilation
 # is successfully for the firs run

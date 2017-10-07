@@ -4,9 +4,9 @@
 
 #Case definition
 #--variantCount=5
-prep=mySpecialCasePreparation
-fin=mySpecialCaseFinalization
-step=myTestStep
+PREPS=mySpecialCasePreparation
+FINS=mySpecialCaseFinalization
+STEPS=myTestStep
 
 # Put here the global initialization steps
 echo "********************************"

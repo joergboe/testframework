@@ -1,5 +1,5 @@
 #--variantCount=20
-#--TTRO_caseStep:=myStep
+#--TTRO_stepsCase:=myStep
 ##--TT_timeout=21
 
 declare -a durations=(30 20 22 44 30 60 30 30 33 34

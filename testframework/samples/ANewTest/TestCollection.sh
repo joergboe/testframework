@@ -13,7 +13,7 @@ fi
 echo "********************************"
 
 #Global test collection preparation steps
-prep=mySpecialPreparation
+preps=mySpecialPreparation
 
 #Function definitions for test collections
 function mySpecialPreparation {
@@ -23,7 +23,7 @@ function mySpecialPreparation {
 }
 #export -f mySpecialPreparation
 
-function fin {
+function testFinalization {
 	echo "**** $FUNCNAME ****"
 	echo "TTPN_myProperty=$TTPN_myProperty"
 	echo "TTPN_myProperty2=$TTPN_myProperty2"
