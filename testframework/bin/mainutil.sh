@@ -290,12 +290,12 @@ function exeSuite {
 	else
 		result=$?
 		if [[ ( $result -eq $errTestFail ) || ( $result -eq $errTestError ) ]]; then
-			printWarning "Execution of suite ${suitePath} ended with result=$result"
+			printWarning "Execution of suite ${suite} variant $1 ended with result=$result"
 		elif [[ $result -eq $errSigint ]]; then
-			printWarning "Set sigint Execution of suite ${suitePath} ended with result=$result"
+			printWarning "Set sigint Execution of suite ${suite} variant $1 ended with result=$result"
 			interruptReceived="true"
 		else
-			printErrorAndExit "Execution of suite ${suitePath} ended with result=$result" $errRt
+			printErrorAndExit "Execution of suite ${suite} variant $1 ended with result=$result" $errRt
 		fi
 	fi
 	
@@ -316,6 +316,53 @@ function exeSuite {
 	echo "**** END Suite: ${suite} variant='$1' in ${suitePath} *******************"
 	return 0
 } #/exeSuite
+
+# Function execute collection variant
+# $1 is the variant
+# $2 is the collection variant workdir
+# $3 execute empty suites
+function exeCollection {
+	#make and cleanup collection varant work dir if a variant exists
+	local cworkdir="$2"
+	if [[ -n "$1" ]]; then
+		if [[ -e $cworkdir ]]; then
+			rm -rf "$cworkdir"
+		fi
+		mkdir -p "$cworkdir"
+	fi
+	# execute
+	local result=0
+	if "${TTRO_scriptDir}/collection.sh" "${cworkdir}" "$1" ${3} 2>&1 | tee -i "${cworkdir}/${TEST_LOG}"; then
+		result=0;
+	else
+		result=$?
+		if [[ ( $result -eq $errTestFail ) || ( $result -eq $errTestError ) ]]; then
+			printWarning "Execution of collection variant $1 ended with result=$result"
+		elif [[ $result -eq $errSigint ]]; then
+			printWarning "Set sigint Execution of collection variant $1 ended with result=$result"
+			interruptReceived="true"
+		else
+			printErrorAndExit "Execution of collection variant $1 ended with result=$result" $errRt
+		fi
+	fi
+	#read result lists and transfer results to main dir in case of variants
+	local x
+	if [[ -n "$1" ]]; then
+		for x in VARIANT SUCCESS SKIP FAILURE ERROR; do
+			local inputFileName="${cworkdir}/${x}_LIST"
+			local outputFileName="${TTRO_workDir}/${x}_LIST"
+			if [[ -e ${inputFileName} ]]; then
+				{ while read; do
+					echo "${1}::$REPLY" >> "$outputFileName"
+				done } < "${inputFileName}"
+			else
+				printError "No result list $inputFileName in suite $cworkdir"
+			fi
+		done
+	fi
+	echo "**** END Suite: collection variant='$1' *******************"
+	return 0
+}
 
 #
 # print command line parameters

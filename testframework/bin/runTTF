@@ -491,24 +491,30 @@ fi
 #######################################################################################
 #echo "*******************************************************************************************************"
 echo  "**** START: Test execution ****************************************************************************"
+#-----------------------
+#export execution lists
+TTRO_sortedSuites=$(declare -p sortedSuites)
+TTRO_executionList=$(declare -p executionList)
+export TTRO_sortedSuites TTRO_executionList
+
 #----------------
 #make output dir
 if [[ $flat == 'true' ]]; then
-	TTRO_workDir="${workdir}"
+	TTRO_workDirMain="${workdir}"
 else
 	datestring=$(date +%Y%m%d-%H%M%S)
-	TTRO_workDir="${workdir}/${datestring}"
+	TTRO_workDirMain="${workdir}/${datestring}"
 fi
-if [[ $flat != 'true' && -e $TTRO_workDir ]]; then
-	printErrorAndExit "Output directory already exists $TTRO_workDir" $errRt
+if [[ $flat != 'true' && -e $TTRO_workDirMain ]]; then
+	printErrorAndExit "Output directory already exists $TTRO_workDirMain" $errRt
 fi
-if [[ -e $TTRO_workDir ]]; then
+if [[ -e $TTRO_workDirMain ]]; then
 	if [[ $noprompt == "true" ]]; then
-		rm -rf "$TTRO_workDir"
+		rm -rf "$TTRO_workDirMain"
 	else
-		while read -p "ERROR: Output directory already exists $TTRO_workDir: Remove it or not or exit? y/n/e "; do
+		while read -p "ERROR: Output directory already exists $TTRO_workDirMain: Remove it or not or exit? y/n/e "; do
 			if [[ $REPLY == y* || $REPLY == Y* ]]; then
-				rm -rf "$TTRO_workDir"
+				rm -rf "$TTRO_workDirMain"
 				break
 			elif [[ $REPLY == n* || $REPLY == N* ]]; then
 				break
@@ -518,36 +524,15 @@ if [[ -e $TTRO_workDir ]]; then
 		done
 	fi
 fi
-mkdir -p "$TTRO_workDir"
-echo "TTRO_workDir=$TTRO_workDir"
+mkdir -p "$TTRO_workDirMain"
+echo "TTRO_workDirMain=$TTRO_workDirMain"
 
 #------------------------------------------------
 # enter working dir
-cd "$TTRO_workDir"
+cd "$TTRO_workDirMain"
 
-#{
-#-----------------------------------------------------------
-#check if properties file exists - read properties and fixup
-if [[ -n $properties ]]; then
-	isVerbose && echo "Include global properties $properties"
-	#setProperties "${properties}"
-	source "${properties}"
-elif [[ -e "$TTRO_inputDir/$TEST_PROPERTIES" ]]; then
-	isVerbose && echo "Include global properties $TTRO_inputDir/$TEST_PROPERTIES"
-	#setProperties "$TTRO_inputDir/$TEST_PROPERTIES"
-	source "$TTRO_inputDir/$TEST_PROPERTIES"
-else
-	isVerbose && echo "No global properies file to evaluate"
-fi
-fixPropsVars # fix global properties and vars
-
-#--------------------------------------
-# Global includes
-#tmp="$TTRO_inputDir/$TEST_COLLECTION_FILE"
-#isVerbose && echo "Set properties from global Collection file $tmp"
-#setProperties "${tmp}"
-#fixPropsVars # fix global properties and vars
-
+#------------------------------------------------
+# source tools
 #if isNotExisting 'TT_tools'; then
 	declare -x TT_tools=''
 #fi
@@ -564,10 +549,6 @@ else
 	isDebug && printDebug "No additional global test tools files defined"
 fi
 fixPropsVars # fix global properties and var
-tmp="$TTRO_inputDir/$TEST_COLLECTION_FILE"
-isVerbose && echo "Source global Collection file $tmp"
-source "$tmp"
-fixPropsVars # fix global properties and vars
 
 #-----------------------------------------------
 if [[ -n $TTRO_reference ]]; then
@@ -585,174 +566,84 @@ if [[ -n $TTRO_reference ]]; then
 	exit 0
 fi
 
-#------------------------------------------------
-# diagnostics
-isVerbose && printTestframeEnvironment
-tmp="${TTRO_workDir}/${TEST_ENVIRONMET_LOG}"
-printTestframeEnvironment > "$tmp"
-export >> "$tmp"
-
 #-----------------------------------
 #prepare result files
 for x in VARIANT SUCCESS SKIP FAILURE ERROR; do
-	tmp=${TTRO_workDir}/${x}_LIST
+	tmp=${TTRO_workDirMain}/${x}_LIST
 	if [[ -e $tmp ]]; then
 		printError "Global result list exists list: $tmp"
 		rm -rf "$tmp"
 	fi
 	touch "$tmp"
 done
-tmp=${TTRO_workDir}/RESULT
+tmp=${TTRO_workDirMain}/RESULT
 if [[ -e $tmp ]]; then
 	printError "Global result file exists list: $tmp"
 	rm -rf "$tmp"
 fi
 touch "$tmp"
 
-#-------------------------------------------------
-# execute global test preparation
-declare -i executedTestPrepSteps=0
-#use special vars names in loop varaiables
-for name_xyza in 'TTRO_preps' 'PREPS'; do
-	if isExisting "$name_xyza"; then
-		if isArray "$name_xyza"; then
-			if isDebug; then
-				v=$(eval declare -p "$name_xyza")
-				printDebug "$v"
-			fi
-			eval "l_xyza=\${#$name_xyza[@]}"
-			for (( i_xyza=0; i_xyza<l_xyza; i_xyza++)); do
-				eval "step_xyza=\${$name_xyza[$i_xyza]}"
-				if isExistingAndTrue 'TTRO_noPreps'; then
-					isVerbose && echo "Suppress Collection Preparation: $step_xyza"
-				else
-					isVerbose && echo "Execute Collection Preparation: $step_xyza"
-					executedTestPrepSteps=$((executedTestPrepSteps+1))
-					eval "$step_xyza"
-				fi
-			done
-		else
-			isDebug && printDebug "$name_xyza=${!name_xyza}"
-			for x_xyza in ${!name_xyza}; do
-				if isExistingAndTrue 'TTRO_noPreps'; then
-					isVerbose && echo "Suppress Collection Preparation: $x_xyza"
-				else
-					isVerbose && echo "Execute Collection Preparation: $x_xyza"
-					executedTestPrepSteps=$((executedTestPrepSteps+1))
-					eval "${x_xyza}"
-				fi
-			done
-		fi
-	fi
-done
-if isFunction 'testPreparation'; then
-	if isExistingAndTrue 'TTRO_noPreps'; then
-		isVerbose && echo "Suppress Collection Preparation function testPreparation"
-	else
-		isVerbose && echo "Execute Collection Preparation function testPreparation"
-		executedTestPrepSteps=$((executedTestPrepSteps+1))
-		testPreparation
-	fi
+#-----------------------------------------------------------
+#check if properties file exists - read properties and fixup
+if [[ -n $properties ]]; then
+	isVerbose && echo "Include global properties $properties"
+	#setProperties "${properties}"
+	source "${properties}"
+elif [[ -e "$TTRO_inputDir/$TEST_PROPERTIES" ]]; then
+	isVerbose && echo "Include global properties $TTRO_inputDir/$TEST_PROPERTIES"
+	#setProperties "$TTRO_inputDir/$TEST_PROPERTIES"
+	source "$TTRO_inputDir/$TEST_PROPERTIES"
+else
+	isVerbose && echo "No global properies file to evaluate"
 fi
-isVerbose && echo "$executedTestPrepSteps Collection Preparation steps executed"
+fixPropsVars # fix global properties and vars
+
+#------------------------------------------------
+# diagnostics
+isVerbose && printTestframeEnvironment
+tmp="${TTRO_workDirMain}/${TEST_ENVIRONMET_LOG}"
+printTestframeEnvironment > "$tmp"
+export >> "$tmp"
 
 #--------------------------------------------
-#execution loop over suites and variants
-declare -i suiteVariants=0
-declare -i i j
-for ((i=0; i<${#sortedSuites[@]}; i++)); do
-	suitePath="${sortedSuites[$i]}"
-	if [[ $suitePath == $TTRO_inputDir ]]; then
-		suite='--'
+#execution loop over collection variants
+#isVerbose && echo "**** START Suite: $suite ************************************"
+declare -i collectionVariants=0
+declare -i j
+declare x
+variantCount=""; variantList=""; splitter=""
+readVariantFile "$TTRO_inputDir/$TEST_COLLECTION_FILE" 'collection'
+if [[ -z $variantCount ]]; then
+	if [[ -z $variantList ]]; then
+		exeCollection "" "${TTRO_workDirMain}" "$takeAllCases"
 	else
-		suite="${suitePath##*/}"
-	fi
-	if [[ -n $interruptReceived ]]; then
-		echo "SIGINT: end Suites loop"
-		break
-	fi
-	isVerbose && echo "**** START Suite: $suite ************************************"
-	variantCount=""; variantList=""; splitter=""
-	if [[ $suite != '--' ]]; then
-		readVariantFile "${suitePath}/${TEST_SUITE_FILE}" "suite"
-	fi
-	if [[ -z $variantCount ]]; then
-		if [[ -z $variantList ]]; then
- 			exeSuite "" "${TTRO_workDir}/${suite}" "$takeAllCases"
-		else
-			for x in $variantList; do
-				exeSuite "$x" "${TTRO_workDir}/${suite}/${x}" "$takeAllCases"
-			done
-			unset x
-		fi
-	else
-		if [[ -z $variantList ]]; then
-			for ((j=0; j<variantCount; j++)); do
-				exeSuite "$j" "${TTRO_workDir}/${suite}/${j}" "$takeAllCases"
-			done
-			unset j
-		else
-			printError "In suite $suite we have both variant variables variantCount=$variantCount and variantList=$variantList ! Suite is skipped"
-		fi
-	fi
-	isVerbose && echo "**** END Suite: $suite **************************************"
-	if [[ -n $interruptReceived ]]; then
-		echo "SIGINT: end Suites loop"
-		break
-	fi
-done
-unset i
-
-#-------------------------------------------------
-# execute global test finalization
-declare -i executedTestFinSteps=0
-for name_xyza in 'TTRO_fins' 'FINS'; do
-	if isExisting "$name_xyza"; then
-		if isArray "$name_xyza"; then
-			if isDebug; then
-				v=$(declare -p "$name_xyza")
-				printDebug "$v"
+		for x in $variantList; do
+			exeCollection "$x" "${TTRO_workDirMain}/${x}" "$takeAllCases"
+			if [[ -n $interruptReceived ]]; then
+				echo "SIGINT: end Collection variant loop"
+				break
 			fi
-			eval "l_xyza=\${#$name_xyza[@]}"
-			for (( i_xyza=0; i_xyza<l_xyza; i_xyza++)); do
-				eval "step_xyza=\${$name_xyza[$i_xyza]}"
-				if isExistingAndTrue 'TTRO_noFins'; then
-					isVerbose && echo "Suppress Collection Finalization: $step_xyza"
-				else
-					isVerbose && echo "Execute Collection Finalization: $step_xyza"
-					executedTestFinSteps=$((executedTestFinSteps+1))
-					eval "$step_xyza"
-				fi
-			done
-		else
-			isDebug && printDebug "$name_xyza=${!name_xyza}"
-			for x_xyza in ${!name_xyza}; do
-				if isExistingAndTrue 'TTRO_noFins'; then
-					isVerbose && echo "Suppress Collection Finalization: $x_xyza"
-				else
-					isVerbose && echo "Execute Collection Finalization: $x_xyza"
-					executedTestFinSteps=$((executedTestFinSteps+1))
-					eval "${x_xyza}"
-				fi
-			done
-		fi
+		done
 	fi
-done
-if isFunction 'testFinalization'; then
-	if isExistingAndTrue 'TTRO_noFins'; then
-		isVerbose && echo "Suppress Collection Finalization function testFinalization"
+else
+	if [[ -z $variantList ]]; then
+		for ((j=0; j<variantCount; j++)); do
+			exeCollection "$j" "${TTRO_workDirMain}/${j}" "$takeAllCases"
+			if [[ -n $interruptReceived ]]; then
+				echo "SIGINT: end Collection variant loop"
+				break
+			fi
+		done
 	else
-		isVerbose && echo "Execute Collection Finalization function testFinalization"
-		executedTestFinSteps=$((executedTestFinSteps+1))
-		testFinalization
+		printErrorAndExit "In collection we have both variant variables variantCount=$variantCount and variantList=$variantList !" $errRt
 	fi
 fi
-isVerbose && echo "$executedTestFinSteps Collection Finalization steps executed"
+unset x j
 
 #print result lists
 echo  "**** END Test execution *******************************************************************************"
 for x in VARIANT SUCCESS SKIP FAILURE ERROR; do
-	tmp="${TTRO_workDir}/${x}_LIST"
+	tmp="${TTRO_workDirMain}/${x}_LIST"
 	eval "${x}Count=0"
 	if isVerbose || [[ $x == 'FAILURE' || $x == 'ERROR' ]]; then echo "**** $x List : ****"; fi
 	if [[ -e ${tmp} ]]; then
@@ -767,16 +658,16 @@ for x in VARIANT SUCCESS SKIP FAILURE ERROR; do
 	fi
 done
 #put results to results file for information purose only 
-echo -e "STATE=completed\nVARIANT=$VARIANTCount\nSUCCESS=$SUCCESSCount\nSKIP=$SKIPCount\nFAILURE=$FAILURECount\nERROR=$ERRORCount" > "${TTRO_workDir}/RESULT"
+echo -e "STATE=completed\nVARIANT=$VARIANTCount\nSUCCESS=$SUCCESSCount\nSKIP=$SKIPCount\nFAILURE=$FAILURECount\nERROR=$ERRORCount" > "${TTRO_workDirMain}/RESULT"
 
 echo
 printf "*******************************************************************************************************\n"
-printf "***** suite variants=%i\n" $suiteVariants
+#printf "***** suite variants=%i\n" $suiteVariants
 printf "***** case variants=%i skipped=%i failures=%i errors=%i\n" $VARIANTCount $SKIPCount $FAILURECount $ERRORCount
-printf "***** used workdir: %s\n" "$TTRO_workDir"
+printf "***** used workdir: %s\n" "$TTRO_workDirMain"
 printf "*******************************************************************************************************\n"
 
-touch "$TTRO_workDir/DONE"
+touch "$TTRO_workDirMain/DONE"
 
 if [ $ERRORCount -gt 0 ]; then
 	exit $errTestError
@@ -786,4 +677,4 @@ else
 	exit 0
 fi
 
-#} 2>&1 | tee -i "${TTRO_workDir}/STDERROUT.log"
+#} 2>&1 | tee -i "${TTRO_workDirMain}/STDERROUT.log"

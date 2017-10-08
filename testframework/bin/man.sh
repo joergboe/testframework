@@ -200,7 +200,8 @@ function manpage () {
 
 	Variables Provided
 	==================
-	TTRO_workDir         - The output directory
+	TTRO_workDirMain     - The main output directory
+	TTRO_workDir         - The output directory of the collection variant
 	TTRO_workDirSuite    - The output directory of the suite
 	TTRO_workDirCase     - The output directory of the case
 	TTRO_inputDir        - The input directory
@@ -208,6 +209,7 @@ function manpage () {
 	TTRO_inputDirCase    - The input directory of the case
 	TTRO_suite           - The suite name
 	TTRO_case            - The case name
+	TTRO_variant         - The variant of the collection
 	TTRO_suiteVariant    - The variant of the suite
 	TTRO_caseVariant     - The variant of the case
 	TTRO_scriptDir       - The scripts path
