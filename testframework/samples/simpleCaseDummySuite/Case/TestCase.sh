@@ -1,1 +1,1 @@
-STEPS=( true )
+STEPS=( 'true' )

@@ -49,9 +49,9 @@ function interruptSignalSuite {
 
 trap interruptSignalSuite SIGINT
 
-# Function errorExit
+# Function errorTrapFunc
 #	global error exit function - prints the caller stack
-function errorExit {
+function errorTrapFunc {
 	echo -e "\033[31mERROR: $FUNCNAME ***************"
 	local -i i=0;
 	while caller $i; do
@@ -60,7 +60,7 @@ function errorExit {
 	echo -e "************************************************\033[0m"
 }
 
-trap errorExit ERR
+trap errorTrapFunc ERR
 
 #-------------------------------------
 #include general files

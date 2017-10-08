@@ -20,9 +20,9 @@ shopt -s globstar nullglob
 declare interruptReceived=""
 declare -r commandname="${0##*/}"
 
-# Function errorExit
+# Function errorTrapFunc
 #	global error exit function - prints the caller stack
-function errorExit {
+function errorTrapFunc {
 	echo -e "\033[31mERROR: $FUNCNAME ***************"
 	local -i i=0;
 	while caller $i; do
@@ -30,7 +30,7 @@ function errorExit {
 	done
 	echo -e "************************************************\033[0m"
 }
-trap errorExit ERR
+trap errorTrapFunc ERR
 
 #includes
 source "${TTRO_scriptDir}/defs.sh"
@@ -115,7 +115,6 @@ function caseFinalization {
 			fi
 		fi
 		isVerbose && echo "$executedTestFinSteps Case Test Finalization steps executed"
-		#return 55
 	else
 		isDebug && printDebug "No execution caseFinalization case $TTRO_case variant '$TTRO_caseVariant'"
 	fi
@@ -124,14 +123,12 @@ function caseFinalization {
 declare caseFinalized=''
 
 function caseExitFunction {
-	isDebug && printDebug "caseExitFunction"
-	if [[ -z skipcase ]]; then
+	isDebug && printDebug "$FUNCNAME"
+	if [[ -z "$skipcase" ]]; then
 		caseFinalization
 	fi
 }
 trap caseExitFunction EXIT
-#trap -p
-isVerbose && echo "START: execution Suite $TTRO_suite variant '$TTRO_suiteVariant' Case $TTRO_case variant '$TTRO_caseVariant'"
 
 #
 # success exit / failure exit and error exit
@@ -160,6 +157,7 @@ function errorExit {
 	exit ${errTestError}
 }
 
+#####################################################################################################
 #Start of main testcase body
 isVerbose && echo "**** START Case $TTRO_case variant $TTRO_caseVariant in workdir $TTRO_workDirCase ********************"
 
