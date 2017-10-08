@@ -462,23 +462,30 @@ done
 readonly noCases executionList sortedSuites
 
 #--------------------------------------------------
-# print final execution list
-if isVerbose; then
-	echo "**** Collected Cases Summary: ${noCases} test cases to execute ****"
-	for ((i=0; i<${#sortedSuites[@]}; i++)); do
-		suitePath="${sortedSuites[$i]}"
-		if [[ $suitePath == $TTRO_inputDir ]]; then
-			suite='--'
-		else
-			suite=${suitePath##*/}
+# print final execution list and prompt
+echo "**** Collected Cases Summary: ${noCases} test cases to execute ****"
+for ((i=0; i<${#sortedSuites[@]}; i++)); do
+	suitePath="${sortedSuites[$i]}"
+	if [[ $suitePath == $TTRO_inputDir ]]; then
+		suite='--'
+	else
+		suite=${suitePath##*/}
+	fi
+	echo "Suite: $suite path=$suitePath ----"
+	for casePath in ${executionList[$suitePath]}; do
+		case=${casePath##*/}
+		echo -e "\tCase: $case path=${casePath}"
+	 done
+done
+echo "********************************************************"
+if [[ $noprompt == "" ]]; then
+	while read -p "Continue or exit? y/e "; do
+		if [[ $REPLY == y* || $REPLY == Y* || $REPLY == c* || $REPLY == C* ]]; then
+			break
+		elif [[ $REPLY == e* || $REPLY == E* || $REPLY == n* || $REPLY == N* ]]; then
+			exit $errScript
 		fi
-		echo "Suite: $suite path=$suitePath ----"
-		for casePath in ${executionList[$suitePath]}; do
-			case=${casePath##*/}
-			echo -e "\tCase: $case path=${casePath}"
-		 done
 	done
-	echo "********************************************************"
 fi
 
 #######################################################################################
@@ -500,12 +507,12 @@ if [[ -e $TTRO_workDir ]]; then
 		rm -rf "$TTRO_workDir"
 	else
 		while read -p "ERROR: Output directory already exists $TTRO_workDir: Remove it or not or exit? y/n/e "; do
-			if [[ $REPLY == "y" || $REPLY == "Y" ]]; then
+			if [[ $REPLY == y* || $REPLY == Y* ]]; then
 				rm -rf "$TTRO_workDir"
 				break
-			elif [[ $REPLY == "n" || $REPLY == "N" ]]; then
+			elif [[ $REPLY == n* || $REPLY == N* ]]; then
 				break
-			elif [[ $REPLY == "e" || $REPLY == "E" ]]; then
+			elif [[ $REPLY == e* || $REPLY == E* ]]; then
 				exit $errScript
 			fi
 		done
