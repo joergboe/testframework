@@ -143,7 +143,7 @@ for x in VARIANT SUCCESS SKIP FAILURE ERROR; do
 		printError "Result list exists in suite $TTRO_suite list: $tmp"
 		rm -rf "$tmp"
 	fi
-	touch "$tmp"
+	builtin echo "#case[:variant]" > "$tmp"
 done
 tmp="${TTRO_workDirSuite}/RESULT"
 if [[ -e $tmp ]]; then
@@ -586,7 +586,9 @@ for x in VARIANT SUCCESS SKIP FAILURE ERROR; do
 	isVerbose && echo "**** $x List : ****"
 	{
 		while read; do
-			eval "${x}_NO=\$((${x}_NO+1))"
+			if [[ $REPLY != \#* ]]; then
+				eval "${x}_NO=\$((${x}_NO+1))"
+			fi
 			isVerbose && echo "$REPLY "
 		done
 	} < "$tmp"

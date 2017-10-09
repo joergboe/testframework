@@ -490,7 +490,8 @@ fi
 
 #######################################################################################
 #echo "*******************************************************************************************************"
-echo  "**** START: Test execution ****************************************************************************"
+declare -xr TTRO_collection="${TTRO_inputDir##*/}"
+echo  "**** START: Test execution collection $TTRO_collection ******************************************************************"
 #-----------------------
 #export execution lists
 TTRO_sortedSuites=$(declare -p sortedSuites)
@@ -574,7 +575,7 @@ for x in VARIANT SUCCESS SKIP FAILURE ERROR; do
 		printError "Global result list exists list: $tmp"
 		rm -rf "$tmp"
 	fi
-	touch "$tmp"
+	builtin echo "#collection[:variant]::suite[:variant]::case[:variant]" > "$tmp"
 done
 tmp=${TTRO_workDirMain}/RESULT
 if [[ -e $tmp ]]; then
@@ -651,7 +652,9 @@ for x in VARIANT SUCCESS SKIP FAILURE ERROR; do
 		{
 			while read; do
 				if isVerbose || [[ $x == 'FAILURE' || $x == 'ERROR' ]]; then echo "$REPLY "; fi
-				eval "${x}Count=\$((\${x}Count+1))"
+				if [[ $REPLY != \#* ]]; then
+					eval "${x}Count=\$((\${x}Count+1))"
+				fi
 			done
 		} < "$tmp"
 	else

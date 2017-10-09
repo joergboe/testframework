@@ -207,6 +207,7 @@ function manpage () {
 	TTRO_inputDir        - The input directory
 	TTRO_inputDirSuite   - The input directory of the suite
 	TTRO_inputDirCase    - The input directory of the case
+	TTRO_collection      - The name of the collection
 	TTRO_suite           - The suite name
 	TTRO_case            - The case name
 	TTRO_variant         - The variant of the collection

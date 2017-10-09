@@ -101,15 +101,23 @@ function exeSuite {
 	
 	#read result lists
 	local x
+	local collectionstring
+	if [[ -n "$TTRO_variant" ]]; then
+		collectionstring="$TTRO_variant"
+	else
+		collectionstring="$TTRO_collection"
+	fi
 	for x in VARIANT SUCCESS SKIP FAILURE ERROR; do
 		local inputFileName="${sworkdir}/${x}_LIST"
 		local outputFileName="${TTRO_workDir}/${x}_LIST"
 		if [[ -e ${inputFileName} ]]; then
 			{ while read; do
-				if [[ -n "$1" ]]; then
-					echo "${suite}:${1}::$REPLY" >> "$outputFileName"
-				else
-					echo "${suite}::$REPLY" >> "$outputFileName"
+				if [[ $REPLY != \#* ]]; then
+					if [[ -n "$1" ]]; then
+						echo "${collectionstring}::${suite}:${1}::$REPLY" >> "$outputFileName"
+					else
+						echo "${collectionstring}::${suite}::$REPLY" >> "$outputFileName"
+					fi
 				fi
 			done } < "${inputFileName}"
 		else
@@ -141,15 +149,12 @@ readonly ortedSuites executionList
 echo "**************************** START: Collection variant $TTRO_variant **********************"
 #-----------------------------------
 #prepare result files if no exists (in case of variant these files must be created)
-for x in VARIANT SUCCESS SKIP FAILURE ERROR; do
-	tmp=${TTRO_workDir}/${x}_LIST
-	if [[ ! -e $tmp ]]; then
-		touch "$tmp"
-	fi
-done
-
-tmp=${TTRO_workDir}/RESULT
-if [[ ! -e $tmp ]]; then
+if [[ -n "$TTRO_variant" ]]; then
+	for x in VARIANT SUCCESS SKIP FAILURE ERROR; do
+		tmp=${TTRO_workDir}/${x}_LIST
+		builtin echo "#variant::suite[:variant]::case[:variant]" > "$tmp"
+	done
+	tmp=${TTRO_workDir}/RESULT
 	touch "$tmp"
 fi
 

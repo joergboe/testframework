@@ -325,7 +325,9 @@ function exeCollection {
 			local outputFileName="${TTRO_workDirMain}/${x}_LIST"
 			if [[ -e ${inputFileName} ]]; then
 				{ while read; do
-					echo "${1}::$REPLY" >> "$outputFileName"
+					if [[ $REPLY != \#* ]]; then
+						echo "${TTRO_collection}:$REPLY" >> "$outputFileName"
+					fi
 				done } < "${inputFileName}"
 			else
 				printError "No result list $inputFileName in suite $cworkdir"
