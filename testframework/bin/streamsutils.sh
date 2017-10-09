@@ -126,6 +126,7 @@ function mkDomainVariable {
 	#local params="$zkstring --property SWS.Port=8443 --property JMX.Port=9443 --property domain.highAvailabilityCount=1 --property domain.checkpointRepository=fileSystem --property domain.checkpointRepositoryConfiguration= { \"Dir\" : \"/home/joergboe/Checkpoint\" } "
 	if ! echoAndExecute $TTPN_st mkdomain "$zkParam" --domain-id "$2" --property "SWS.Port=$3" --property "JMX.Port=$4" --property domain.highAvailabilityCount=1; then
 		printError "$FUNCNAME : Can not make domain $2"
+		#return 1
 		return $errTestFail
 	fi
 	if ! echoAndExecute $TTPN_st genkey "$zkParam"; then

@@ -575,7 +575,7 @@ isVerbose && echo "$executedTestFinSteps Test Suite Finalisation steps executed"
 
 #-------------------------------------------------------
 #put results to results file for information purose only 
-echo -e "STATE=completed\nVARIANT=$jobIndex\nSUCCESS=$variantSuccess\nSKIP=$variantSkiped\nFAILURE=$variantFailures\nERROR=$variantErrors" > "${TTRO_workDirSuite}/RESULT"
+echo -e "VARIANT=$jobIndex\nSUCCESS=$variantSuccess\nSKIP=$variantSkiped\nFAILURE=$variantFailures\nERROR=$variantErrors" > "${TTRO_workDirSuite}/RESULT"
 
 #-------------------------------------------------------
 #Final verbose suite result printout
@@ -619,6 +619,7 @@ elif [[ $variantFailures -ne 0 ]]; then
 fi
 
 printf "**** Suite: $TTRO_suite Variant: '$TTRO_suiteVariant' cases=%i skipped=%i failures=%i errors=%i *****\n" $jobIndex $variantSkiped $variantFailures $variantErrors
+builtin echo -n "$suiteResult" > "${TTRO_workDirSuite}/DONE"
 
 isDebug && printDebug "END: Suite $TTRO_suite variant='$TTRO_suiteVariant' suite exit code $suiteResult"
 

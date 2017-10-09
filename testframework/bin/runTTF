@@ -582,6 +582,7 @@ if [[ -e $tmp ]]; then
 	rm -rf "$tmp"
 fi
 touch "$tmp"
+builtin echo -n '0' > "$TTRO_workDirMain/.suiteVariants"
 
 #-----------------------------------------------------------
 #check if properties file exists - read properties and fixup
@@ -658,23 +659,28 @@ for x in VARIANT SUCCESS SKIP FAILURE ERROR; do
 	fi
 done
 #put results to results file for information purose only 
-echo -e "STATE=completed\nVARIANT=$VARIANTCount\nSUCCESS=$SUCCESSCount\nSKIP=$SKIPCount\nFAILURE=$FAILURECount\nERROR=$ERRORCount" > "${TTRO_workDirMain}/RESULT"
+echo -e "VARIANT=$VARIANTCount\nSUCCESS=$SUCCESSCount\nSKIP=$SKIPCount\nFAILURE=$FAILURECount\nERROR=$ERRORCount" > "${TTRO_workDirMain}/RESULT"
+suiteVariants=$(<"$TTRO_workDirMain/.suiteVariants")
 
 echo
 printf "*******************************************************************************************************\n"
-#printf "***** suite variants=%i\n" $suiteVariants
+printf "***** collection variants=%i\n" $collectionVariants
+printf "***** suite variants=%i\n" $suiteVariants
 printf "***** case variants=%i skipped=%i failures=%i errors=%i\n" $VARIANTCount $SKIPCount $FAILURECount $ERRORCount
 printf "***** used workdir: %s\n" "$TTRO_workDirMain"
 printf "*******************************************************************************************************\n"
 
-touch "$TTRO_workDirMain/DONE"
-
-if [ $ERRORCount -gt 0 ]; then
-	exit $errTestError
-elif [ $FAILURECount -gt 0 ]; then
-	exit $errTestFail
-else
-	exit 0
+declare mainResult=0
+if [[ -n "$interruptReceived" ]]; then
+	mainResult=$errSigint
+elif [[ $ERRORCount -gt 0 ]]; then
+	mainResult=$errTestError
+elif [[ $FAILURECount -gt 0 ]]; then
+	mainResult=$errTestFail
 fi
+
+builtin echo -n "$mainResult" > "$TTRO_workDirMain/DONE"
+
+exit $mainResult
 
 #} 2>&1 | tee -i "${TTRO_workDirMain}/STDERROUT.log"

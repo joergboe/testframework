@@ -16,18 +16,21 @@ shopt -s globstar nullglob
 declare interruptReceived=''
 declare -r commandname="${0##*/}"
 
+######################################################
+# Functions
+
 # Function interruptSignalColl
 function interruptSignalColl {
 	echo "SIGINT received in $commandname ********************"
 	if [[ -z $interruptReceived ]]; then
 		interruptReceived="true"
 	else
-		echo "Abort test"
+		echo "Abort test collection"
 		exit $errSigint
 	fi
 	return 0
 }
-trap interruptSignalMain SIGINT
+trap interruptSignalColl SIGINT
 
 # Function errorTrapFunc
 #	global error exit function - prints the caller stack
@@ -44,7 +47,7 @@ trap errorTrapFunc ERR
 #-----------------------------------------------------
 #include the definitions
 source "${TTRO_scriptDir}/defs.sh"
-source "${TTRO_scriptDir}/mainutil.sh"
+#source "${TTRO_scriptDir}/mainutil.sh"
 source "${TTRO_scriptDir}/util.sh"
 
 # usage and parameters
@@ -56,6 +59,71 @@ function usage {
 	
 	EOF
 }
+
+#
+# function to execute the variants of suites
+# $1 is the variant
+# $2 is the suite variant workdir
+# $3 execute empty suites
+# expect set vars suitePath suite sworkdir directory
+function exeSuite {
+	#skip suites with no test cases if $3 is false / empty dummy suite is skipped any way
+	if [[ ( ${executionList[$suitePath]} == "" ) && ( ( -z $3 ) || ( $suite == '--' ) ) ]]; then
+		isDebug && printDebug "$FUNCNAME: skip empty suite $suitePath: variant='$1'"
+		return 0
+	fi
+	if [[ $suite != '--' ]]; then
+		suiteVariants=$((suiteVariants+1))
+	fi
+	echo "**** START Suite: ${suite} variant='$1' in ${suitePath} *****************"
+	#make and cleanup suite work dir
+	local sworkdir="$2"
+	if [[ -e $sworkdir ]]; then
+		rm -rf "$sworkdir"
+	fi
+	mkdir -p "$sworkdir"
+
+	#execute suite variant
+	local result=0
+	if "${TTRO_scriptDir}/suite.sh" "$suite" "${suitePath}" "${sworkdir}" "$1" ${executionList[$suitePath]} 2>&1 | tee -i "${sworkdir}/${TEST_LOG}"; then
+		result=0;
+	else
+		result=$?
+		if [[ ( $result -eq $errTestFail ) || ( $result -eq $errTestError ) ]]; then
+			printWarning "Execution of suite ${suite} variant $1 ended with result=$result"
+		elif [[ $result -eq $errSigint ]]; then
+			printWarning "Set sigint Execution of suite ${suite} variant $1 ended with result=$result"
+			interruptReceived="true"
+		else
+			printErrorAndExit "Execution of suite ${suite} variant $1 ended with result=$result" $errRt
+		fi
+	fi
+	
+	#read result lists
+	local x
+	for x in VARIANT SUCCESS SKIP FAILURE ERROR; do
+		local inputFileName="${sworkdir}/${x}_LIST"
+		local outputFileName="${TTRO_workDir}/${x}_LIST"
+		if [[ -e ${inputFileName} ]]; then
+			{ while read; do
+				if [[ -n "$1" ]]; then
+					echo "${suite}:${1}::$REPLY" >> "$outputFileName"
+				else
+					echo "${suite}::$REPLY" >> "$outputFileName"
+				fi
+			done } < "${inputFileName}"
+		else
+			printError "No result list $inputFileName in suite $sworkdir"
+		fi
+	done
+
+	echo "**** END Suite: ${suite} variant='$1' in ${suitePath} *******************"
+	return 0
+} #/exeSuite
+
+##########################################################
+# Main body
+
 isDebug && printDebug "$0 $*"
 if [[ $# -ne 3 ]]; then
 	usage
@@ -70,6 +138,7 @@ eval "$TTRO_sortedSuites"
 eval "$TTRO_executionList"
 readonly ortedSuites executionList
 
+echo "**************************** START: Collection variant $TTRO_variant **********************"
 #-----------------------------------
 #prepare result files if no exists (in case of variant these files must be created)
 for x in VARIANT SUCCESS SKIP FAILURE ERROR; do
@@ -146,7 +215,7 @@ if isFunction 'testPreparation'; then
 	else
 		isVerbose && echo "Execute Collection Preparation function testPreparation"
 		executedTestPrepSteps=$((executedTestPrepSteps+1))
-		testPreparationin ${suitePath}
+		testPreparation
 	fi
 fi
 isVerbose && echo "$executedTestPrepSteps Collection Preparation steps executed"
@@ -244,6 +313,49 @@ if isFunction 'testFinalization'; then
 fi
 isVerbose && echo "$executedTestFinSteps Collection Finalization steps executed"
 
-isDebug && printDebug "END: Collection variant='$TTRO_variant'"
+builtin echo "$suiteVariants" > "$TTRO_workDir/.suiteVariants"
+
+echo "**************************** END: Collection variant $TTRO_variant **********************"
+
+#-------------------------------------------------------
+#Final verbose suite result printout
+for x in VARIANT SUCCESS SKIP FAILURE ERROR; do
+	tmp="${TTRO_workDir}/${x}_LIST"
+	eval "${x}_NO=0"
+	isVerbose && echo "**** $x List : ****"
+	{
+		while read; do
+			eval "${x}_NO=\$((${x}_NO+1))"
+			isVerbose && echo "$REPLY "
+		done
+	} < "$tmp"
+	tmp3="${x}_NO"
+	isDebug && printDebug "$x = ${!tmp3}"
+done
+
+declare collectionResult=0
+if [[ -n "$interruptReceived" ]]; then
+	collectionResult=$errSigint
+elif [[ $ERROR_NO -ne 0 ]]; then
+	collectionResult=$errTestError
+elif [[ $FAILURE_NO -ne 0 ]]; then
+	collectionResult=$errTestFail
+fi
+
+#Print summary only in case if there are more than one variant
+if [[ -n "$TTRO_variant" ]]; then
+	#put results to results file for information purose only 
+	echo -e "VARIANT=$VARIANT_NO\nSUCCESS=$SUCCESS_NO\nSKIP=$SKIP_NO\nFAILURE=$FAILURE_NO\nERROR=$ERROR_NO" > "${TTRO_workDir}/RESULT"
+	
+	echo "**** Results Collection variant: $TTRO_variant ***********************************************"
+	printf "***** suite variants=%i\n" $suiteVariants
+	printf "**** Collection Variant: '$TTRO_variant' cases=%i skipped=%i failures=%i errors=%i *****\n" $VARIANT_NO $SKIP_NO $FAILURE_NO $ERROR_NO
+	
+	builtin echo -n "$collectionResult" > "${TTRO_workDir}/DONE"
+fi
+
+isDebug && printDebug "END: Collection variant='$TTRO_variant' suite exit code $collectionResult"
+
+exit $collectionResult
 
 :
