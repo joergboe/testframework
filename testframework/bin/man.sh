@@ -11,20 +11,32 @@ function manpage () {
 	A test case is comprised of a directory with the main test case file with name: '$TEST_CASE_FILE' and other necessary artifacts
 	which are necessary for the test execution.
 	The name of a test case is the last component of the path-name of the main test case file.
+	The test case file conains the necessary definitions and the script code to execute the test.
 	
 	A test suite is a collection of test cases which are organized in a test suite directory. The directory sub tree
 	of the test suite may have an arbitrary depth.
 	A test suite is defined through a directory with the main suite file with name: '$TEST_SUITE_FILE'
 	The name of a test suite is the last component of the path-name of the main test suite file.
+	The test suite file contains the necessary definitions and the script code to execute the test suite preparation 
+	and suite finalization. The test suite file may contain common suite code (functions must be exported).
+	Suites may be omitted.
 	
 	One or more test suites and / or test cases form a Test Collection. A test collection is defined through a directory with the 
 	test collection file with name: '$TEST_COLLECTION_FILE'.
-	A test collection may have at the test properties file $TEST_PROPERTIES and at least one test
-	Suite directory or a test Case directory. The name of the test properties file may be changed by a comman line parameter (--properties).
+	The test collection file contains the necessary definitions and the script code to execute the test collection preparation 
+	and collection finalization. The test collection file may contain common code (functions must be exported).
+	A test collection may have a test properties file $TEST_PROPERTIES which should contain the definition of varaible and 
+	properties which may be variable in different test environments.
+	The name of the test properties file may be changed by a comman line parameter (--properties).
+	
+	Common used script code may be placed in separate script files, which must be registered during test run.
 	
 	Test suites must not be nested in other test suites or test cases.
 	Test cases must not be nested in other test case directories.
 	All path names of test cases and suites must not contain any white space characters. A test Suite must not have the name '--'.
+	
+	Test Cases, Test Suites and Test Collections may define variants. This allows the repeated execution of the artifact with changed
+	parameter sets.
 
 
 	Execution Environment
@@ -41,10 +53,10 @@ function manpage () {
 
 	Test Case File '$TEST_CASE_FILE', Test Suite File '$TEST_SUITE_FILE' and the '$TEST_COLLECTION_FILE'
 	====================================================================================================
-	These files may have two sections: The description section and a script code section. Both sections may be empty.
+	These files may have two sections: The preamble and a script code section. Both sections may be empty.
 	
-	The description section may define properties and variables which are set up before execution of Test collection, Test suite or Test case.
-	A description statement starts with the character sequence '#--' and the variable or property definition must follow
+	The preamble defines variables which are neccessary before execution of appropriate artifacts starts.
+	A preamble statement starts with the character sequence '#--' and the variable definition must follow
 	immediately. (No spaces). The definition of the variables and properties must have the form:
 	#--<name>=<value>
 	or
@@ -55,18 +67,19 @@ function manpage () {
 	If the '=' operator is used, the assignment executed with eval. That means expansion and word splitting is 
 	performed and hence quoting is required.
 	The whole assignment must fit into one line.
+	The expansion is executed in the environment of the calling artifact.
 	
-	The script code section is a bash script. In the script section you can define required custom functions for the test 
-	preparation, for the test step execution and the test finalization. The script code of the main body is executed during 
-	initialization of the Test collection, of the Test suite or of the Test case.
+	The script code section is a bash script. In the script section, you can define required custom functions for the 
+	initialization, the test preparation, for the test step execution and the test finalization. The script code of the main body 
+	is executed during initialization of the Test collection, of the Test suite or of the Test case.
 
 
 	Test Property File $TEST_PROPERTIES
 	===================================
-	This file may contain global property and variable definitions. This file must no contain script code. This file is intended 
+	This file may contain global property and variable definitions. This file should no contain script code. This file is intended 
 	to store stuff which may change when the test collection is executed in different environments. The default name of this 
 	file is '$TEST_PROPERTIES' and it is expected in the Test collection directory. An alternative file name may be assigned with 
-	command line parameter --properties. The syntax is the same as in the 'description' section.
+	command line parameter --properties or the environment TT_properties is evaluated. The properties file is a bash script.
 
 
 	Test Tools and Modules
@@ -74,12 +87,18 @@ function manpage () {
 	If your test collection requires special functions, you must source the appropriate modules from the test collection file. 
 	Especially the streamsutils.sh must be sourced at the beginning of the main body of the test collection file:
 	
-	source "$TTRO_scriptDir/streamsutils.sh"
+	registerTool "$TTRO_scriptDir/streamsutils.sh"
+	or
+	setVar 'TT_tools' "$TT_tools $TTRO_scriptDir/streamsutils.sh"
+	
+	The first form sources the script 'streamsutils.sh' and modifies the TT_tools variable.
+	The seconmd form modifies the TT_tools variable only. The utilites script is sourced during start up of the called artifact.
 
 
-	Test Case and Test Suite variants
-	=================================
-	The variants of Test Cases and test suites are defined in the description section of a '$TEST_CASE_FILE' file or a '$TEST_SUITE_FILE' file.
+	Test Collection, Test Case and Test Suite variants
+	==================================================
+	The variants of cases, suites and collections are defined in the preamble of the '$TEST_CASE_FILE', the '$TEST_SUITE_FILE' or
+	the $TEST_COLLECTION_FILE file.
 	The appropriate file must have either no variant variable, a variantCount variable or a variantList variable.
 	
 	The variantCount must be in the form:
