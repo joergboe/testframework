@@ -89,9 +89,14 @@ function exeSuite {
 		result=0;
 	else
 		result=$?
-		printError "Execution of suite ${suite} variant $1 ended with result=$result"
-		suiteErrors=$(( suiteErrors + 1))
-		builtin echo "$suite:$1" >> "$TTRO_workDir/SUITE_ERROR_LIST"
+		if [[ $result -eq $errSigint ]]; then
+			printWarning "Set SIGINT Execution of suite ${suite} variant $1 ended with result=$result"
+			interruptReceived="true"
+		else
+			printError "Execution of suite ${suite} variant $1 ended with result=$result"
+			suiteErrors=$(( suiteErrors + 1))
+			builtin echo "$suite:$1" >> "$TTRO_workDir/SUITE_ERROR_LIST"
+		fi
 	fi
 	
 	#read result lists

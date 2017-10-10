@@ -95,8 +95,13 @@ function manpage () {
 	The seconmd form modifies the TT_tools variable only. The utilites script is sourced during start up of the called artifact.
 
 
+	Test File Preample
+	==================
+	The preamble defines the variants of the test artifacts and in case of a tes case, the timeout values for the test case.
+	NOTE: The values do not require enclosing quotes.
+	
 	Test Collection, Test Case and Test Suite variants
-	==================================================
+	
 	The variants of cases, suites and collections are defined in the preamble of the '$TEST_CASE_FILE', the '$TEST_SUITE_FILE' or
 	the $TEST_COLLECTION_FILE file.
 	The appropriate file must have either no variant variable, a variantCount variable or a variantList variable.
@@ -109,9 +114,14 @@ function manpage () {
 	#--variantList=<list>
 	#--variantList:=<list>
 	
-	NOTE: Currently the variables variantCount, variantList, TT_timeout and TT_extraTime are always treated as literal.
+	NOTE: Currently only the operator '=' is supported.
 	
-	These files may contain comment lines (# ...).
+	Test Case timeouts
+	
+	Each test case can define an individual timeout variable. When the timout is reached for an test case, 
+	the job is killed with SIGTERM (15). If the job still runs after additional time (TTP_additionalTime), 
+	the job is killed with SIGKILL (9).
+	If there is no individual timeout defined, the default values TTP_timeout is used.
 
 
 	Test Framework Variables and Properties
@@ -208,11 +218,11 @@ function manpage () {
 	TTRO_fins              - This variable stores the list of global test finalization commands. If one command returns an failure (return code != 0), the error is logged and the execution
 	                        is continued
 	                         
-	TT_timeout            - The test case timeout in seconds. default is 120 sec. This variable must be defined in the 
+	TTP_timeout           - The default test case timeout in seconds. default is 120 sec. This variable must be defined in the 
 	                        description section of test case file or in the Test Suite or Test Collection. A definition 
 	                        in the script section of a Test Case has no effect.
-	TT_extraTime          - The extra wait time after the test case time out. If the test case does not end after this 
-	                        time a SIGKILL is issued and the test case is stopped. The default is 30 sec. This variable 
+	TTP_additionalTime    - The extra wait time after the test case time out. If the test case does not end after this 
+	                        time a SIGKILL is issued and the test case is stopped. The default is 45 sec. This variable 
 	                        must be defined in the description section of test case file or in the Test Suite or Test Collection. 
 	                        A definition in the script section of a Test Case has no effect.
 

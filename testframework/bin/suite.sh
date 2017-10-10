@@ -154,13 +154,26 @@ touch "$tmp"
 
 #----------------------------------------------------------------------------------
 #extract test case variants from list and put all cases and variants into the lists
+function setTimeoutInArray {
+	if isExisting 'timeout'; then
+		caseTimeout[$noCaseVariants]="$timeout"
+		if [[ ${caseTimeout[$noCaseVariants]} -eq 0 ]]; then
+			printError "wrong timeout in case $caseName. timeout='$timeout'"
+		fi
+	else
+		caseTimeout[$noCaseVariants]=0
+	fi
+}
+
 declare -a caseVariantPathes=()		#the case path of all case variants
 declare -a caseVariantIds=()		#the variant id of all cases
 declare -a caseVariantWorkdirs=()	#the workdir of each variant
+declare -ai caseTimeout=()			#the individual timeout
 declare -i noCaseVariants=0			#the overall number of case variants
 for ((i=0; i<noCases; i++)) do
 	casePath="${cases[$i]}"
 	caseName="${casePath##*/}"
+	unset timeout
 	readVariantFile "${casePath}/${TEST_CASE_FILE}" "case"
 	echo "variantCount=$variantCount variantList=$variantList"
 	if [[ -z $variantCount ]]; then
@@ -168,12 +181,14 @@ for ((i=0; i<noCases; i++)) do
 			caseVariantPathes[$noCaseVariants]="$casePath"
 			caseVariantIds[$noCaseVariants]=""
 			caseVariantWorkdirs[$noCaseVariants]="${TTRO_workDirSuite}/${caseName}"
+			setTimeoutInArray
 			noCaseVariants=$((noCaseVariants+1))
 		else
 			for x in $variantList; do
 				caseVariantPathes[$noCaseVariants]="$casePath"
 				caseVariantIds[$noCaseVariants]="${x}"
 				caseVariantWorkdirs[$noCaseVariants]="${TTRO_workDirSuite}/${caseName}/${x}"
+				setTimeoutInArray
 				noCaseVariants=$((noCaseVariants+1))
 			done
 			unset x
@@ -184,6 +199,7 @@ for ((i=0; i<noCases; i++)) do
 				caseVariantPathes[$noCaseVariants]="$casePath"
 				caseVariantIds[$noCaseVariants]="${j}"
 				caseVariantWorkdirs[$noCaseVariants]="${TTRO_workDirSuite}/${caseName}/${j}"
+				setTimeoutInArray
 				noCaseVariants=$((noCaseVariants+1))
 			done
 			unset j
@@ -193,6 +209,8 @@ for ((i=0; i<noCases; i++)) do
 	fi
 done
 unset i casePath caseName
+unset timeout variantCount variantList
+
 isVerbose && echo "Execute Suite $TTRO_suite variant='$TTRO_suiteVariant' in workdir $TTRO_workDirSuite number of cases=$noCases number of case variants=$noCaseVariants"
 
 #------------------------------------------------
@@ -249,7 +267,6 @@ isVerbose && echo "$executedTestPrepSteps Test Suite Preparation steps executed"
 
 #-------------------------------------------------
 #test case execution
-#TODO: evaluate timeout properly
 unset x
 if [[ $TTRO_noParallelCases -eq 1 ]]; then
 	declare -ri maxParralelJobs=1
@@ -258,8 +275,8 @@ else
 fi
 declare -i currentParralelJobs=TTRO_noParallelCases
 
-declare -ri waitAfterKill=30
-declare -ri globalTimeout=120
+setVar 'TTP_timeout' "$defaultTimeout"
+setVar 'TTP_additionalTime' "$defaultAdditionalTime"
 declare -a tjobid=()	#the job id of process group
 declare -a tpid=()		#pid of the case job this is the crucical value of the structure
 declare -a tcase=()		#the name of the running case
@@ -347,12 +364,7 @@ while [[ -z $allJobsGone ]]; do
 						killed[$i]="$now"
 					fi
 				else
-					if isExisting TT_extraTime; then
-						tmp1="$TT_extraTime"
-					else
-						tmp1="$waitAfterKill"
-					fi
-					tmp=$((${killed[$i]}+tmp1))
+					tmp=$((${killed[$i]}+$TT_extraTime))
 					if [[ $now -gt $tmp ]]; then
 						if [[ -z ${tjobid[$i]} ]]; then
 							tempjobspec="${tpid[$i]}"
@@ -511,11 +523,11 @@ while [[ -z $allJobsGone ]]; do
 		tmp="$(date +'%-s')"
 		isDebug && printDebug "Enter tjobid[$availableTpidIndex]=${tjobid[$availableTpidIndex]} state=$tmp2 tpid[${availableTpidIndex}]=$! time=${tmp} state=$tmp2"
 		startTime[$availableTpidIndex]="$tmp"
-		if isExisting TT_timeout; then
-			tmp1="$TT_timeout"
-		else
-			tmp1="$globalTimeout"
+		tmp1=${caseTimeout[$jobIndex]}
+		if [[ $tmp1 -eq 0 ]]; then
+			tmp1="$TTP_timeout"
 		fi
+		isVerbose && echo "Job timeout $tmp1"
 		endTime[$availableTpidIndex]=$((tmp+tmp1))
 		timeout[$availableTpidIndex]="$tmp1"
 		tcaseWorkDir[$availableTpidIndex]="$cworkdir"

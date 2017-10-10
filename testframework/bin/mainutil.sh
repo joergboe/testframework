@@ -310,9 +310,14 @@ function exeCollection {
 		result=0;
 	else
 		result=$?
-		printError "Execution of collection variant $1 ended with result=$result"
-		collectionErrors=$(( collectionErrors + 1 ))
-		builtin echo "$TTRO_collection:$1" >> "$TTRO_workDirMain/COLLECTION_ERROR_LIST"
+		if [[ $result -eq $errSigint ]]; then
+			printWarning "Set SIGINT Execution of collection variant $1 ended with result=$result"
+			interruptReceived="true"
+		else
+			printError "Execution of collection variant $1 ended with result=$result"
+			collectionErrors=$(( collectionErrors + 1 ))
+			builtin echo "$TTRO_collection:$1" >> "$TTRO_workDirMain/COLLECTION_ERROR_LIST"
+		fi
 	fi
 	#read result lists and transfer results to main dir in case of variants
 	local x

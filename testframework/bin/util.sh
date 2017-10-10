@@ -173,7 +173,6 @@ function splitVarValue {
 # exits with ${errRt} if an invalid line was read;
 # results are returned in global variables variantCount; variantList
 function readVariantFile {
-	#TODO: the variables variantCount, variantList, TT_timeout and TT_extraTime are always treated as literal. Should be improved
 	isDebug && printDebug "$FUNCNAME $1"
 	if [[ ! -r $1 ]]; then
 		printErrorAndExit "${FUNCNAME} : Can not open file=$1 for read" ${errRt}
@@ -203,18 +202,18 @@ function readVariantFile {
 								fi
 								isVerbose && echo "variantList='${variantList}'"
 							;;
-							TT_timeout )
-								if ! TT_timeout="${value}"; then
+							timeout )
+								if ! timeout="${value}"; then
 									printErrorAndExit "${FUNCNAME} : Invalid value in file=$1 line=$lineno '$REPLY'" ${errRt}
 								fi
-								isVerbose && echo "TT_timeout='${TT_timeout}'"
+								isVerbose && echo "timeout='${timeout}'"
 							;;
-							TT_extraTime )
-								if ! TT_extraTime="${value}"; then
-									printErrorAndExit "${FUNCNAME} : Invalid value in file=$1 line=$lineno '$REPLY'" ${errRt}
-								fi
-								isVerbose && echo "TT_extraTime='${TT_extraTime}'"
-							;;
+#							additionalTime )
+#								if ! additionalTime="${value}"; then
+#									printErrorAndExit "${FUNCNAME} : Invalid value in file=$1 line=$lineno '$REPLY'" ${errRt}
+#								fi
+#								isVerbose && echo "additionalTime='${additionalTime}'"
+#							;;
 							* )
 								#other property or variable
 								isDebug && printDebug "${FUNCNAME} : Ignore varname='$varname' in file $1 line=$lineno"
