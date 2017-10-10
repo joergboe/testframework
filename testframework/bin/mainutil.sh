@@ -51,6 +51,8 @@ function usage {
 	${errTestFail}    : at least one test fails ( \${errTestFail} )
 	${errTestError}    : at least one test error ( \${errTestError} )
 	${errVersion}    : Streams version is not supported ( \${errVersion} )
+	${errSuiteError}    : Error during suite execution ( \${errSuiteError} )
+	${errCollError}    : Error during collection execution ( \${errCollError} )
 	${errInvocation}    : Invocation error ( \${errInvocation} )
 	${errScript}    : Script error ( \${errScript} )
 	${errRt}    : Runntime error ( \${errRt} )
@@ -304,18 +306,13 @@ function exeCollection {
 	collectionVariants=$(( collectionVariants + 1 ))
 	# execute
 	local result=0
-	if "${TTRO_scriptDir}/collection.sh" "${cworkdir}" "$1" ${3} 2>&1 | tee -i "${cworkdir}/${TEST_LOG}"; then
+	if "${TTRO_scriptDir}/collection.sh" "${cworkdir}" "$1" "${3}" 2>&1 | tee -i "${cworkdir}/${TEST_LOG}"; then
 		result=0;
 	else
 		result=$?
-		if [[ ( $result -eq $errTestFail ) || ( $result -eq $errTestError ) ]]; then
-			printWarning "Execution of collection variant $1 ended with result=$result"
-		elif [[ $result -eq $errSigint ]]; then
-			printWarning "Set sigint Execution of collection variant $1 ended with result=$result"
-			interruptReceived="true"
-		else
-			printErrorAndExit "Execution of collection variant $1 ended with result=$result" $errRt
-		fi
+		printError "Execution of collection variant $1 ended with result=$result"
+		collectionErrors=$(( collectionErrors + 1 ))
+		builtin echo "$TTRO_collection:$1" >> "$TTRO_workDirMain/COLLECTION_ERROR_LIST"
 	fi
 	#read result lists and transfer results to main dir in case of variants
 	local x
@@ -337,6 +334,16 @@ function exeCollection {
 		local svar=$(<"$cworkdir/.suiteVariants")
 		glob=$((glob + svar))
 		builtin echo -n "$glob" > "$TTRO_workDirMain/.suiteVariants"
+		svar=$(<"$cworkdir/.suiteErrors")
+		if [[ $svar -gt 0 ]]; then
+			glob=$(<"$TTRO_workDirMain/.suiteErrors")
+			glob=$((glob + svar))
+			builtin echo -n "$glob" > "$TTRO_workDirMain/.suiteErrors"
+			while read; do
+				[[ $REPLY == \#* ]] && continue
+				builtin echo "$TTRO_collection:${1}::$REPLY" >> "$TTRO_workDirMain/SUITE_ERROR_LIST"
+			done < "$cworkdir/SUITE_ERROR_LIST"
+		fi
 	fi
 	
 	echo "**** END Suite: collection variant='$1' *******************"

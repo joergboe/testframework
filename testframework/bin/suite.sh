@@ -614,10 +614,6 @@ fi
 declare suiteResult=0
 if [[ $interruptReceived -gt 0 ]]; then
 	suiteResult=$errSigint
-elif [[ $variantErrors -ne 0 ]]; then
-	suiteResult=$errTestError
-elif [[ $variantFailures -ne 0 ]]; then
-	suiteResult=$errTestFail
 fi
 
 printf "**** Suite: $TTRO_suite Variant: '$TTRO_suiteVariant' cases=%i skipped=%i failures=%i errors=%i *****\n" $jobIndex $variantSkiped $variantFailures $variantErrors

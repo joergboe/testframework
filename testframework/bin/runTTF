@@ -584,6 +584,9 @@ if [[ -e $tmp ]]; then
 fi
 touch "$tmp"
 builtin echo -n '0' > "$TTRO_workDirMain/.suiteVariants"
+builtin echo -n '0' > "$TTRO_workDirMain/.suiteErrors"
+touch "$TTRO_workDirMain/COLLECTION_ERROR_LIST"
+touch "$TTRO_workDirMain/SUITE_ERROR_LIST"
 
 #-----------------------------------------------------------
 #check if properties file exists - read properties and fixup
@@ -610,7 +613,7 @@ export >> "$tmp"
 #--------------------------------------------
 #execution loop over collection variants
 #isVerbose && echo "**** START Suite: $suite ************************************"
-declare -i collectionVariants=0
+declare -i collectionVariants=0 collectionErrors=0
 declare -i j
 declare x
 variantCount=""; variantList=""; splitter=""
@@ -664,11 +667,24 @@ done
 #put results to results file for information purose only 
 echo -e "VARIANT=$VARIANTCount\nSUCCESS=$SUCCESSCount\nSKIP=$SKIPCount\nFAILURE=$FAILURECount\nERROR=$ERRORCount" > "${TTRO_workDirMain}/RESULT"
 suiteVariants=$(<"$TTRO_workDirMain/.suiteVariants")
+suiteErrors=$(<"$TTRO_workDirMain/.suiteErrors")
+
+#Print suite errors ant collection
+if [[ $suiteErrors -gt 0 ]]; then
+	printError "Errors in $suiteErrors suites:"
+	cat "$TTRO_workDirMain/SUITE_ERROR_LIST"
+fi
+if [[ $collectionErrors -gt 0 ]]; then
+	echo
+	printError "Errors in $collectionErrors collection variants:"
+	cat "$TTRO_workDirMain/COLLECTION_ERROR_LIST"
+fi
+
 
 echo
 printf "*******************************************************************************************************\n"
-printf "***** collection variants=%i\n" $collectionVariants
-printf "***** suite variants=%i\n" $suiteVariants
+printf "***** collection variants=%i errors during collection execution=%i\n" $collectionVariants $collectionErrors
+printf "***** suite variants=%i errors during suite execution=%i\n" $suiteVariants $suiteErrors
 printf "***** case variants=%i skipped=%i failures=%i errors=%i\n" $VARIANTCount $SKIPCount $FAILURECount $ERRORCount
 printf "***** used workdir: %s\n" "$TTRO_workDirMain"
 printf "*******************************************************************************************************\n"
@@ -676,6 +692,10 @@ printf "************************************************************************
 declare mainResult=0
 if [[ -n "$interruptReceived" ]]; then
 	mainResult=$errSigint
+elif [[ $collectionErrors -gt 0 ]]; then
+	mainResult=$errCollError
+elif [[ $suiteErrors -gt 0 ]]; then
+	mainResult=$errSuiteError
 elif [[ $ERRORCount -gt 0 ]]; then
 	mainResult=$errTestError
 elif [[ $FAILURECount -gt 0 ]]; then

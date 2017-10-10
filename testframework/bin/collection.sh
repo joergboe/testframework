@@ -89,14 +89,9 @@ function exeSuite {
 		result=0;
 	else
 		result=$?
-		if [[ ( $result -eq $errTestFail ) || ( $result -eq $errTestError ) ]]; then
-			printWarning "Execution of suite ${suite} variant $1 ended with result=$result"
-		elif [[ $result -eq $errSigint ]]; then
-			printWarning "Set sigint Execution of suite ${suite} variant $1 ended with result=$result"
-			interruptReceived="true"
-		else
-			printErrorAndExit "Execution of suite ${suite} variant $1 ended with result=$result" $errRt
-		fi
+		printError "Execution of suite ${suite} variant $1 ended with result=$result"
+		suiteErrors=$(( suiteErrors + 1))
+		builtin echo "$suite:$1" >> "$TTRO_workDir/SUITE_ERROR_LIST"
 	fi
 	
 	#read result lists
@@ -227,7 +222,7 @@ isVerbose && echo "$executedTestPrepSteps Collection Preparation steps executed"
 
 #--------------------------------------------
 #execution loop over suites and variants
-declare -i suiteVariants=0
+declare -i suiteVariants=0 suiteErrors=0
 declare -i i j
 for ((i=0; i<${#sortedSuites[@]}; i++)); do
 	suitePath="${sortedSuites[$i]}"
@@ -319,6 +314,7 @@ fi
 isVerbose && echo "$executedTestFinSteps Collection Finalization steps executed"
 
 builtin echo "$suiteVariants" > "$TTRO_workDir/.suiteVariants"
+builtin echo "$suiteErrors" > "$TTRO_workDir/.suiteErrors"
 
 echo "**************************** END: Collection variant $TTRO_variant **********************"
 
@@ -330,6 +326,7 @@ for x in VARIANT SUCCESS SKIP FAILURE ERROR; do
 	isVerbose && echo "**** $x List : ****"
 	{
 		while read; do
+			[[ $REPLY == \#* ]] && continue
 			eval "${x}_NO=\$((${x}_NO+1))"
 			isVerbose && echo "$REPLY "
 		done
@@ -341,10 +338,12 @@ done
 declare collectionResult=0
 if [[ -n "$interruptReceived" ]]; then
 	collectionResult=$errSigint
-elif [[ $ERROR_NO -ne 0 ]]; then
-	collectionResult=$errTestError
-elif [[ $FAILURE_NO -ne 0 ]]; then
-	collectionResult=$errTestFail
+fi
+
+#Print suite errors
+if [[ $suiteErrors -gt 0 ]]; then
+	printError "Errors in $suiteErrors suites:"
+	cat "$TTRO_workDir/SUITE_ERROR_LIST"
 fi
 
 #Print summary only in case if there are more than one variant
@@ -353,7 +352,7 @@ if [[ -n "$TTRO_variant" ]]; then
 	echo -e "VARIANT=$VARIANT_NO\nSUCCESS=$SUCCESS_NO\nSKIP=$SKIP_NO\nFAILURE=$FAILURE_NO\nERROR=$ERROR_NO" > "${TTRO_workDir}/RESULT"
 	
 	echo "**** Results Collection variant: $TTRO_variant ***********************************************"
-	printf "***** suite variants=%i\n" $suiteVariants
+	printf "***** suite variants=%i errors during suite execution=%i\n" $suiteVariants $suiteErrors
 	printf "**** Collection Variant: '$TTRO_variant' cases=%i skipped=%i failures=%i errors=%i *****\n" $VARIANT_NO $SKIP_NO $FAILURE_NO $ERROR_NO
 	
 	builtin echo -n "$collectionResult" > "${TTRO_workDir}/DONE"
