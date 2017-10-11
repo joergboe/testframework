@@ -170,12 +170,13 @@ declare -a caseVariantIds=()		#the variant id of all cases
 declare -a caseVariantWorkdirs=()	#the workdir of each variant
 declare -ai caseTimeout=()			#the individual timeout
 declare -i noCaseVariants=0			#the overall number of case variants
+declare variantCount variantList
 for ((i=0; i<noCases; i++)) do
 	casePath="${cases[$i]}"
 	caseName="${casePath##*/}"
 	unset timeout
 	readVariantFile "${casePath}/${TEST_CASE_FILE}" "case"
-	echo "variantCount=$variantCount variantList=$variantList"
+	#echo "variantCount=$variantCount variantList=$variantList"
 	if [[ -z $variantCount ]]; then
 		if [[ -z $variantList ]]; then
 			caseVariantPathes[$noCaseVariants]="$casePath"

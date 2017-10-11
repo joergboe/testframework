@@ -130,7 +130,7 @@ function manpage () {
 	#--<name>=<value>
 	No spaces are allowed between name '=' and value.
 	The assignment is literally executed. That means no expansion and no word splitting is performed and no quoting is required.
-	NOTE: Currently no quoting is allowed. (There is no quote removal)
+	Quoting is allowed. (There is a quote removal)
 	The whole assignment must fit into one line.
 	The preamble defines the variants of the test artifacts and in case of a test case, the timeout values for the test case.
 	

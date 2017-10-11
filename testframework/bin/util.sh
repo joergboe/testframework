@@ -113,6 +113,28 @@ function printTestframeEnvironment {
 	echo "*******************************"
 }
 
+TTRO_help_dequote='
+# Removes the sorounding quotes
+#	and prints result to stdout
+#	$1 the value to dequote'
+function dequote {
+	#eval printf %s "$1" 2> /dev/null
+	eval printf %s "$1"
+}
+
+TTRO_help_isPureDigit='
+# Checks whether the input string is a pure digit'
+function isPureDigit {
+	if [[ $1 =~ [0-9]+ ]]; then
+		if [[ "${BASH_REMATCH[0]}" == "$1" ]]; then
+			isDebug && printDebug "$FUNCNAME '$1' return 0"
+			return 0
+		fi
+	fi
+	isDebug && printDebug "$FUNCNAME '$1' return 1"
+	return 1
+}
+
 TTRO_help_splitVarValue='
 # Function splitVarValue
 #	Split an line #*#varname=value into the components
@@ -134,12 +156,13 @@ function splitVarValue {
 			local value1=${tmp#*:=}
 			local name1=${tmp%%:=*}
 			#echo "name1=$name1 value1=$value1"
-			if [[ $value1 != $tmp && $name1 != $tmp ]]; then #there was something removed -> there was a =
+			if [[ "$value1" != "$tmp" && "$name1" != "$tmp" ]]; then #there was something removed -> there was a =
 				splitter=':='
 			else
 				value1=${tmp#*=}
 				name1=${tmp%%=*}
-				if [[ $value1 != $tmp && $name1 != $tmp ]]; then #there was something removed -> there was a :=
+				#echo "name1=$name1 value1=$value1"
+				if [[ "$value1" != "$tmp" && "$name1" != "$tmp" ]]; then #there was something removed -> there was a :=
 					splitter='='
 				else
 					printError "$FUNCNAME: No '=' in special comment line '$1' Ignored"
@@ -183,6 +206,7 @@ function readVariantFile {
 		local varname=
 		local value=
 		local result=0
+		local unq
 		while [[ result -eq 0 ]]; do
 			if ! read -r; then result=1; fi
 			if [[ ( result -eq 0 ) || ( ${#REPLY} -gt 0 ) ]]; then #do not eval the last and empty line
@@ -191,29 +215,29 @@ function readVariantFile {
 						isDebug && printDebug "$FUNCNAME prepare for variant encoding varname=$varname value=$value"
 						case $varname in
 							variantCount )
-								if ! variantCount="${value}"; then
+								unq=$(dequote "${value}")
+								if ! variantCount="${unq}"; then
 									printErrorAndExit "${FUNCNAME} : Invalid value in file=$1 line=$lineno '$REPLY'" ${errRt}
 								fi
 								isVerbose && echo "variantCount='${variantCount}'"
+								if ! isPureDigit "$variantCount"; then
+									printErrorAndExit "${FUNCNAME} : variantCount is no digit in file=$1 line=$lineno '$REPLY'" ${errRt}
+								fi
 							;;
 							variantList )
-								if ! variantList="${value}"; then
+								unq=$(dequote "${value}")
+								if ! variantList="${unq}"; then
 									printErrorAndExit "${FUNCNAME} : Invalid value in file=$1 line=$lineno '$REPLY'" ${errRt}
 								fi
 								isVerbose && echo "variantList='${variantList}'"
 							;;
 							timeout )
-								if ! timeout="${value}"; then
+								unq=$(dequote "${value}")
+								if ! timeout="${unq}"; then
 									printErrorAndExit "${FUNCNAME} : Invalid value in file=$1 line=$lineno '$REPLY'" ${errRt}
 								fi
 								isVerbose && echo "timeout='${timeout}'"
 							;;
-#							additionalTime )
-#								if ! additionalTime="${value}"; then
-#									printErrorAndExit "${FUNCNAME} : Invalid value in file=$1 line=$lineno '$REPLY'" ${errRt}
-#								fi
-#								isVerbose && echo "additionalTime='${additionalTime}'"
-#							;;
 							* )
 								#other property or variable
 								isDebug && printDebug "${FUNCNAME} : Ignore varname='$varname' in file $1 line=$lineno"
