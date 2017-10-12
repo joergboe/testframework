@@ -219,10 +219,10 @@ function readVariantFile {
 								if ! variantCount="${unq}"; then
 									printErrorAndExit "${FUNCNAME} : Invalid value in file=$1 line=$lineno '$REPLY'" ${errRt}
 								fi
-								isVerbose && echo "variantCount='${variantCount}'"
 								if ! isPureDigit "$variantCount"; then
 									printErrorAndExit "${FUNCNAME} : variantCount is no digit in file=$1 line=$lineno '$REPLY'" ${errRt}
 								fi
+								isVerbose && echo "variantCount='${variantCount}'"
 							;;
 							variantList )
 								unq=$(dequote "${value}")
@@ -235,6 +235,9 @@ function readVariantFile {
 								unq=$(dequote "${value}")
 								if ! timeout="${unq}"; then
 									printErrorAndExit "${FUNCNAME} : Invalid value in file=$1 line=$lineno '$REPLY'" ${errRt}
+								fi
+								if ! isPureDigit "$timeout"; then
+									printErrorAndExit "${FUNCNAME} : timeout is no digit in file=$1 line=$lineno '$REPLY'" ${errRt}
 								fi
 								isVerbose && echo "timeout='${timeout}'"
 							;;
