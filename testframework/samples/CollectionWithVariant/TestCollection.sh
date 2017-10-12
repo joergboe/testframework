@@ -1,5 +1,5 @@
 
-#--variantList:=success failure skip error
+#--variantList='success failure skip error'
 
 function testPreparation {
 	if [[ "$TTRO_variant" == "success" ]]; then #show this in the first variant only
