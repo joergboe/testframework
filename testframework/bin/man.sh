@@ -116,12 +116,16 @@ function manpage () {
 	If your test collection requires special functions, you must source the appropriate modules from the test collection file. 
 	Especially the streamsutils.sh must be sourced at the beginning of the main body of the test collection file:
 	
-	registerTool "$TTRO_scriptDir/streamsutils.sh"
+	registerTool "\$TTRO_scriptDir/streamsutils.sh"
 	or
-	setVar 'TT_tools' "$TT_tools $TTRO_scriptDir/streamsutils.sh"
+	setVar 'TT_tools' "\$TT_tools \$TTRO_scriptDir/streamsutils.sh"
 	
 	The first form sources the script 'streamsutils.sh' and modifies the TT_tools variable.
 	The second form modifies the TT_tools variable only. The utilities script is sourced during start up of the called artifact.
+	
+	If the initialization of a tool module  depends on other properties, the module must not use eager initialization. In such 
+	a case the tool module must provide an separate initialization function. This initialization function must be called in the test 
+	collection initialization. (The framework sources the tools modules before the propertie file is sourced)
 
 
 	Test File Preamble
@@ -190,7 +194,7 @@ function manpage () {
 	variable is unset. In general the usage of an unset variable will cause a script failure.
 	Use function 'isExisting' or 'isNotExisting' to avoid script abort.
 	
-	Some properties are designed that the existence of the property indicates the trueness. (TTP_debug, TTP_skip..)
+	Some properties are designed that the existence of the property indicates the trueness.
 
 
 	Accepted Environment
@@ -200,16 +204,19 @@ function manpage () {
 	=================
 	The testframe may print verbose information and debug information or both. The verbosity may be enabled with command line options.
 	Additionally the verbosity can be controlled with existence of the properties:
-	TTP_debug            - enables debug
-	TTP_debugDisable     - disables debug (overrides TTPN_debug)
-	TTP_verbose          - enables verbosity
-	TTP_verboseDisable   - disables verbosity (overrides TTPN_verbose)
+	TTPN_debug            - enables debug
+	TTPN_debugDisable     - disables debug (overrides TTPN_debug)
+	TTPN_verbose          - enables verbosity
+	TTPN_verboseDisable   - disables verbosity (overrides TTPN_verbose)
+	
+	NOTE: The check if an existing variable is empty or not is much faster then the check against existance of an variable. Therefore 
+	we use here the empty value an consider it as unset property.
 
 
 	Variables Used
 	==============
-	TTP_skip              - Skips the execution of test case preparation, test case execution and test case finalization steps
-	TTP_skipIgnore        - If set to true, the skip variable is ignored.
+	TTPN_skip              - Skips the execution of test case preparation, test case execution and test case finalization steps
+	TTPN_skipIgnore        - If set to true, the skip variable is ignored.
 	
 	STEPS                 - The space separated list or an array of test step commands with local meaning. If one command returns an failure (return code != 0), 
 	                        the test execution is stopped
@@ -322,7 +329,7 @@ function manpage () {
 	
 	Skip Test Cases
 	===============
-	A test case is skipped if the property TTP_skip is defined. This property may be set :
+	A test case is skipped if the property TTPN_skip is defined. This property may be set :
 	- In the initialization or preparation phase of an test collection variant - this disables all cases of this collection variant
 	- In the initialization or preparation phase of an test suite variant - this disables all cases of this suite variant
 	- In the initialization phase of an test case (variant) - this disables only one case variant
@@ -370,5 +377,6 @@ function manpage () {
 	  - Execute all test collection finalization steps if required
 	- End loop over all Collection variants
 	- print result
+	
 	EOF
 }
