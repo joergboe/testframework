@@ -1,6 +1,7 @@
 
-#--variantCount:=4
-#--TTRO_caseStep:=executeCase myEvaluate
+#--variantCount=4
+
+STEPS='executeCase myEvaluate'
 
 declare -ar prameterArray=("-zt" "--properties" "--link --no-start" "-Dbla=xx")
 

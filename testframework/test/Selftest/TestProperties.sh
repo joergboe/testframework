@@ -2,4 +2,4 @@
 # Self test properies
 ############################################
 
-#--TTPN_sourceDir=$TTRO_scriptDir
+setVar 'TTPN_sourceDir' "$TTRO_scriptDir"

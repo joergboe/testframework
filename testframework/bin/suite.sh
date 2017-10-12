@@ -365,7 +365,7 @@ while [[ -z $allJobsGone ]]; do
 						killed[$i]="$now"
 					fi
 				else
-					tmp=$((${killed[$i]}+$TT_extraTime))
+					tmp=$((${killed[$i]}+$TTP_additionalTime))
 					if [[ $now -gt $tmp ]]; then
 						if [[ -z ${tjobid[$i]} ]]; then
 							tempjobspec="${tpid[$i]}"

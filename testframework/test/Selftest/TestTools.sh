@@ -35,19 +35,22 @@ function runRunTTF {
 		if [[ $result -eq 0 ]]; then
 			return 0
 		else
-			printError "result is $result"
+			printError "result is $result. Expected is $TT_expectResult"
+			failureOccurred='true'
 		fi
 	elif [[ $TT_expectResult == 'X' ]]; then
 		if [[ $result -ne 0 ]]; then
 			return 0
 		else
-			printError "result is $result"
+			printError "result is $result. Expected is $TT_expectResult"
+			failureOccurred='true'
 		fi
 	else
 		if [[ $TT_expectResult -eq $result ]]; then
 			return 0
 		else
-			printError "result is $result"
+			printError "result is $result. Expected is $TT_expectResult"
+			failureOccurred='true'
 		fi
 	fi
 }

@@ -2,9 +2,11 @@
 # test tools for the self test
 ###################################
 
-#--TTRO_testPrep:=modifyAll
 # register tool module
 registerTool "$TTRO_inputDir/TestTools.sh"
+
+#Test collection preparation
+PREPS='modifyAll'
 
 TTRO_help_modifyPrefix='
 # This function modifies the varname prefix and copies the code

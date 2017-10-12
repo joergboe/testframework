@@ -249,9 +249,8 @@ function readVariantFile {
 					else
 						printErrorAndExit "${FUNCNAME} : Invalid line or property name in case or suitefile file=$1 line=$lineno '$REPLY'" ${errRt}
 					fi
-				else
-					isDebug && printDebug "Ignore line file=$1 line=$lineno '$REPLY'"
 				fi
+					#isDebug && printDebug "Ignore line file=$1 line=$lineno '$REPLY'"
 				lineno=$((lineno+1))
 			fi
 		done
@@ -797,16 +796,18 @@ function linewisePatternMatchArray {
 				return 0
 			else
 				local display=$(declare -p patternList)
-				echo "$FUNCNAME : Only $matches of Pattern=$display matches in file=$1"
+				echo "$FUNCNAME : Only $matches of $noPattern pattern maches found in file=$1"
+				echo "Pattern=$display"
 				return $errTestFail
 			fi
 		else
 			if [[ $matches -gt 0 ]]; then
-				echo "$FUNCNAME : One matche found in file=$1"
+				echo "$FUNCNAME : $matches matches found in file=$1"
 				return 0
 			else
 				local display=$(declare -p patternList)
-				echo "$FUNCNAME : None of Pattern=$display matches in file=$1"
+				echo "$FUNCNAME : No match found in file=$1"
+				echo "Pattern=$display"
 				return $errTestFail
 			fi
 		fi

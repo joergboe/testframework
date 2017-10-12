@@ -1,13 +1,19 @@
 #--variantCount=4
-#--TTRO_casePrep:=copyAndModifyTestCollection
-#--TTRO_caseStep:=getOptions runRunTTF myEvaluate
 
-declare -a options=( '' '-j 1' '-j 1 -v' '-j 1 -v -d' )
+PREPS=copyAndModifyTestCollection
+STEPS='getOptions runRunTTF myEvaluate'
+
+declare -a options=( '--noprompt' '-j 1 --noprompt' '-j 1 -v --noprompt' '-j 1 -v -d --noprompt' )
 
 function getOptions {
 	TT_runOptions="${options[$TTRO_caseVariant]}"
 }
 
 function myEvaluate {
-	linewisePatternMatch './STDERROUT1.log' 'true' '*\*\*\*\*\* case variants=0 skipped=0 failures=0 errors=0' '*\*\*\*\*\* suite variants=1'
+	if ! linewisePatternMatch './STDERROUT1.log' 'true' '*\*\*\*\*\* case variants=0 skipped=0 failures=0 errors=0'\
+	                          '*\*\*\*\*\* suite variants=1 errors during suite execution=0'\
+	                          '*\*\*\*\*\* collection variants=1 errors during collection execution=0'; then
+		failureOccurred='true'
+	fi
+	return 0
 }

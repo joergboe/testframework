@@ -1,5 +1,5 @@
 
-#--TTRO_caseStep:=noParams myEvaluate
+STEPS='noParams myEvaluate'
 
 function noParams {
 	if $TTPN_binDir/runTTF 2>&1 | tee STDERROUT1.log; then
