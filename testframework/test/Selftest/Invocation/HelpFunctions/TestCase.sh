@@ -21,7 +21,7 @@ case $TTRO_caseVariant in
 					'*TYRO_tools environment.'
 					'-n|--no-checks           : The script omits the checkes for the streams environment and does not attempt to start domain/instance. Saves time'
 					'-s|--skip-ignore         : If this option is given the ignore attribute of the cases are ignored'
-					'-j|--threads VALUE       : The number of parallel test executions. \(you have 8 \(virtual\) cores this is default\)'
+					'-j|--threads VALUE       : The number of parallel test executions. \(you have * \(virtual\) cores this is default\)'
 					'*If the value is set to 1 no parallel execution is performed'
 					'-l|--link                : Content found in data directoy are linked to workspace not copied \(Set TYPN_link=true\)'
 					'--no-start               : Supress the execution of the start sequence \(Set TYPN_noStart\)'
