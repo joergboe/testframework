@@ -16,6 +16,28 @@ export PATH="<location of test framework>/bin:$PATH"
 
 Whats new:
 ----------
+Version 1.0.0:
+- re-name TestProperties to TestProperties.sh
+- Removed propertie section in preamble, all properties moved to script section
+- Preamble now supports only variantList, variantCount and timeout
+- Preamble requires now quoting (for lists)
+- Check whether variantCount and timeout are digits
+- New test steps / pres / fins invocation local space separated list STEPS/PREPS/FINS
+- New test steps / pres / fins invocation local array STEPS/PREPS/FINS possible
+- New test steps / pres / fins invocation local functions testStep, testPreparation, testFinalization
+- Global space separated lists steps / pres / fins invocation re-named:
+    TTRO_prepsCase TTRO_prepsSuite TTRO_preps
+    TTRO_stepsCase
+    TTRO_finsCase TTRO_finsSuite TTRO_fins
+- Improved handling and display in case of erroros in suite/collection initialization and preparation
+- All function calls for collection/suite/case preparation and steps and finalization are now unchecked called
+  to improve failure propagation
+- Collections variant support
+- TstCollection.sh and TestSuite.sh are now only once sourced in collection and suite context
+- TTRO_extraTime renamed to TTP_additionalTime
+- New utis functions isArray, isFunction, arrayHasKey, isExistingAndTrue, isTrue, isFalse
+
+
 Version 0.2.0:
 - Dummy Suite support: Test cases can be defined without suite context.
 - Test collection now requires a TestCollection.sh file and the TestProperties file is now optional
