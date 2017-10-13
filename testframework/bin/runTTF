@@ -327,12 +327,23 @@ if [[ $noStart == "true" ]]; then
 	setVar TTPN_noStart "true"
 	setVar TTPN_noPreps "true"
 	setVar TTPN_noPrepsSuite "true"
+else
+	setVar TTPN_noStart ''
+	setVar TTPN_noPreps ''
+	setVar TTPN_noPrepsSuite ''
 fi
 if [[ $noStop == "true" ]]; then
 	setVar TTPN_noStop "true"
 	setVar TTPN_noFins "true"
 	setVar TTPN_noFinsSuite "true"
+else
+	setVar TTPN_noStop ''
+	setVar TTPN_noFins ''
+	setVar TTPN_noFinsSuite ''
 fi
+setVar TTPN_noPrepsCase ''
+setVar TTPN_noFinsCase ''
+
 fixPropsVars
 
 #--------------------------------
