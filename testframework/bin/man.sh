@@ -99,7 +99,7 @@ function manpage () {
 	during the the execution of the appropriate artifact. The variable FINS and the function testFinalization have local meaning and are
 	defined in the appropriate script file.
 	
-	If the variables TTRO_noPreps TTRO_noPrepsSuite TTRO_noPrepsCase TTRO_noFins TTRO_noFinsSuite TTRO_noFinsCase are set to a 
+	If the variables TTPN_noPreps TTPN_noPrepsSuite TTPN_noPrepsCase TTPN_noFins TTPN_noFinsSuite TTPN_noFinsCase are set to a 
 	non empty value the preparation and the finalization of the appropriate artifact is supressed.
 
 
@@ -271,20 +271,20 @@ function manpage () {
 	TTRO_treads          - The number of threads to be used during test case execution. Is set to 1 if parallel test case
 	                       execution is enabled. Is set to \$TTRO_noCpus if back-to-back test case execution is enabled.
 	TTRO_reference       - The reference will be printed
-	TTRO_noStart         - This property is provided with value "true" if the --no-start command line option is used. It is empty otherwise
-	TTRO_noStop          - This  property is provided with value "true" if the --no-stop command line option is used. It is empty otherwise
+	TTPN_noStart         - This property is provided with value "true" if the --no-start command line option is used. It is empty otherwise
+	TTPN_noStop          - This  property is provided with value "true" if the --no-stop command line option is used. It is empty otherwise
 	TTPN_link            - This  property is provided with value "true" if the --link command line option is used. It is empty otherwise
-	TTRO_noPreps         - This property is provided with value "true" if the --no-start command line option is used. It is empty otherwise
+	TTPN_noPreps         - This property is provided with value "true" if the --no-start command line option is used. It is empty otherwise
 	                       If the property is true no Test Collection preparation is called
-	TTRO_noPrepsSuite    - This property is provided with value "true" if the --no-start command line option is used. It is empty otherwise
+	TTPN_noPrepsSuite    - This property is provided with value "true" if the --no-start command line option is used. It is empty otherwise
 	                       If the property is true no Test Suite preparation is called
-	TTRO_noPrepsCase     - This property is not provided.
+	TTPN_noPrepsCase     - This property is not provided.
 	                       If the property is true no Test Case preparation is called
-	TTRO_noFins          - This property is provided with value "true" if the --no-stop command line option is used. It is empty otherwise
+	TTPN_noFins          - This property is provided with value "true" if the --no-stop command line option is used. It is empty otherwise
 	                       If the property is true no Test Collection finalization is called
-	TTRO_noFinsSuite     - This property is provided with value "true" if the --no-stop command line option is used. It is empty otherwise
+	TTPN_noFinsSuite     - This property is provided with value "true" if the --no-stop command line option is used. It is empty otherwise
 	                       If the property is true no Test Suite finalization is called
-	TTRO_noFinsCase      - This property is not provided.
+	TTPN_noFinsCase      - This property is not provided.
 	                       If the property is true no Test Case finalization is called
 
 

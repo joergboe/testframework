@@ -192,7 +192,7 @@ for name_xyza in 'TTRO_preps' 'PREPS'; do
 			eval "l_xyza=\${#$name_xyza[@]}"
 			for (( i_xyza=0; i_xyza<l_xyza; i_xyza++)); do
 				eval "step_xyza=\${$name_xyza[$i_xyza]}"
-				if isExistingAndTrue 'TTRO_noPreps'; then
+				if isExistingAndTrue 'TTPN_noPreps'; then
 					isVerbose && echo "Suppress Collection Preparation: $step_xyza"
 				else
 					isVerbose && echo "Execute Collection Preparation: $step_xyza"
@@ -203,7 +203,7 @@ for name_xyza in 'TTRO_preps' 'PREPS'; do
 		else
 			isDebug && printDebug "$name_xyza=${!name_xyza}"
 			for x_xyza in ${!name_xyza}; do
-				if isExistingAndTrue 'TTRO_noPreps'; then
+				if isExistingAndTrue 'TTPN_noPreps'; then
 					isVerbose && echo "Suppress Collection Preparation: $x_xyza"
 				else
 					isVerbose && echo "Execute Collection Preparation: $x_xyza"
@@ -215,7 +215,7 @@ for name_xyza in 'TTRO_preps' 'PREPS'; do
 	fi
 done
 if isFunction 'testPreparation'; then
-	if isExistingAndTrue 'TTRO_noPreps'; then
+	if isExistingAndTrue 'TTPN_noPreps'; then
 		isVerbose && echo "Suppress Collection Preparation function testPreparation"
 	else
 		isVerbose && echo "Execute Collection Preparation function testPreparation"
@@ -285,7 +285,7 @@ for name_xyza in 'TTRO_fins' 'FINS'; do
 			eval "l_xyza=\${#$name_xyza[@]}"
 			for (( i_xyza=0; i_xyza<l_xyza; i_xyza++)); do
 				eval "step_xyza=\${$name_xyza[$i_xyza]}"
-				if isExistingAndTrue 'TTRO_noFins'; then
+				if isExistingAndTrue 'TTPN_noFins'; then
 					isVerbose && echo "Suppress Collection Finalization: $step_xyza"
 				else
 					isVerbose && echo "Execute Collection Finalization: $step_xyza"
@@ -296,7 +296,7 @@ for name_xyza in 'TTRO_fins' 'FINS'; do
 		else
 			isDebug && printDebug "$name_xyza=${!name_xyza}"
 			for x_xyza in ${!name_xyza}; do
-				if isExistingAndTrue 'TTRO_noFins'; then
+				if isExistingAndTrue 'TTPN_noFins'; then
 					isVerbose && echo "Suppress Collection Finalization: $x_xyza"
 				else
 					isVerbose && echo "Execute Collection Finalization: $x_xyza"
@@ -308,7 +308,7 @@ for name_xyza in 'TTRO_fins' 'FINS'; do
 	fi
 done
 if isFunction 'testFinalization'; then
-	if isExistingAndTrue 'TTRO_noFins'; then
+	if isExistingAndTrue 'TTPN_noFins'; then
 		isVerbose && echo "Suppress Collection Finalization function testFinalization"
 	else
 		isVerbose && echo "Execute Collection Finalization function testFinalization"

@@ -36,6 +36,8 @@ Version 1.0.0:
 - TstCollection.sh and TestSuite.sh are now only once sourced in collection and suite context
 - TTRO_extraTime renamed to TTP_additionalTime
 - New utis functions isArray, isFunction, arrayHasKey, isExistingAndTrue, isTrue, isFalse
+- Re-named properties TTRO_noStart -> TTPN_..
+- Handle debug and verbose as propertie
 
 
 Version 0.2.0:

@@ -233,7 +233,7 @@ for name_xyza in 'TTRO_prepsSuite' 'PREPS'; do
 			eval "l_xyza=\${#$name_xyza[@]}"
 			for (( i_xyza=0; i_xyza<l_xyza; i_xyza++)); do
 				eval "step_xyza=\${$name_xyza[$i_xyza]}"
-				if isExistingAndTrue 'TTRO_noPrepsSuite'; then
+				if isExistingAndTrue 'TTPN_noPrepsSuite'; then
 					isVerbose && echo "Suppress Suite Preparation: $step_xyza"
 				else
 					isVerbose && echo "Execute Suite Preparation: $step_xyza"
@@ -244,7 +244,7 @@ for name_xyza in 'TTRO_prepsSuite' 'PREPS'; do
 		else
 			isDebug && printDebug "$name_xyza=${!name_xyza}"
 			for x_xyza in ${!name_xyza}; do
-				if isExistingAndTrue 'TTRO_noPrepsSuite'; then
+				if isExistingAndTrue 'TTPN_noPrepsSuite'; then
 					isVerbose && echo "Suppress Suite Preparation: $x_xyza"
 				else
 					isVerbose && echo "Execute Suite Preparation: $x_xyza"
@@ -256,7 +256,7 @@ for name_xyza in 'TTRO_prepsSuite' 'PREPS'; do
 	fi
 done
 if isFunction 'testPreparation'; then
-	if isExistingAndTrue 'TTRO_noPrepsSuite'; then
+	if isExistingAndTrue 'TTPN_noPrepsSuite'; then
 		isVerbose && echo "Suppress Suite Preparation function testPreparation"
 	else
 		isVerbose && echo "Execute Suite Preparation function testPreparation"
@@ -553,7 +553,7 @@ for name_xyza in 'TTRO_finSuite' 'FINS'; do
 			eval "l_xyza=\${#$name_xyza[@]}"
 			for (( i_xyza=0; i_xyza<l_xyza; i_xyza++)); do
 				eval "step=\${$name_xyza[$i_xyza]}"
-				if isExistingAndTrue 'TTRO_noFinsSuite'; then
+				if isExistingAndTrue 'TTPN_noFinsSuite'; then
 					isVerbose && echo "Suppress Suite Finalization: $step"
 				else
 					isVerbose && echo "Execute Suite Finalization: $step"
@@ -564,7 +564,7 @@ for name_xyza in 'TTRO_finSuite' 'FINS'; do
 		else
 			isDebug && printDebug "$name_xyza=${!name_xyza}"
 			for x_xyza in ${!name_xyza}; do
-				if isExistingAndTrue 'TTRO_noFinsSuite'; then
+				if isExistingAndTrue 'TTPN_noFinsSuite'; then
 					isVerbose && echo "Suppress Suite Finalization: $x_xyza"
 				else
 					isVerbose && echo "Execute Suite Finalization: $x_xyza"
@@ -576,7 +576,7 @@ for name_xyza in 'TTRO_finSuite' 'FINS'; do
 	fi
 done
 if isFunction 'testFinalization'; then
-	if isExistingAndTrue 'TTRO_noFinsSuite'; then
+	if isExistingAndTrue 'TTPN_noFinsSuite'; then
 		isVerbose && echo "Suppress Suite Finalization function testFinalization"
 	else
 		isVerbose && echo "Execute Suite Finalization function testFinalization"

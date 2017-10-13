@@ -82,7 +82,7 @@ function caseFinalization {
 					for (( i_xyza=0; i_xyza<l_xyza; i_xyza++)); do
 						local step_xyza
 						eval "step_xyza=\${$name_xyza[$i_xyza]}"
-						if isExistingAndTrue 'TTRO_noFinsCase'; then
+						if isExistingAndTrue 'TTPN_noFinsCase'; then
 							isVerbose && echo "Suppress Case Finalization: $step_xyza"
 						else
 							isVerbose && echo "Execute Case Finalization: $step_xyza"
@@ -94,7 +94,7 @@ function caseFinalization {
 					isDebug && printDebug "$name_xyza=${!name_xyza}"
 					local x_xyza
 					for x_xyza in ${!name_xyza}; do
-						if isExistingAndTrue 'TTRO_noFinsCase'; then
+						if isExistingAndTrue 'TTPN_noFinsCase'; then
 							isVerbose && echo "Suppress Case Finalization: $x_xyza"
 						else
 							isVerbose && echo "Execute Case Finalization: $x_xyza"
@@ -106,7 +106,7 @@ function caseFinalization {
 			fi
 		done
 		if isFunction 'testFinalization'; then
-			if isExistingAndTrue 'TTRO_noFinsCase'; then
+			if isExistingAndTrue 'TTPN_noFinsCase'; then
 				isVerbose && echo "Suppress Case Finalization function testFinalization"
 			else
 				isVerbose && echo "Execute Case Finalization function testFinalization"
@@ -229,7 +229,7 @@ for name_xyza in 'TTRO_prepsCase' 'PREPS'; do
 			eval "l_xyza=\${#$name_xyza[@]}"
 			for (( i_xyza=0; i_xyza<l_xyza; i_xyza++)); do
 				eval "step_xyza=\${$name_xyza[$i_xyza]}"
-				if isExistingAndTrue 'TTRO_noPrepsCase'; then
+				if isExistingAndTrue 'TTPN_noPrepsCase'; then
 					isVerbose && echo "Suppress Case Preparation: $step_xyza"
 				else
 					isVerbose && echo "Execute Case Preparation: $step_xyza"
@@ -240,7 +240,7 @@ for name_xyza in 'TTRO_prepsCase' 'PREPS'; do
 		else
 			isDebug && printDebug "$name_xyza=${!name_xyza}"
 			for x_xyza in ${!name_xyza}; do
-				if isExistingAndTrue 'TTRO_noPrepsCase'; then
+				if isExistingAndTrue 'TTPN_noPrepsCase'; then
 					isVerbose && echo "Suppress Case Preparation: $x_xyza"
 				else
 					isVerbose && echo "Execute Case Preparation: $x_xyza"
@@ -252,7 +252,7 @@ for name_xyza in 'TTRO_prepsCase' 'PREPS'; do
 	fi
 done
 if isFunction 'testPreparation'; then
-	if isExistingAndTrue 'TTRO_noPrepsCase'; then
+	if isExistingAndTrue 'TTPN_noPrepsCase'; then
 		isVerbose && echo "Suppress Case Preparation function testPreparation"
 	else
 		isVerbose && echo "Execute Case Preparation function testPreparation"

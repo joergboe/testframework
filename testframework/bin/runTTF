@@ -33,10 +33,10 @@ fi
 #---------------------------------------------------
 #include the utils define the preliminary trace vars
 source "${TTRO_scriptDir}/version.sh"
-declare -x TTPN_debug=""
-declare -x TTPN_debugDisable=""
-declare -x TTPN_verbose=""
-declare -x TTPN_verboseDisable=""
+#declare -x TTPN_debug=""
+#declare -x TTPN_debugDisable=""
+#declare -x TTPN_verbose=""
+#declare -x TTPN_verboseDisable=""
 
 #-----------------------------------------------------
 # Shutdown and interrut vars and functions
@@ -80,16 +80,14 @@ source "${TTRO_scriptDir}/util.sh"
 #The export check - checks whethere there are already vaiables exported with TT prefix
 declare exportCheckFailed=""
 for x in "${!TTRO_@}"; do
-	if [[ $x != TTRO_scriptDir && $x != TT_tools && $x != TTRO_version && $x != TTRO_help* ]]; then
+	if [[ $x != TTRO_scriptDir && $x != TTRO_version && $x != TTRO_help* ]]; then
 		exportCheckFailed="true"
 		printWarning "In environment there are TT scoped identifier: ${x}"
 	fi
 done
 for x in "${!TTPN_@}"; do
-	if [[ $x != TTPN_debug && $x != TTPN_debugDisable && $x != TTPN_verbose && $x != TTPN_verboseDisable ]]; then
-		exportCheckFailed="true"
-		printWarning "In environment there are TT scoped identifier: ${x}"
-	fi
+	exportCheckFailed="true"
+	printWarning "In environment there are TT scoped identifier: ${x}"
 done
 for x in "${!TTP_@}"; do
 	exportCheckFailed="true"
@@ -134,6 +132,12 @@ declare -a cases=() # the list of cases from command line
 #set number of cores
 declare -r noCpus=$(cat /proc/cpuinfo | grep processor | wc -l)
 #getconf _NPROCESSORS_ONLN
+
+#---------------------------------------------------------
+if ! declare -p TTPN_debug &> /dev/null; then TTPN_debug=''; fi
+if ! declare -p TTPN_debugDisable &> /dev/null; then TTPN_debugDisable=''; fi
+if ! declare -p TTPN_verbose &> /dev/null; then TTPN_verbose=''; fi
+if ! declare -p TTPN_verboseDisable &> /dev/null; then TTPN_verboseDisable=''; fi
 
 #------------------------------------------------------
 # get parametes and set option variables and cases map
@@ -242,6 +246,12 @@ if [[ -z $threads ]]; then
 fi
 
 #---------------------------------------------------------
+setVar 'TTPN_debug' "$debug"
+setVar 'TTPN_debugDisable' ''
+setVar 'TTPN_verbose' "$verbose"
+setVar 'TTPN_verboseDisable' ''
+
+#---------------------------------------------------------
 # create workdir if necessary and make it absolute
 if [[ -z ${workdir} ]]; then
 	workdir="${currentDir}/${DEFAULT_WORKDIR}"
@@ -301,8 +311,6 @@ done
 
 #-------------------------------------------
 # set the global programm defined properties
-TTPN_debug="$debug"
-TTPN_verbose="$verbose"
 declare -x TTRO_noParallelCases="$threads"
 # declare -x TTRO_noCpus="$noCpus"
 if [[ TTRO_noParallelCases -eq 1 ]]; then
@@ -315,17 +323,15 @@ fi
 for ((i=0; i<${#varNamesToSet[@]}; i++)); do
 	declare "${varNamesToSet[$i]}"="${varValuesToSet[$i]}"
 done
-declare TTRO_noStart=""
-declare TTRO_noStop=""
 if [[ $noStart == "true" ]]; then
-	TTRO_noStart="true"
-	TTRO_noPreps="true"
-	TTRO_noPrepsSuite="true"
+	setVar TTPN_noStart "true"
+	setVar TTPN_noPreps "true"
+	setVar TTPN_noPrepsSuite "true"
 fi
 if [[ $noStop == "true" ]]; then
-	TTRO_noStop="true"
-	TTRO_noFins="true"
-	TTRO_noFinsSuite="true"
+	setVar TTPN_noStop "true"
+	setVar TTPN_noFins "true"
+	setVar TTPN_noFinsSuite "true"
 fi
 fixPropsVars
 
@@ -368,7 +374,7 @@ checkSuiteList # check nested suite and duplicate test suite names. This is cons
 if isDebug; then
 	printDebug "******************* test suites found *******************"
 	for x in ${!caseMap[@]}; do
-		if [[ $TTRO_inputDir == $x ]]; then
+		if [[ "$TTRO_inputDir" == "$x" ]]; then
 			tmp='--'
 		else
 			tmp=${x##*/}
@@ -387,7 +393,7 @@ searchCases
 if isDebug; then
 	printDebug "******************* test cases found *******************"
 	for x in ${!caseMap[@]}; do
-		if [[ $TTRO_inputDir == $x ]]; then
+		if [[ "$TTRO_inputDir" == "$x" ]]; then
 			tmp='--'
 		else
 			tmp=${x##*/}
@@ -427,7 +433,7 @@ tmp=$( { for x in ${!caseMap[@]}; do echo "$x"; done } | sort )
 
 sortedSuites+=( "${TTRO_inputDir}" ) # add dummy suite
 for x in $tmp; do
-	if [[ $x != $TTRO_inputDir ]]; then
+	if [[ "$x" != "$TTRO_inputDir" ]]; then
 		sortedSuites+=( "${x}" )
 	fi
 done

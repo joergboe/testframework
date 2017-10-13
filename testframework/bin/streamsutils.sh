@@ -117,7 +117,7 @@ TTRO_help_mkDomainVariable='
 #	$4 jmx port'
 function mkDomainVariable {
 	isDebug && printDebug "$FUNCNAME $*"
-	if [[ -n $TTRO_noStart ]]; then
+	if [[ -n $TTPN_noStart ]]; then
 		echo "$FUNCNAME : function supressed"
 		return 0
 	fi
@@ -149,7 +149,7 @@ TTRO_help_startDomainVariable='
 #	$2 domainname'
 function startDomainVariable {
 	isDebug && printDebug "$FUNCNAME $*"
-	if [[ -n $TTRO_noStart ]]; then
+	if [[ -n $TTPN_noStart ]]; then
 		echo "$FUNCNAME : function supressed"
 		return 0
 	fi
@@ -176,7 +176,7 @@ TTRO_help_mkInstVariable='
 #	$3 numresources'
 function mkInstVariable {
 	isDebug && printDebug "$FUNCNAME $*"
-	if [[ -n $TTRO_noStart ]]; then
+	if [[ -n $TTPN_noStart ]]; then
 		echo "$FUNCNAME : function supressed"
 		return 0
 	fi
@@ -202,7 +202,7 @@ TTRO_help_startInstVariable='
 #	$2 domainname'
 function startInstVariable {
 	isDebug && printDebug "$FUNCNAME $*"
-	if [[ -n $TTRO_noStart ]]; then
+	if [[ -n $TTPN_noStart ]]; then
 		echo "$FUNCNAME : function supressed"
 		return 0
 	fi
@@ -231,19 +231,19 @@ function cleanUpInstAndDomainAtStop {
 TTRO_help_cleanUpInstAndDomainVariableOld='
 # Function cleanUpInstAndDomainVariableOld deprecated
 #	stop and clean instance and domain from variable params
-#	$1 start or stop determines the if TTRO_noStart or TTRO_noStop is evaluated
+#	$1 start or stop determines the if TTPN_noStart or TTPN_noStop is evaluated
 #	$2 zk string
 #	$3 domain id
 #	$4 instance id'
 function cleanUpInstAndDomainVariableOld {
 	isDebug && printDebug "$FUNCNAME $*"
 	if [[ $1 == start ]]; then
-		if [[ -n $TTRO_noStart ]]; then
+		if [[ -n $TTPN_noStart ]]; then
 			echo "$FUNCNAME : at start function supressed"
 			return 0
 		fi
 	elif [[ $1 == stop ]]; then
-		if [[ -n $TTRO_noStop ]]; then
+		if [[ -n $TTPN_noStop ]]; then
 			echo "$FUNCNAME : at stop function supressed"
 			return 0
 		fi
