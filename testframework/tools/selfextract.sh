@@ -74,7 +74,7 @@ else
 fi
 
 if [[ -n $interactive ]]; then
-	while read -p "Install into directory $destination. (yes/no/exit) [y/n/e]"; do
+	while read -p "Install into directory $destination (yes/no/exit) [y/n/e]"; do
 		if [[ $REPLY == "y" || $REPLY == "Y" || $REPLY == "yes" ]]; then
 			break
 		elif [[ $REPLY == "n" || $REPLY == "N" || $REPLY == "no" ]]; then
