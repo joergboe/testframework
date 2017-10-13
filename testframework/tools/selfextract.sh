@@ -69,7 +69,7 @@ elif [[ $commandname =~ testframeInstaller_v([0-9]+)\.([0-9]+)\.([0-9]+.+)\.sh ]
 	fix="${BASH_REMATCH[3]}"
 	echo "Install runTTF development version $major.$minor.$fix"
 else
-	echo "ERROR: This is no valid install package commandname=$commandname"
+	echo "ERROR: This is no valid install package commandname=$commandname" >&2
 	exit 1
 fi
 
@@ -79,7 +79,12 @@ if [[ -n $interactive ]]; then
 			break
 		elif [[ $REPLY == "n" || $REPLY == "N" || $REPLY == "no" ]]; then
 			read -p "Enter installation directory:"
-			eval destination="$REPLY"
+			eval tempdir="$REPLY"
+			if [[ $tempdir == .* ]]; then
+				echo "Use a absolute path not $tempdir"
+			else
+				destination="$tempdir"
+			fi
 		elif [[ $REPLY == "e" || $REPLY == "E" || $REPLY == "exit" ]]; then
 			exit 2
 		fi
@@ -92,6 +97,11 @@ if [[ -n $interactive ]]; then
 			exit 2
 		fi
 	done
+fi
+
+if [[ $destination == .* ]]; then
+	echo "Use a absolute path not $destination" >&2
+	exit 1
 fi
 
 versiondir="v$major.$minor"
