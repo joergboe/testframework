@@ -166,13 +166,6 @@ isVerbose && echo "**** START Case $TTRO_case variant $TTRO_caseVariant in workd
 cd "$TTRO_workDirCase"
 
 #-----------------------------------
-#setup properties and vars
-#tmp="${TTRO_inputDirCase}/${TEST_CASE_FILE}"
-#isVerbose && echo "Set properties from Case file $tmp"
-#setProperties "$tmp"
-#fixPropsVars
-
-#-----------------------------------
 # tools
 for x in $TT_tools; do
 	isVerbose && echo "Source global tools file: $x"

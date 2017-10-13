@@ -711,5 +711,3 @@ fi
 builtin echo -n "$mainResult" > "$TTRO_workDirMain/DONE"
 
 exit $mainResult
-
-#} 2>&1 | tee -i "${TTRO_workDirMain}/STDERROUT.log"

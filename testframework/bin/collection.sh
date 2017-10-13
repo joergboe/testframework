@@ -231,7 +231,7 @@ declare -i suiteVariants=0 suiteErrors=0
 declare -i i j
 for ((i=0; i<${#sortedSuites[@]}; i++)); do
 	suitePath="${sortedSuites[$i]}"
-	if [[ $suitePath == $TTRO_inputDir ]]; then
+	if [[ "$suitePath" == "$TTRO_inputDir" ]]; then
 		suite='--'
 	else
 		suite="${suitePath##*/}"

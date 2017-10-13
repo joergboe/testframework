@@ -100,15 +100,6 @@ isDebug && printDebug "noCases=$noCases"
 # enter working dir
 cd "$TTRO_workDirSuite"
 
-#-------------------------
-#setup properties and vars
-#if [[ $TTRO_suite != '--' ]]; then
-#	tmp="${TTRO_inputDirSuite}/${TEST_SUITE_FILE}"
-#	isVerbose && echo "Set properties from Suite file $tmp"
-#	setProperties "$tmp"
-#fi
-#fixPropsVars
-
 #-------------------------------------
 # include tools
 for x in $TT_tools; do
