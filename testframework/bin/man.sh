@@ -262,8 +262,8 @@ function manpage () {
 	TTRO_suite           - The suite name
 	TTRO_case            - The case name
 	TTRO_variant         - The variant of the collection
-	TTRO_suiteVariant    - The variant of the suite
-	TTRO_caseVariant     - The variant of the case
+	TTRO_variantSuite    - The variant of the suite
+	TTRO_variantCase     - The variant of the case
 	TTRO_scriptDir       - The scripts path
 	
 	TTRO_noCpus          - The number of detected cores

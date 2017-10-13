@@ -7,7 +7,7 @@ declare -a options=( '' '-j 1' '-j 1 -v' '-j 1 -v -d' )
 
 function executeCase {
 	echo $TTRO_inputDirCase
-	if echoAndExecute $TTPN_binDir/runTTF --directory "$TTRO_inputDirCase/testCollection" ${options[$TTRO_caseVariant]} 2>&1 | tee STDERROUT1.log; then
+	if echoAndExecute $TTPN_binDir/runTTF --directory "$TTRO_inputDirCase/testCollection" ${options[$TTRO_variantCase]} 2>&1 | tee STDERROUT1.log; then
 		return $errTestFail
 	else
 		return 0

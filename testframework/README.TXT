@@ -38,6 +38,7 @@ Version 1.0.0:
 - New utis functions isArray, isFunction, arrayHasKey, isExistingAndTrue, isTrue, isFalse
 - Re-named properties TTRO_noStart -> TTPN_..
 - Handle debug and verbose as propertie
+- Re-names TTRO_caseVariant -> TTRO_variantCase TTRO_suiteVariant -> TTRO_variantSuite
 
 
 Version 0.2.0:

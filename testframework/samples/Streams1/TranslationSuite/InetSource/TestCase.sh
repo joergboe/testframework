@@ -15,7 +15,7 @@ function myCompile {
 	local rr
 	compileAndIntercept
 	echo "######### myCompile result $result"
-	if [[ $TTRO_caseVariant -eq 0 ]]; then
+	if [[ $TTRO_variantCase -eq 0 ]]; then
 		if [[ $result -eq 0 ]]; then
 			return 0
 		else
@@ -34,7 +34,7 @@ function myCompile {
 # does nothing in the firs run
 # evaluates in the second step
 function myEvaluate {
-	if [[ $TTRO_caseVariant -eq 0 ]]; then
+	if [[ $TTRO_variantCase -eq 0 ]]; then
 		return 0
 	fi
 	if ! linewisePatternMatch "$TT_evaluationFile" '' 'CDISP9164E ERROR: CDIST0200E: InetSource operator cannot be used inside a consistent region*'; then

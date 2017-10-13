@@ -55,7 +55,7 @@ fi
 #setup case values
 declare -rx TTRO_inputDirCase="$1"; shift
 declare -rx TTRO_workDirCase="$1"; shift
-declare -rx TTRO_caseVariant="$1"
+declare -rx TTRO_variantCase="$1"
 #more values to setup
 declare -r suite="${TTRO_inputDirSuite##*/}"
 declare -rx TTRO_case="${TTRO_inputDirCase##*/}"
@@ -116,7 +116,7 @@ function caseFinalization {
 		fi
 		isVerbose && echo "$executedTestFinSteps Case Test Finalization steps executed"
 	else
-		isDebug && printDebug "No execution caseFinalization case $TTRO_case variant '$TTRO_caseVariant'"
+		isDebug && printDebug "No execution caseFinalization case $TTRO_case variant '$TTRO_variantCase'"
 	fi
 	return 0
 }
@@ -136,30 +136,30 @@ trap caseExitFunction EXIT
 function successExit {
 	echo "SUCCESS" > "${TTRO_workDirCase}/RESULT"
 	caseFinalization
-	isVerbose && echo "**** END Case case=${TTRO_case} variant='${TTRO_caseVariant}' SUCCESS *****"
+	isVerbose && echo "**** END Case case=${TTRO_case} variant='${TTRO_variantCase}' SUCCESS *****"
 	exit 0
 }
 function skipExit {
 	echo "SKIP" > "${TTRO_workDirCase}/RESULT"
-	isVerbose && echo "**** END Case case=${TTRO_case} variant='${TTRO_caseVariant}' SKIP **********"
+	isVerbose && echo "**** END Case case=${TTRO_case} variant='${TTRO_variantCase}' SKIP **********"
 	exit 0
 }
 function failureExit {
 	echo "FAILURE" > "${TTRO_workDirCase}/RESULT"
 	caseFinalization
-	isVerbose && echo "**** END Case case=${TTRO_case} variant='${TTRO_caseVariant}' FAILURE ********" >&2
+	isVerbose && echo "**** END Case case=${TTRO_case} variant='${TTRO_variantCase}' FAILURE ********" >&2
 	exit 0
 }
 function errorExit {
 	echo "ERROR" > "${TTRO_workDirCase}/RESULT"
 	caseFinalization
-	isVerbose && echo "END Case case=${TTRO_case} variant='${TTRO_caseVariant}' ERROR ***************" >&2
+	isVerbose && echo "END Case case=${TTRO_case} variant='${TTRO_variantCase}' ERROR ***************" >&2
 	exit ${errTestError}
 }
 
 #####################################################################################################
 #Start of main testcase body
-isVerbose && echo "**** START Case $TTRO_case variant $TTRO_caseVariant in workdir $TTRO_workDirCase ********************"
+isVerbose && echo "**** START Case $TTRO_case variant $TTRO_variantCase in workdir $TTRO_workDirCase ********************"
 
 #----------------------------------
 # enter working dir
@@ -207,7 +207,7 @@ if declare -p TTPN_skipIgnore &> /dev/null; then
 	fi
 fi
 if [[ -n $skipcase ]]; then
-	isVerbose && echo "SKIP variable set; Skip execution case=$TTRO_case variant=$TTRO_caseVariant"
+	isVerbose && echo "SKIP variable set; Skip execution case=$TTRO_case variant=$TTRO_variantCase"
 	skipExit
 fi
 

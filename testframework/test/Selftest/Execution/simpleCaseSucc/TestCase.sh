@@ -6,7 +6,7 @@ STEPS='getOptions TT_expectResult=0 runRunTTF myEvaluate'
 declare -a options=( '--noprompt' '-j 1 --noprompt' '-j 1 -v --noprompt' '-j 1 -v -d --noprompt' )
 
 function getOptions {
-	TT_runOptions="${options[$TTRO_caseVariant]}"
+	TT_runOptions="${options[$TTRO_variantCase]}"
 }
 
 function myEvaluate {

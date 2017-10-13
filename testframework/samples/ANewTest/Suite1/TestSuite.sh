@@ -9,7 +9,7 @@ echo "*********************************"
 
 #Suite test preparation steps
 PREPS=(\
-	'mySpecialSuitePreparation "$TTRO_suiteVariant"' )
+	'mySpecialSuitePreparation "$TTRO_variantSuite"' )
 
 FINS=mySpecialSuiteFinalization
 

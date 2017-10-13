@@ -55,7 +55,7 @@ TTRO_help_copyAndTransformSpl='
 #	Copy all files from input directory to workdir and
 #	Transform spl files'
 function copyAndTransformSpl {
-	copyAndTransform "$TTRO_inputDirCase" "$TTRO_workDirCase" "$TTRO_caseVariant" '*.spl'
+	copyAndTransform "$TTRO_inputDirCase" "$TTRO_workDirCase" "$TTRO_variantCase" '*.spl'
 }
 
 TTRO_help_compile='

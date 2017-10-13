@@ -4,7 +4,7 @@ STEPS='executeCase myEvaluate'
 
 declare -A outputValidation=()
 
-case $TTRO_caseVariant in
+case $TTRO_variantCase in
 	help)
 		patternList=('usage: run*'
 					'OPTIONS:*'
@@ -62,8 +62,8 @@ case $TTRO_caseVariant in
 esac
 
 function executeCase {
-	local tmp="--$TTRO_caseVariant"
-	if [[ $TTRO_caseVariant == "ref" ]]; then
+	local tmp="--$TTRO_variantCase"
+	if [[ $TTRO_variantCase == "ref" ]]; then
 		tmp="--ref --directory $TTRO_inputDirCase/test --noprompt"
 	fi
 	echo "$tmp"

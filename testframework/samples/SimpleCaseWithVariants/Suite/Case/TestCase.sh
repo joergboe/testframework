@@ -1,10 +1,10 @@
 #--variantList='success failure failureexit error scripterror skip'
 
 #Declare test finalization array and call function with parameter
-FINS=( "myTestFin $TTRO_caseVariant" )
+FINS=( "myTestFin $TTRO_variantCase" )
 
 #Initialization handle the skip case
-if [[ "$TTRO_caseVariant" == "skip" ]]; then
+if [[ "$TTRO_variantCase" == "skip" ]]; then
 	setVar 'TTPN_skip' 'true'
 fi
 
@@ -15,8 +15,8 @@ fi
 # - error the function returns 1
 # - error there is a script error
 function testStep {
-	echo "----- Excecute $FUNCNAME variant is : $TTRO_caseVariant -----"
-	case $TTRO_caseVariant in
+	echo "----- Excecute $FUNCNAME variant is : $TTRO_variantCase -----"
+	case $TTRO_variantCase in
 		success)
 			return 0 ;;
 		failure)

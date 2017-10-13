@@ -713,7 +713,7 @@ TTRO_help_copyOnly='
 # Function copyOnly
 #	Copy all files from input directory to workdir'
 function copyOnly {
-	copyAndTransform "$TTRO_inputDirCase" "$TTRO_workDirCase" "$TTRO_caseVariant"
+	copyAndTransform "$TTRO_inputDirCase" "$TTRO_workDirCase" "$TTRO_variantCase"
 }
 
 TTRO_help_linewisePatternMatch='

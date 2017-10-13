@@ -12,7 +12,7 @@ setVar 'TTPN_myCaseProperty' "This is a sample case property"
 echo "********************************"
 echo "global Case initialization steps"
 echo "********************************"
-if [[ $TTRO_caseVariant -eq 4 ]]; then
+if [[ $TTRO_variantCase -eq 4 ]]; then
 	setVar 'TTPN_skip' 'true'
 fi
 
@@ -35,13 +35,13 @@ function testFinalization {
 
 function testStep {
 	echo " **** $FUNCNAME ****"
-	if [[ $TTRO_caseVariant -eq 0 ]]; then
+	if [[ $TTRO_variantCase -eq 0 ]]; then
 		echo "Variant 0 returns with success"
 		return 0
-	elif [[ $TTRO_caseVariant -eq 1 ]]; then
+	elif [[ $TTRO_variantCase -eq 1 ]]; then
 		echo "Variant 1 calls failure exit"
 		failureExit
-	elif [[ $TTRO_caseVariant -eq 2 ]]; then
+	elif [[ $TTRO_variantCase -eq 2 ]]; then
 		echo "Variant 2 returns with another failure return code"
 		return 1
 	else

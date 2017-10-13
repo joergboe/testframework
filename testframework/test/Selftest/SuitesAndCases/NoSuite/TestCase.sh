@@ -1,7 +1,7 @@
 #--variantCount=4
 
 PREPS='copyAndModifyTestCollection'
-STEPS=('TT_runOptions=${options[$TTRO_caseVariant]}' 'runRunTTF myEvaluate')
+STEPS=('TT_runOptions=${options[$TTRO_variantCase]}' 'runRunTTF myEvaluate')
 
 declare -a options=( '--noprompt' '-j 1 --noprompt' '-j 1 -v --noprompt' '-j 1 -v -d --noprompt' )
 

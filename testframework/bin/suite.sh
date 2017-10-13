@@ -85,7 +85,7 @@ fi
 declare -rx TTRO_suite="$1"; shift
 declare -rx TTRO_inputDirSuite="$1"; shift
 declare -rx TTRO_workDirSuite="$1"; shift
-declare -rx TTRO_suiteVariant="$1"; shift
+declare -rx TTRO_variantSuite="$1"; shift
 declare -a cases=() # case pathes
 declare -i noCases=0
 while [[ $# -ge 1 ]]; do
@@ -203,7 +203,7 @@ done
 unset i casePath caseName
 unset timeout variantCount variantList
 
-isVerbose && echo "Execute Suite $TTRO_suite variant='$TTRO_suiteVariant' in workdir $TTRO_workDirSuite number of cases=$noCases number of case variants=$noCaseVariants"
+isVerbose && echo "Execute Suite $TTRO_suite variant='$TTRO_variantSuite' in workdir $TTRO_workDirSuite number of cases=$noCases number of case variants=$noCaseVariants"
 
 #------------------------------------------------
 # diagnostics
@@ -620,9 +620,9 @@ if [[ $interruptReceived -gt 0 ]]; then
 	suiteResult=$errSigint
 fi
 
-printf "**** Suite: $TTRO_suite Variant: '$TTRO_suiteVariant' cases=%i skipped=%i failures=%i errors=%i *****\n" $jobIndex $variantSkiped $variantFailures $variantErrors
+printf "**** Suite: $TTRO_suite Variant: '$TTRO_variantSuite' cases=%i skipped=%i failures=%i errors=%i *****\n" $jobIndex $variantSkiped $variantFailures $variantErrors
 builtin echo -n "$suiteResult" > "${TTRO_workDirSuite}/DONE"
 
-isDebug && printDebug "END: Suite $TTRO_suite variant='$TTRO_suiteVariant' suite exit code $suiteResult"
+isDebug && printDebug "END: Suite $TTRO_suite variant='$TTRO_variantSuite' suite exit code $suiteResult"
 
 exit $suiteResult
