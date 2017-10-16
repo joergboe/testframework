@@ -4,6 +4,8 @@
 ####################################################
 # Initialization section
 
+declare result=''
+
 TTRO_help_streamsutilsInitialization='
 # Module initialization
 #	check streams environment exits if no streams environment found

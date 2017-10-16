@@ -251,6 +251,10 @@ for ((i=0; i<${#sortedSuites[@]}; i++)); do
 		else
 			for x in $variantList; do
 				exeSuite "$x" "${TTRO_workDir}/${suite}/${x}" "$takeAllCases"
+				if [[ -n $interruptReceived ]]; then
+					echo "SIGINT: end Suites loop"
+					break
+				fi
 			done
 			unset x
 		fi
@@ -258,6 +262,10 @@ for ((i=0; i<${#sortedSuites[@]}; i++)); do
 		if [[ -z $variantList ]]; then
 			for ((j=0; j<variantCount; j++)); do
 				exeSuite "$j" "${TTRO_workDir}/${suite}/${j}" "$takeAllCases"
+				if [[ -n $interruptReceived ]]; then
+					echo "SIGINT: end Suites loop"
+					break
+				fi
 			done
 			unset j
 		else
