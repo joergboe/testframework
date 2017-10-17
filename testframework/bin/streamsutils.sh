@@ -4,53 +4,60 @@
 ####################################################
 # Initialization section
 
+#required global varaible for result propagation
 declare result=''
 
-TTRO_help_streamsutilsInitialization='
 # Module initialization
 #	check streams environment exits if no streams environment found
-#	set required properties and variables'
-function streamsutilsInitialization {
-	isDebug && printDebug "$FUNCNAME"
-	#environment check
-	if ! declare -p STREAMS_INSTALL > /dev/null; then
-		printErrorAndExit "Missing environment: STREAMS_INSTALL must be set" ${errEnv}
-	fi
-	#set props
-	setVar 'TTP_splcFlags' '-a'
-	setVar 'TTPN_splc' "${STREAMS_INSTALL}/bin/sc"
-	setVar 'TTPN_st' "${STREAMS_INSTALL}/bin/streamtool"
-	setVar 'TTPN_md' "${STREAMS_INSTALL}/bin/spl-make-doc"
-	setVar 'TTPN_mt' "${STREAMS_INSTALL}/bin/spl-make-toolkit"
-	setVar 'TTPN_swsPort' '8443'
-	setVar 'TTPN_jmxPort' '9443'
-	setVar TTPN_numresources 1
+#	set required properties and variables
+#	Function call is not required since all initialization is done in main body'
+isDebug && printDebug "streamsutilsInitialization"
+#environment check
+if ! declare -p STREAMS_INSTALL > /dev/null; then
+	printErrorAndExit "Missing environment: STREAMS_INSTALL must be set" ${errEnv}
+fi
+#set props
+setVar 'TTP_splcFlags' '-a'
+setVar 'TTPN_splc' "${STREAMS_INSTALL}/bin/sc"
+setVar 'TTPN_st' "${STREAMS_INSTALL}/bin/streamtool"
+setVar 'TTPN_md' "${STREAMS_INSTALL}/bin/spl-make-doc"
+setVar 'TTPN_mt' "${STREAMS_INSTALL}/bin/spl-make-toolkit"
+setVar 'TTPN_swsPort' '8443'
+setVar 'TTPN_jmxPort' '9443'
+setVar TTPN_numresources 1
 
-	if declare -p STREAMS_ZKCONNECT &> /dev/null && [[ -n $STREAMS_ZKCONNECT ]]; then
-		setVar TTPN_streamsZkConnect "$STREAMS_ZKCONNECT"
-	else
-		setVar TTPN_streamsZkConnect ""
-	fi
-	echo "$FUNCNAME: TTPN_streamsZkConnect=$TTPN_streamsZkConnect"
-	if declare -p STREAMS_DOMAIN_ID &> /dev/null && [[ -n $STREAMS_DOMAIN_ID ]]; then
-		setVar TTPN_streamsDomainId "$STREAMS_DOMAIN_ID"
-		echo "$FUNCNAME: TTPN_streamsDomainId=$TTPN_streamsDomainId"
-	fi
-	if declare -p STREAMS_INSTANCE_ID &> /dev/null && [[ -n $STREAMS_INSTANCE_ID ]]; then
-		setVar TTPN_streamsInstanceId "$STREAMS_INSTANCE_ID"
-		echo "$FUNCNAME: TTPN_streamsInstanceId=$TTPN_streamsInstanceId"
-	fi
-	# test var to check duplicate init
-	setVar 'TTRO_ttt' '55'
-	# variables required for functions
-	setVar 'TT_mainComposite' 'Main'
-	setVar 'TT_evaluationFile' './EVALUATION.log'
-	setVar 'TT_sabFile' './output/Main.sab' 
-	setVar 'TT_jobFile' './jobno.log'
-}
+if declare -p STREAMS_ZKCONNECT &> /dev/null && [[ -n $STREAMS_ZKCONNECT ]]; then
+	setVar TTPN_streamsZkConnect "$STREAMS_ZKCONNECT"
+else
+	setVar TTPN_streamsZkConnect ""
+fi
+echo "$FUNCNAME: TTPN_streamsZkConnect=$TTPN_streamsZkConnect"
+if declare -p STREAMS_DOMAIN_ID &> /dev/null && [[ -n $STREAMS_DOMAIN_ID ]]; then
+	setVar TTPN_streamsDomainId "$STREAMS_DOMAIN_ID"
+	echo "$FUNCNAME: TTPN_streamsDomainId=$TTPN_streamsDomainId"
+fi
+if declare -p STREAMS_INSTANCE_ID &> /dev/null && [[ -n $STREAMS_INSTANCE_ID ]]; then
+	setVar TTPN_streamsInstanceId "$STREAMS_INSTANCE_ID"
+	echo "$FUNCNAME: TTPN_streamsInstanceId=$TTPN_streamsInstanceId"
+fi
+# test var to check duplicate init
+#setVar 'TTRO_ttt' '55'
+# variables required for functions
+setVar 'TT_mainComposite' 'Main'
+setVar 'TT_evaluationFile' './EVALUATION.log'
+setVar 'TT_sabFile' './output/Main.sab' 
+setVar 'TT_jobFile' './jobno.log'
+
 
 #########################################################
 # Functions section
+
+TTRO_help_streamsutilsInitialization='
+# Module initialization
+#	Function call is not required since all initialization is done in main body'
+function streamsutilsInitialization {
+	echo "$FUNCNAME dummy function"
+}
 
 TTRO_help_copyAndTransformSpl='
 # Function copyAndTransformSpl
