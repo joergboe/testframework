@@ -35,8 +35,8 @@ case $TTRO_variantCase in
 	man)
 		patternList=('The runTTF script is a framework for the control of test case execution.*'
 					 'The execution of test case/suite variants and the parallel execution is inherently supported.*'
-					 'Test Cases, Test Suites and Test Collections*'
-					 '============================================'
+					 '## Test Cases, Test Suites and Test Collections*'
+					 '==============================================='
 					 "A test case is comprised of a directory with the main test case file with name: 'TestCase.sh' and other necessary artifacts"
 					 "which are necessary for the test execution."
 					 'The name of a test case is the last component of the path-name of the main test case file.')
