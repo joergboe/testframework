@@ -31,7 +31,9 @@ if [[ $commitstatus ]]; then
 fi
 
 mkdir -p "$docdir"
-./runTTFLink --man > "$docdir/manpage.md"
+cd bin
+./runTTF --man | grep -v '===' > "../$docdir/manpage.md.tmp"
+cd -
 
 commithash=$(git rev-parse HEAD)
 echo "RELEASE.INFO commithash=$commithash"
