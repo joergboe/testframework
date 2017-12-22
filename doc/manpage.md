@@ -1,13 +1,11 @@
 
-# runTTFLink 
-===========
+# runTTF 
 
-The runTTFLink script is a framework for the control of test case execution.
+The runTTF script is a framework for the control of test case execution.
 The execution of test case/suite variants and the parallel execution is inherently supported.
 
 
 ## Test Cases, Test Suites and Test Collections
-===============================================
 A test case is comprised of a directory with the main test case file with name: 'TestCase.sh' and other necessary artifacts
 which are necessary for the test execution.
 The name of a test case is the last component of the path-name of the main test case file.
@@ -40,7 +38,6 @@ parameter sets.
 
 
 ## Execution Environment
-=========================
 The test framework starts with the analysis of the input directory (option -i|--directory). If no cases list is given as
 command line parameter, all found test cases which are not marked with a 'skipped' property are executed.
 If a cases list is given from the command line, all test cases with match the cases list are executed (pattern match)
@@ -52,7 +49,6 @@ A summary is printed after test case execution.
 
 
 ## Test Case File 'TestCase.sh', Test Suite File 'TestSuite.sh' and the 'TestCollection.sh'
-=======================================================================================================
 These files have in general two sections: The preamble and a script code section. Both sections may be empty.
 
 The preamble defines variables which are necessary before execution of appropriate artifacts starts.
@@ -104,7 +100,6 @@ non empty value the preparation and the finalization of the appropriate artifact
 
 
 ## Test Property File TestProperties.sh
-======================================
 This file may contain global property and variable definitions. This file should no contain script code. This file is intended 
 to store stuff which may change when the test collection is executed in different environments. The default name of this 
 file is 'TestProperties.sh' and it is expected in the Test collection directory. An alternative file name may be assigned with 
@@ -112,13 +107,12 @@ command line parameter --properties or the environment TT_properties is evaluate
 
 
 ## Test Tools and Modules
-=========================
 If your test collection requires special functions, you must source the appropriate modules from the test collection file. 
 Especially the streamsutils.sh must be sourced at the beginning of the main body of the test collection file:
 
-registerTool "$TTRO_scriptDir/streamsutils.sh"
-or
-setVar 'TT_tools' "$TT_tools $TTRO_scriptDir/streamsutils.sh"
+registerTool "$TTRO_scriptDir/streamsutils.sh"\n
+or\n
+setVar 'TT_tools' "$TT_tools $TTRO_scriptDir/streamsutils.sh"\n
 
 The first form sources the script 'streamsutils.sh' and modifies the TT_tools variable.
 The second form modifies the TT_tools variable only. The utilities script is sourced during start up of the called artifact.
@@ -129,7 +123,6 @@ collection initialization. (The framework sources the tools modules before the p
 
 
 ## Test File Preamble
-=====================
 The definition of the variables and properties must have the form:
 #--<name>=<value>
 No spaces are allowed between name '=' and value.
@@ -139,7 +132,6 @@ The whole assignment must fit into one line.
 The preamble defines the variants of the test artifacts and in case of a test case, the timeout values for the test case.
 
 ## Test Collection, Test Case and Test Suite variants
-=====================================================
 The variants of cases, suites and collections are defined in the preamble of the 'TestCase.sh', the 'TestSuite.sh' or
 the TestCollection.sh file.
 The appropriate file must have either no variant variable, a variantCount variable or a variantList variable.
@@ -151,7 +143,6 @@ The variantList must be a space separated list of identifiers or numbers or a mi
 #--variantList=<list>
 
 ## Test Case timeouts
-=====================
 Each test case can define an individual timeout variable. When the timeout is reached for an test case, 
 the job is killed with SIGTERM (15). If the job still runs after additional time (TTP_additionalTime), 
 the job is killed with SIGKILL (9).
@@ -159,14 +150,12 @@ If there is no individual timeout defined, the default values TTP_timeout is use
 
 
 ## Test Framework Variables and Properties
-==========================================
 Variables with the prefix TT_, TTRO_, TTP_ or TTPN_ are treated as global definitions and they are exported from 
 Test Collection to Test Suite and from Test Suite to Test Case.
 
 In the script code section, variables and properties can be assigned with function setVar '<name>' "<value>".
 
 ## Property Variables
-=====================
 Property variables are not changed once they have been defined. Re-definition of property variables will be ignored. 
 An pure assignment to a property in a test suite/case script may cause a script failure. Use function setVar instead.
 The name of a property must be prefixed with TTP_ or TTPN_
@@ -178,7 +167,6 @@ NOTE: Prefer the TTP_ version.
 
 
 ## Simple Global Variables and Global Read-only Variables
-=========================================================
 Global variables may be defined in the script code section of the test artifacts. 
 Simple variables and can be re-written in suite- or test-case-script and must have the prefix TT_. 
 Read-only variables can not be re-written once they have been defined and must have the prefix TTRO_. 
@@ -188,7 +176,6 @@ a plain assignment is sufficient. A re-write of an read-only variable will cause
 
 
 ## Trueness and Falseness
-=========================
 Logical variables with the semantics of an boolean are considered 'true' if these variables are set to something different than 
 the empty value (null). An empty (null) variable or an unset variable is considered 'false'. Care must be taken if a 
 variable is unset. In general the usage of an unset variable will cause a script failure.
@@ -198,98 +185,93 @@ Some properties are designed that the existence of the property indicates the tr
 
 
 ## Accepted Environment
-=======================
 
 ## Debug and Verbose
-====================
 The testframe may print verbose information and debug information or both. The verbosity may be enabled with command line options.
 Additionally the verbosity can be controlled with existence of the properties:
-TTPN_debug            - enables debug
-TTPN_debugDisable     - disables debug (overrides TTPN_debug)
-TTPN_verbose          - enables verbosity
-TTPN_verboseDisable   - disables verbosity (overrides TTPN_verbose)
+- TTPN_debug            - enables debug
+- TTPN_debugDisable     - disables debug (overrides TTPN_debug)
+- TTPN_verbose          - enables verbosity
+- TTPN_verboseDisable   - disables verbosity (overrides TTPN_verbose)
 
 NOTE: The check if an existing variable is empty or not is much faster then the check against existance of an variable. Therefore 
 we use here the empty value an consider it as unset property.
 
 
 ## Variables Used
-=================
-TTPN_skip              - Skips the execution of test case preparation, test case execution and test case finalization steps
-TTPN_skipIgnore        - If set to true, the skip variable is ignored.
+- TTPN_skip              - Skips the execution of test case preparation, test case execution and test case finalization steps
+- TTPN_skipIgnore        - If set to true, the skip variable is ignored.
 
-STEPS                 - The space separated list or an array of test step commands with local meaning. If one command returns an failure (return code != 0), 
-                        the test execution is stopped
-TTRO_stepsCase        - This variable is designed to store a space separated list of test step commands.
-                        and the test case variant is considered an error. When the execution of all test commands return success the 
-                        test case variant is considered a success.
+- STEPS                 - The space separated list or an array of test step commands with local meaning. If one command returns an failure (return code != 0), 
+                          the test execution is stopped
+- TTRO_stepsCase        - This variable is designed to store a space separated list of test step commands.
+                          and the test case variant is considered an error. When the execution of all test commands return success the 
+                          test case variant is considered a success.
                         
-TTRO_preps            - This variable stores the list of global test collection preparation commands. If one command returns an failure (return code != 0), 
-                        the test execution of the collection variant is stopped.
-TTRO_prepsSuite       - This variable stores the list of test suite preparation commands. If one command returns an failure (return code != 0), 
-                        the test execution ot the suite is stopped.
-TTRO_prepsCase        - The space separated list of test case preparation commands. If one command returns an failure (return code != 0), 
-                        the test execution is stopped and the test is considered an error.
-PREPS                 - The space separated list or an array of test preparation commands with local meaning.
+- TTRO_preps            - This variable stores the list of global test collection preparation commands. If one command returns an failure (return code != 0), 
+                          the test execution of the collection variant is stopped.
+- TTRO_prepsSuite       - This variable stores the list of test suite preparation commands. If one command returns an failure (return code != 0), 
+                          the test execution ot the suite is stopped.
+- TTRO_prepsCase        - The space separated list of test case preparation commands. If one command returns an failure (return code != 0), 
+                          the test execution is stopped and the test is considered an error.
+- PREPS                 - The space separated list or an array of test preparation commands with local meaning.
 
-TTRO_fins             - This variable stores the list of global test finalization commands. If one command returns an failure (return code != 0), 
-                        the error is logged and execution is stopped
-TTRO_finsSuite        - This variables stores the list of test suite finalization commands. If one command returns an failure (return code != 0), 
-                        the error is logged and the execution is stopped
-TTRO_finsCase         - This variable is designed to store the list of test case finalization commands. If one command returns an failure (return code != 0), 
-                        the error is logged and the execution is stopped. The result of the case is not affected.
-FINS                  - The space separated list or an array of test finalization commands.
+- TTRO_fins             - This variable stores the list of global test finalization commands. If one command returns an failure (return code != 0), 
+                          the error is logged and execution is stopped
+- TTRO_finsSuite        - This variables stores the list of test suite finalization commands. If one command returns an failure (return code != 0), 
+                          the error is logged and the execution is stopped
+- TTRO_finsCase         - This variable is designed to store the list of test case finalization commands. If one command returns an failure (return code != 0), 
+                          the error is logged and the execution is stopped. The result of the case is not affected.
+- FINS                  - The space separated list or an array of test finalization commands.
                          
-TTP_timeout           - The default test case timeout in seconds. default is 120 sec. This variable must be defined in the 
-                        description section of test case file or in the Test Suite or Test Collection. A definition 
-                        in the script section of a Test Case has no effect.
-TTP_additionalTime    - The extra wait time after the test case time out. If the test case does not end after this 
-                        time a SIGKILL is issued and the test case is stopped. The default is 45 sec. This variable 
-                        must be defined in the description section of test case file or in the Test Suite or Test Collection. 
-                        A definition in the script section of a Test Case has no effect.
+- TTP_timeout           - The default test case timeout in seconds. default is 120 sec. This variable must be defined in the 
+                          description section of test case file or in the Test Suite or Test Collection. A definition 
+                          in the script section of a Test Case has no effect.
+- TTP_additionalTime    - The extra wait time after the test case time out. If the test case does not end after this 
+                          time a SIGKILL is issued and the test case is stopped. The default is 45 sec. This variable 
+                          must be defined in the description section of test case file or in the Test Suite or Test Collection. 
+                          A definition in the script section of a Test Case has no effect.
 
 
 ## Variables Provided
-=====================
-TTRO_workDirMain     - The main output directory
-TTRO_workDir         - The output directory of the collection variant
-TTRO_workDirSuite    - The output directory of the suite
-TTRO_workDirCase     - The output directory of the case
-TTRO_inputDir        - The input directory
-TTRO_inputDirSuite   - The input directory of the suite
-TTRO_inputDirCase    - The input directory of the case
-TTRO_collection      - The name of the collection
-TTRO_suite           - The suite name
-TTRO_case            - The case name
-TTRO_variant         - The variant of the collection
-TTRO_variantSuite    - The variant of the suite
-TTRO_variantCase     - The variant of the case
-TTRO_scriptDir       - The scripts path
+- TTRO_workDirMain     - The main output directory
+- TTRO_workDir         - The output directory of the collection variant
+- TTRO_workDirSuite    - The output directory of the suite
+- TTRO_workDirCase     - The output directory of the case
+- TTRO_inputDir        - The input directory
+- TTRO_inputDirSuite   - The input directory of the suite
+- TTRO_inputDirCase    - The input directory of the case
+- TTRO_collection      - The name of the collection
+- TTRO_suite           - The suite name
+- TTRO_case            - The case name
+- TTRO_variant         - The variant of the collection
+- TTRO_variantSuite    - The variant of the suite
+- TTRO_variantCase     - The variant of the case
+- TTRO_scriptDir       - The scripts path
 
-TTRO_noCpus          - The number of detected cores
-TTRO_noParallelCases - The max number of parallel executed cases. If set to 1 all cases are executed back-to-back
-TTRO_treads          - The number of threads to be used during test case execution. Is set to 1 if parallel test case
-                       execution is enabled. Is set to $TTRO_noCpus if back-to-back test case execution is enabled.
-TTRO_reference       - The reference will be printed
-TTPN_noStart         - This property is provided with value "true" if the --no-start command line option is used. It is empty otherwise
-TTPN_noStop          - This  property is provided with value "true" if the --no-stop command line option is used. It is empty otherwise
-TTPN_link            - This  property is provided with value "true" if the --link command line option is used. It is empty otherwise
-TTPN_noPreps         - This property is provided with value "true" if the --no-start command line option is used. It is empty otherwise
-                       If the property is true no Test Collection preparation is called
-TTPN_noPrepsSuite    - This property is provided with value "true" if the --no-start command line option is used. It is empty otherwise
-                       If the property is true no Test Suite preparation is called
-TTPN_noPrepsCase     - This property is not provided.
-                       If the property is true no Test Case preparation is called
-TTPN_noFins          - This property is provided with value "true" if the --no-stop command line option is used. It is empty otherwise
-                       If the property is true no Test Collection finalization is called
-TTPN_noFinsSuite     - This property is provided with value "true" if the --no-stop command line option is used. It is empty otherwise
-                       If the property is true no Test Suite finalization is called
-TTPN_noFinsCase      - This property is not provided.
-                       If the property is true no Test Case finalization is called
+- TTRO_noCpus          - The number of detected cores
+- TTRO_noParallelCases - The max number of parallel executed cases. If set to 1 all cases are executed back-to-back
+- TTRO_treads          - The number of threads to be used during test case execution. Is set to 1 if parallel test case
+                         execution is enabled. Is set to $TTRO_noCpus if back-to-back test case execution is enabled.
+- TTRO_reference       - The reference will be printed
+- TTPN_noStart         - This property is provided with value "true" if the --no-start command line option is used. It is empty otherwise
+- TTPN_noStop          - This  property is provided with value "true" if the --no-stop command line option is used. It is empty otherwise
+- TTPN_link            - This  property is provided with value "true" if the --link command line option is used. It is empty otherwise
+- TTPN_noPreps         - This property is provided with value "true" if the --no-start command line option is used. It is empty otherwise
+                         If the property is true no Test Collection preparation is called
+- TTPN_noPrepsSuite    - This property is provided with value "true" if the --no-start command line option is used. It is empty otherwise
+                         If the property is true no Test Suite preparation is called
+- TTPN_noPrepsCase     - This property is not provided.
+                         If the property is true no Test Case preparation is called
+- TTPN_noFins          - This property is provided with value "true" if the --no-stop command line option is used. It is empty otherwise
+                         If the property is true no Test Collection finalization is called
+- TTPN_noFinsSuite     - This property is provided with value "true" if the --no-stop command line option is used. It is empty otherwise
+                         If the property is true no Test Suite finalization is called
+- TTPN_noFinsCase      - This property is not provided.
+                         If the property is true no Test Case finalization is called
 
 
 ## Special Script Execution options
-===================================
 To maintain the correctness of the test execution all scripts are executed with special options set:
 
 errexit: Exit immediately if a pipeline (which may consist of a single simple command),  a sub-shell command enclosed 
@@ -316,7 +298,6 @@ sub-directories. If the pattern is followed by a /, only directories and sub-dir
 
 
 ## Test Case Result
-===================
 To signal an error or an failure of a test case the user defined test function may either set the variables:
 - errorOccurred
 - failureOccurred
@@ -328,7 +309,6 @@ Or the function may call one of the functions:
 To signal the success of a test case just leave the function with return 0.
 
 ## Skip Test Cases
-==================
 A test case is skipped if the property TTPN_skip is defined. This property may be set :
 - In the initialization or preparation phase of an test collection variant - this disables all cases of this collection variant
 - In the initialization or preparation phase of an test suite variant - this disables all cases of this suite variant
@@ -338,7 +318,6 @@ Alternatively the existence of an file SKIP in the test case directory inhibits 
 
 
 ## Sequence Control
-===================
 The Test Collection, each Test Suite variant and each Test Case variant are executed in an own environment. 
 The global variables and properties (TT.. variables) are inherited from Test Collection to Suite and to Case.
 
