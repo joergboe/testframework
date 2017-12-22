@@ -4,7 +4,8 @@ set -o errexit; set -o nounset;
 
 source bin/version.sh
 
-declare -r releasdir='releases'
+declare -r releasedir='releases'
+declare -r docdir='doc'
 
 echo
 echo "Build release package version v$TTRO_version"
@@ -29,25 +30,28 @@ if [[ $commitstatus ]]; then
 	fi
 fi
 
+mkdir -p "$docdir"
+./runTTFLink --man > "$docdir/manpage.md"
+
 commithash=$(git rev-parse HEAD)
 echo "RELEASE.INFO commithash=$commithash"
 echo "commithash=$commithash" > RELEASE.INFO
 
-mkdir -p "$releasdir"
+mkdir -p "$releasedir"
 
 fname="testframeInstaller_v${TTRO_version}.sh"
 
-tar cvJf "$releasdir/tmp.tar.xz" bin samples README.md RELEASE.INFO
+tar cvJf "$releasedir/tmp.tar.xz" bin samples README.md RELEASE.INFO
 
-cat tools/selfextract.sh releases/tmp.tar.xz > "$releasdir/$fname"
+cat tools/selfextract.sh releases/tmp.tar.xz > "$releasedir/$fname"
 
-chmod +x "$releasdir/$fname"
+chmod +x "$releasedir/$fname"
 
-rm "$releasdir/tmp.tar.xz"
+rm "$releasedir/tmp.tar.xz"
 
 echo
 echo "*************************************************"
-echo "Success build release package '$releasdir/$fname'"
+echo "Success build release package '$releasedir/$fname'"
 echo "*************************************************"
 
 exit 0

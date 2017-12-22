@@ -2,12 +2,15 @@ function manpage () {
 	local command=${0##*/}
 	less <<-EOF
 
+	# $command 
+	===========
+	
 	The $command script is a framework for the control of test case execution.
 	The execution of test case/suite variants and the parallel execution is inherently supported.
 
 
-	Test Cases, Test Suites and Test Collections
-	============================================
+	## Test Cases, Test Suites and Test Collections
+	===============================================
 	A test case is comprised of a directory with the main test case file with name: '$TEST_CASE_FILE' and other necessary artifacts
 	which are necessary for the test execution.
 	The name of a test case is the last component of the path-name of the main test case file.
@@ -39,8 +42,8 @@ function manpage () {
 	parameter sets.
 
 
-	Execution Environment
-	======================
+	## Execution Environment
+	=========================
 	The test framework starts with the analysis of the input directory (option -i|--directory). If no cases list is given as
 	command line parameter, all found test cases which are not marked with a 'skipped' property are executed.
 	If a cases list is given from the command line, all test cases with match the cases list are executed (pattern match)
@@ -51,8 +54,8 @@ function manpage () {
 	A summary is printed after test case execution.
 
 
-	Test Case File '$TEST_CASE_FILE', Test Suite File '$TEST_SUITE_FILE' and the '$TEST_COLLECTION_FILE'
-	====================================================================================================
+	## Test Case File '$TEST_CASE_FILE', Test Suite File '$TEST_SUITE_FILE' and the '$TEST_COLLECTION_FILE'
+	=======================================================================================================
 	These files have in general two sections: The preamble and a script code section. Both sections may be empty.
 	
 	The preamble defines variables which are necessary before execution of appropriate artifacts starts.
@@ -103,16 +106,16 @@ function manpage () {
 	non empty value the preparation and the finalization of the appropriate artifact is supressed.
 
 
-	Test Property File $TEST_PROPERTIES
-	===================================
+	## Test Property File $TEST_PROPERTIES
+	======================================
 	This file may contain global property and variable definitions. This file should no contain script code. This file is intended 
 	to store stuff which may change when the test collection is executed in different environments. The default name of this 
 	file is '$TEST_PROPERTIES' and it is expected in the Test collection directory. An alternative file name may be assigned with 
 	command line parameter --properties or the environment TT_properties is evaluated. The properties file is a bash script.
 
 
-	Test Tools and Modules
-	======================
+	## Test Tools and Modules
+	=========================
 	If your test collection requires special functions, you must source the appropriate modules from the test collection file. 
 	Especially the streamsutils.sh must be sourced at the beginning of the main body of the test collection file:
 	
@@ -128,8 +131,8 @@ function manpage () {
 	collection initialization. (The framework sources the tools modules before the propertie file is sourced)
 
 
-	Test File Preamble
-	==================
+	## Test File Preamble
+	=====================
 	The definition of the variables and properties must have the form:
 	#--<name>=<value>
 	No spaces are allowed between name '=' and value.
@@ -138,8 +141,8 @@ function manpage () {
 	The whole assignment must fit into one line.
 	The preamble defines the variants of the test artifacts and in case of a test case, the timeout values for the test case.
 	
-	Test Collection, Test Case and Test Suite variants
-	==================================================
+	## Test Collection, Test Case and Test Suite variants
+	=====================================================
 	The variants of cases, suites and collections are defined in the preamble of the '$TEST_CASE_FILE', the '$TEST_SUITE_FILE' or
 	the $TEST_COLLECTION_FILE file.
 	The appropriate file must have either no variant variable, a variantCount variable or a variantList variable.
@@ -150,23 +153,23 @@ function manpage () {
 	The variantList must be a space separated list of identifiers or numbers or a mixture of identifiers and numbers:
 	#--variantList=<list>
 	
-	Test Case timeouts
-	==================
+	## Test Case timeouts
+	=====================
 	Each test case can define an individual timeout variable. When the timeout is reached for an test case, 
 	the job is killed with SIGTERM (15). If the job still runs after additional time (TTP_additionalTime), 
 	the job is killed with SIGKILL (9).
 	If there is no individual timeout defined, the default values TTP_timeout is used.
 
 
-	Test Framework Variables and Properties
-	=======================================
+	## Test Framework Variables and Properties
+	==========================================
 	Variables with the prefix TT_, TTRO_, TTP_ or TTPN_ are treated as global definitions and they are exported from 
 	Test Collection to Test Suite and from Test Suite to Test Case.
 	
 	In the script code section, variables and properties can be assigned with function setVar '<name>' "<value>".
 	
-	Property Variables
-	==================
+	## Property Variables
+	=====================
 	Property variables are not changed once they have been defined. Re-definition of property variables will be ignored. 
 	An pure assignment to a property in a test suite/case script may cause a script failure. Use function setVar instead.
 	The name of a property must be prefixed with TTP_ or TTPN_
@@ -177,8 +180,8 @@ function manpage () {
 	NOTE: Prefer the TTP_ version.
 
 
-	Simple Global Variables and Global Read-only Variables
-	=====================================================
+	## Simple Global Variables and Global Read-only Variables
+	=========================================================
 	Global variables may be defined in the script code section of the test artifacts. 
 	Simple variables and can be re-written in suite- or test-case-script and must have the prefix TT_. 
 	Read-only variables can not be re-written once they have been defined and must have the prefix TTRO_. 
@@ -187,8 +190,8 @@ function manpage () {
 
 
 
-	Trueness and Falseness
-	======================
+	## Trueness and Falseness
+	=========================
 	Logical variables with the semantics of an boolean are considered 'true' if these variables are set to something different than 
 	the empty value (null). An empty (null) variable or an unset variable is considered 'false'. Care must be taken if a 
 	variable is unset. In general the usage of an unset variable will cause a script failure.
@@ -197,11 +200,11 @@ function manpage () {
 	Some properties are designed that the existence of the property indicates the trueness.
 
 
-	Accepted Environment
-	====================
+	## Accepted Environment
+	=======================
 
-	Debug and Verbose
-	=================
+	## Debug and Verbose
+	====================
 	The testframe may print verbose information and debug information or both. The verbosity may be enabled with command line options.
 	Additionally the verbosity can be controlled with existence of the properties:
 	TTPN_debug            - enables debug
@@ -213,8 +216,8 @@ function manpage () {
 	we use here the empty value an consider it as unset property.
 
 
-	Variables Used
-	==============
+	## Variables Used
+	=================
 	TTPN_skip              - Skips the execution of test case preparation, test case execution and test case finalization steps
 	TTPN_skipIgnore        - If set to true, the skip variable is ignored.
 	
@@ -249,8 +252,8 @@ function manpage () {
 	                        A definition in the script section of a Test Case has no effect.
 
 
-	Variables Provided
-	==================
+	## Variables Provided
+	=====================
 	TTRO_workDirMain     - The main output directory
 	TTRO_workDir         - The output directory of the collection variant
 	TTRO_workDirSuite    - The output directory of the suite
@@ -288,8 +291,8 @@ function manpage () {
 	                       If the property is true no Test Case finalization is called
 
 
-	Special Script Execution options
-	===============================
+	## Special Script Execution options
+	===================================
 	To maintain the correctness of the test execution all scripts are executed with special options set:
 	
 	errexit: Exit immediately if a pipeline (which may consist of a single simple command),  a sub-shell command enclosed 
@@ -315,8 +318,8 @@ function manpage () {
 	sub-directories. If the pattern is followed by a /, only directories and sub-directories match
 
 
-	Test Case Result
-	================
+	## Test Case Result
+	===================
 	To signal an error or an failure of a test case the user defined test function may either set the variables:
 	- errorOccurred
 	- failureOccurred
@@ -327,8 +330,8 @@ function manpage () {
 	
 	To signal the success of a test case just leave the function with return 0.
 	
-	Skip Test Cases
-	===============
+	## Skip Test Cases
+	==================
 	A test case is skipped if the property TTPN_skip is defined. This property may be set :
 	- In the initialization or preparation phase of an test collection variant - this disables all cases of this collection variant
 	- In the initialization or preparation phase of an test suite variant - this disables all cases of this suite variant
@@ -337,8 +340,8 @@ function manpage () {
 	Alternatively the existence of an file SKIP in the test case directory inhibits this case (all variants)
 
 
-	Sequence Control
-	================
+	## Sequence Control
+	===================
 	The Test Collection, each Test Suite variant and each Test Case variant are executed in an own environment. 
 	The global variables and properties (TT.. variables) are inherited from Test Collection to Suite and to Case.
 	
