@@ -18,11 +18,26 @@ while read -p "Is this correct: y/e "; do
 	fi
 done
 
+commitstatus=$(git status --porcelain)
+if [[ $commitstatus ]]; then
+	echo "Repository has uncommited changes:"
+	echo "$commitstatus"
+	read -p "To produce the release anyay press y/Y";
+	if [[ $REPLY != "y" && $REPLY != "Y" ]]; then
+		echo "Abort"
+		exit 1
+	fi
+fi
+
+commithash=$(git rev-parse HEAD)
+echo "RELEASE.INFO commithash=$commithash"
+echo "commithash=$commithash" > RELEASE.INFO
+
 mkdir -p "$releasdir"
 
 fname="testframeInstaller_v${TTRO_version}.sh"
 
-tar cvJf "$releasdir/tmp.tar.xz" bin samples README.TXT
+tar cvJf "$releasdir/tmp.tar.xz" bin samples README.md RELEASE.INFO
 
 cat tools/selfextract.sh releases/tmp.tar.xz > "$releasdir/$fname"
 
