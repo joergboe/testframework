@@ -124,7 +124,7 @@ collection initialization. (The framework sources the tools modules before the p
 
 ## Test File Preamble
 The definition of the variables and properties must have the form:
-#--<name>=<value>
+#--name=value
 No spaces are allowed between name '=' and value.
 The assignment is literally executed. That means no expansion and no word splitting is performed and no quoting is required.
 Quoting is allowed. (There is a quote removal)
@@ -137,10 +137,10 @@ the TestCollection.sh file.
 The appropriate file must have either no variant variable, a variantCount variable or a variantList variable.
 
 The variantCount must be in the form:
-#--variantCount=<number>
+#--variantCount=number
 
 The variantList must be a space separated list of identifiers or numbers or a mixture of identifiers and numbers:
-#--variantList=<list>
+#--variantList=list
 
 ## Test Case timeouts
 Each test case can define an individual timeout variable. When the timeout is reached for an test case, 
@@ -153,7 +153,7 @@ If there is no individual timeout defined, the default values TTP_timeout is use
 Variables with the prefix TT_, TTRO_, TTP_ or TTPN_ are treated as global definitions and they are exported from 
 Test Collection to Test Suite and from Test Suite to Test Case.
 
-In the script code section, variables and properties can be assigned with function setVar '<name>' "<value>".
+In the script code section, variables and properties can be assigned with function setVar 'name' "value".
 
 ## Property Variables
 Property variables are not changed once they have been defined. Re-definition of property variables will be ignored. 
