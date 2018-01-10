@@ -18,6 +18,10 @@ export PATH="<location of test framework>/bin:$PATH"
 
 Whats new:
 ----------
+Version 1.0.1
+- corrections in selftest
+
+
 Version 1.0.0:
 - re-name TestProperties to TestProperties.sh
 - Removed propertie section in preamble, all properties moved to script section

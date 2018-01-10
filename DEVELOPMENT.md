@@ -7,11 +7,16 @@ source controlled
 - tools    - contains tools for the creation of the release package
 
 not source controlled
-- releases - releaase packages goes here
+- releases - release packages goes here
 - runTTWorkdir - work directory with test results and test artifacts
 
+
+- doc      - md documentation. Folder is ignored in master branch but controlled in gh-pages branch
+
 # Create a release package:
+- Update version info in bin/version.sh
 - create a release tag vx.y.z
+- clean up your workspace and commit all changes
 - execute the script buildReleasePackage.sh in the workspace directory
 
 # Installation:

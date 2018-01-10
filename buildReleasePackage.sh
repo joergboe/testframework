@@ -23,7 +23,7 @@ commitstatus=$(git status --porcelain)
 if [[ $commitstatus ]]; then
 	echo "Repository has uncommited changes:"
 	echo "$commitstatus"
-	read -p "To produce the release anyay press y/Y";
+	read -p "To produce the release anyway press y/Y";
 	if [[ $REPLY != "y" && $REPLY != "Y" ]]; then
 		echo "Abort"
 		exit 1
