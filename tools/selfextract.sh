@@ -151,7 +151,8 @@ rm -f "${destination}/bin/runTTF"
 rm -f "${destination}/bin/runTTF$major"
 rm -f "${destination}/bin/runTTF$major.$minor"
 #move to target
-mv "$tempdir/README.TXT" "${destination}"
+mv "$tempdir/README.md" "${destination}"
+mv "$tempdir/RELEASE.INFO" "${destination}"
 mv $tempdir/samples/* $sampledir
 mv $tempdir/bin/* $bindir
 #remove temp folfer

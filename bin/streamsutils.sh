@@ -31,14 +31,14 @@ if declare -p STREAMS_ZKCONNECT &> /dev/null && [[ -n $STREAMS_ZKCONNECT ]]; the
 else
 	setVar TTPN_streamsZkConnect ""
 fi
-echo "$FUNCNAME: TTPN_streamsZkConnect=$TTPN_streamsZkConnect"
+echo "streamsutilsInitialization: TTPN_streamsZkConnect=$TTPN_streamsZkConnect"
 if declare -p STREAMS_DOMAIN_ID &> /dev/null && [[ -n $STREAMS_DOMAIN_ID ]]; then
 	setVar TTPN_streamsDomainId "$STREAMS_DOMAIN_ID"
-	echo "$FUNCNAME: TTPN_streamsDomainId=$TTPN_streamsDomainId"
+	echo "streamsutilsInitialization: TTPN_streamsDomainId=$TTPN_streamsDomainId"
 fi
 if declare -p STREAMS_INSTANCE_ID &> /dev/null && [[ -n $STREAMS_INSTANCE_ID ]]; then
 	setVar TTPN_streamsInstanceId "$STREAMS_INSTANCE_ID"
-	echo "$FUNCNAME: TTPN_streamsInstanceId=$TTPN_streamsInstanceId"
+	echo "streamsutilsInitialization: TTPN_streamsInstanceId=$TTPN_streamsInstanceId"
 fi
 # test var to check duplicate init
 #setVar 'TTRO_ttt' '55'

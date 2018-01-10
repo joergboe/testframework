@@ -18,6 +18,9 @@ export PATH="<location of test framework>/bin:$PATH"
 
 Whats new:
 ----------
+Version 1.0.2
+- correction in streams initialization
+
 Version 1.0.1
 - corrections in selftest
 
