@@ -11,7 +11,6 @@ declare -r errSigint=130
 #constants
 declare -r DEFAULT_WORKDIR='runTTFWorkdir'
 declare -r TEST_PROPERTIES="TestProperties.sh"
-declare -r TEST_COLLECTION_FILE="TestCollection.sh"
 declare -r TEST_SUITE_FILE="TestSuite.sh"
 declare -r TEST_CASE_FILE="TestCase.sh"
 #declare -r TEST_TOOLS_FILE="TestTools.sh"

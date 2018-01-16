@@ -85,181 +85,119 @@ function optionInParamSection {
 	exit ${errInvocation}
 }
 
+# Scan scan directory structure and search for suites
+# $1 the directory to scan
+# $2 the index of the current suite
 #
-# Search for test suites. Suites are directories with a suite definition file $TEST_SUITE_FILE
-# Use global caseMap and noSuites
-function searchSuites {
-	local suite=""
-	local myPath=""
-	local x
-	isDebug && printDebug "******* $FUNCNAME in directory ${directory}"
-	for x in ${directory}/**/$TEST_SUITE_FILE; do
-		if [[ -f $x || -h $x ]]; then # recognize links to
-			isDebug && printDebug "Found Suite properties file ${x}"
-			suite=""; myPath="";
-			myPath="${x%/$TEST_SUITE_FILE}"
-			if [[ $x == *\ * ]]; then
-				printErrorAndExit "Invald path : $x\nPathes must not contain spaces." ${errRt}
-			fi
-			suite="${myPath##*/}" # suite name is the last part of the path
-			isDebug && printDebug "Found Suite ${suite}"
-			#enter an empty value here
-			caseMap["${myPath}"]="" #enter an empty value here
-			noSuites=$(( noSuites+1 ))
-		fi
-	done
-	return 0
-}
-
+# Function uses the global variables:
+# suitesIndex: It increments suitesIndex once the enterd directory is a suitesIndex
+#              suitesIndex=0 indicates the dummy suite
+# suitesPath: The array with the absolute pathes of the suites index=0 is the dunmy suite
+# level0Suites: The space separated list with the root suite indexes
+# childSuites: The global map: key is the index of the suite and value is the space separated list of child suite indexes
+# childCases:  The global map: key is the index of the suite and value is the space separated list of (child) case indexes 
+# casesIndex: The global index of the next cases
+# casesPath:  The array with the absolute pathes to the cases
 #
-# check nested suite and duplicate test suite names. This is considered an error
-# Use global caseMap
-function checkSuiteList {
-	local n1 n2 i j
-	isDebug && printDebug "******* $FUNCNAME"
-	for i in ${!caseMap[@]}; do
-		for j in ${!caseMap[@]}; do
-			#skip same entries
-			if [ $i != $j ]; then
-				#check for nested suites
-				if [[ ( ${i} == ${j}* ) || ( ${j} == ${i}* ) ]]; then
-					printErrorAndExit "Nested suites found\n$i\n$j\nSuites must not be nested" ${errRt}
-				fi
-				#check for equal names
-				n1="${i##*/}"; n2="${j##*/}"
-				if [ ${n1} == ${n2} ]; then
-					printErrorAndExit "Same suite name found in \n$i\n$j" ${errRt}
-				fi
-			fi
-		done
-	done
-	return 0
-}
-
-#
-#search test cases. Cases are sub directories in suites with a case definition file $TEST_CASE_FILE
-#cases are entered as value into the caseMap as space separated list 
-#Check for duplicates and nested elements
-# Use global caseMap
-function searchCases {
-	local case="" casePath=""
-	local -i noCases=0
-	local myPath x tmp n1 n2 i j
-	local suite allSuites insertCase
-	local allRegularCases=''
-	isDebug && printDebug "******* $FUNCNAME"
-	allSuites="${!caseMap[@]} $TTRO_inputDir" # add dummy suite as last element
-	for myPath in $allSuites; do
-		if [[ $myPath == $TTRO_inputDir ]]; then
-			suite='--'
-			caseMap[$myPath]='' #add dummy suite
+# Function uses the variables of the actual parent
+# childSuitesIndex: the index of the next child suite in the current suite
+# 
+function scan {
+	isDebug && printDebug "******* $FUNCNAME dir to scan='$1' index of the parent suite $2 path of the parent suite=${suitesPath[$2]}"
+	local parentSuite="$2"
+	local mypath
+	local dirlist=()
+	local isSuite=''
+	local isCase=''
+	local mySuiteIndex="$2"
+	local parentPath="${suitesPath[$parentSuite]}"
+	if [[ $1 == *[[:space:]]* ]]; then
+		printErrorAndExit "Pathes must not have spaces wrong component $1" ${errRt}
+	fi
+	for mypath in $1/*; do
+		isDebug && printDebug "'$mypath'"
+		local filename="${mypath##*/}"
+		local mybase="${mypath%/*}"
+		isDebug && printDebug "filename='$filename' mybase='$mybase'"
+		if [[ -d $mypath ]]; then
+			dirlist+=("$mypath")
 		else
-			suite="${myPath##*/}"
-		fi
-		isDebug && printDebug "search in suite: $suite $myPath"
-		noCases=0
-		for x in ${myPath}/**/$TEST_CASE_FILE; do
-			if [[ -f $x || -h $x ]]; then # recognize also links to
-				isDebug && printDebug "Found test case file ${x}"
-				case=""
-				casePath="${x%/$TEST_CASE_FILE}"
-				isDebug && printDebug "Found case $case"
-				if [[ $x == *\ * ]]; then
-					"Invald path : $x\nPathes must not contain spaces." ${errRt}
+			if [[ $filename == $TEST_SUITE_FILE ]]; then
+				isSuite='true'
+				suitesPath[$suitesIndex]="$mybase"
+				childSuitesIndex=$((childSuitesIndex+1))
+				childSuites[$parentSuite]="${childSuites[$parentSuite]}$suitesIndex "
+				childSuites[$suitesIndex]=''
+				childCases[$suitesIndex]=''
+				mySuiteIndex="$suitesIndex"
+				if [[ parentSuite -eq 0 ]]; then
+					level0Suites="${level0Suites}${suitesIndex} "
 				fi
-				case="${casePath##*/}"
-				insertCase='true'
-				if [[ $suite != '--' ]]; then
-					allRegularCases="$allRegularCases $x"
+				local rpath="${mybase#$parentPath/}"
+				suitesRPath[$suitesIndex]="$rpath"
+				executeSuite[$suitesIndex]=''
+				suitesIndex=$((suitesIndex+1))
+				isDebug && printDebug "Suite found state of childSuites:"
+				#declare -p childSuites
+			elif [[ $filename == $TEST_CASE_FILE ]]; then
+				if [[ $isSuite ]]; then
+					printError "ERROR ignore Suite and Case in one directory in $mybase"
 				else
-					##remove already found cases in regular suites from dummy suite
-					for i in $allRegularCases; do
-						if [[ $x == $i* ]]; then
-							isDebug && printDebug "Dummy suite case $x is already recognized in sute/case $i"
-							insertCase=''
-							break
-						fi
-					done
-				fi
-				if [[ -n $insertCase ]]; then
-					#put case into caseMap
-					tmp="${caseMap["$myPath"]} ${casePath}"
-					caseMap["$myPath"]="${tmp}"
-					noCases=$(( noCases+1 ))
+					isCase='true'
+					casesPath[$casesIndex]="$mybase"
+					childCases[$parentSuite]="${childCases[$parentSuite]}$casesIndex "
+					local rpath="${mybase#$parentPath/}"
+					casesRPath[$casesIndex]="$rpath"
+					executeCase[$casesIndex]=''
+					casesIndex=$((casesIndex+1))
+					isDebug && printDebug "Case found state of childCases:"
+					#declare -p childCases
 				fi
 			fi
-		done
-		isDebug && printDebug "$noCases test cases found in $myPath"
+		fi
+	done
+	#declare -p dirlist
+	if [[ "$isSuite" ]]; then
+		local childSuitesIndex=0;
+	fi
+	local i
+	for ((i=0;i<${#dirlist[@]};i++)); do
+		scan "${dirlist[$i]}" "$mySuiteIndex"
+	done
+	isDebug && printDebug "Leave $FUNCNAME $1 childSuitesIndex=$childSuitesIndex"
+	return 0
+}
 
-		# check nested case and duplicate test case names
-		for i in ${caseMap["$myPath"]}; do
-			for j in ${caseMap["$myPath"]}; do
-				#skip same entries
-				if [ "$i" != "$j" ]; then
-					#check for nested cases
-					isDebug && printDebug "check for nested cases $i $j"
-					if [[ ${i} == ${j} ]]; then
-						printErrorAndExit "Nested case found\n$i\n$j\nTest cases must not be nested" ${errRt}
-					fi
-					#check for same names
-					n1="${i##*/}"; n2="${j##*/}"
-					if [ "${n1}" == "${n2}" ]; then
-						printErrorAndExit "Same test case name found in \n$i\n$j" ${errRt}
-					fi
-				fi
-			done
-		done
+# print found suites and cases
+# $1 suite index to print
+# $2 ident
+function printSuitesCases {
+	isDebug && printDebug "******* $FUNCNAME $1 $2"
+	local ident="$2"
+	local spacer=''
+	local i
+	for ((i=0; i<ident; i++)); do spacer="${spacer}"$'\t'; done
+	printDebug "${spacer}S: ${suitesPath[$1]} rpath=${suitesRPath[$1]}"
+	local li=${childCases[$1]}
+	local x
+	for x in $li; do
+		printDebug "${spacer}C: ${casesPath[$x]} rpath=${casesRPath[$x]}"
+	done
+	li=${childSuites[$1]}
+	local x
+	local i2=$((ident+1))
+	for x in $li; do
+		printSuitesCases "$x" "i2"
 	done
 	return 0
 }
 
-#
-# Sort cases alphabetical and determine the final execution list
-# Use global sortedSuites as input for suites (array)
-# Use caseMap input map with cases found in file  system
-# Use global cases the as input for case pattern (array)
-# Use global executionList as output for found test cases to be executed
-# Use global usedCaseIndexList the indexes of used cases forom cases array
-# Use global noCases the number of found cases
-function sortCases {
-	local myPath suite x casePath case tmpx tmp
-	local -i i j
-	for ((i=0; i<${#sortedSuites[@]}; i++)); do
-		myPath="${sortedSuites[$i]}"
-		isDebug && printDebug "*********** take suite=${myPath}"
-		if [[ $myPath == $TTRO_inputDir ]]; then
-			suite=''
-		else
-			suite=${myPath##*/}
-		fi
-		executionList["$myPath"]=""
-		declare -a sortedCases=$( { for x in ${caseMap["$myPath"]}; do echo "$x"; done } | sort )
-		isDebug && printDebug "sortedCases=\n$sortedCases\n**********"
-		for casePath in ${sortedCases}; do
-			case=${casePath##*/}
-			isDebug && printDebug "check if case=${case} matches"
-			if [[ -n "$takeAllCases" ]]; then
-				isDebug && printDebug "direct insert case=${case} into execution list"
-				executionList["$myPath"]+=" ${casePath}"
-				noCases=$((noCases+1))
-			else
-				# lookup if case matches one pattern from parameter list
-				tmpx="${!cases[@]}"
-				for ((j=0; j<${#cases[@]}; j++)); do
-					tmp="${suite}::${case}"
-					isDebug && printDebug "tmp='$tmp'"
-					isDebug && printDebug "case='${cases[$j]}'"
-					if [[ $tmp == ${cases[$j]} ]]; then
-						isDebug && printDebug "conditional insert case=${case} into execution list"
-						executionList["$myPath"]+=" ${casePath}"
-						noCases=$((noCases+1))
-						usedCaseIndexList=" $j"
-					fi
-				done
-			fi
-		done
-	done
-	return 0
+# Checks for every case if there was a matching enty in cases array
+# $1 current suite index
+function checkCaseMatch {
+	isDebug && printDebug "******* $FUNCNAME $1"
+	local i
+	#for ((i=0; i<
 }
 
 #

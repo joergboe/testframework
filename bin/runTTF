@@ -351,13 +351,9 @@ fixPropsVars
 printParams
 
 #-----------------------------------------------------------------------------------------
-# Check test collection files and properies file if properties parameter was given
-tmp="$TTRO_inputDir/$TEST_COLLECTION_FILE"
-if [[ -r "$tmp" ]]; then
-	isVerbose && echo "Found readable test collection file $tmp"
-else
-	printErrorAndExit "No test collection file $tmp found" $errRt
-fi
+
+#-----------------------------------------------------------------------------------------
+# Check test properies file if properties parameter was given
 if [[ -n "$properties" ]]; then
 	if [[ -r "$properties" ]]; then
 		isVerbose && echo "Found readable test properties file $properties"
@@ -368,52 +364,36 @@ fi
 
 #-----------------------------------------------------------------------------------------
 # search test suites. Suites are directories with a suite definition file $TEST_SUITE_FILE
-declare -A caseMap=() # The case map; key is the suite path; value is the case path list (space separated)
-declare -i noSuites=0 # the global number of suites
+# globals for searches
+declare suitesIndex=0      #the global index of the next suite
+declare level0Suites=''    #the list of all level 0 suites
+declare -a suitesPath=()   #the array with all suites pathes
+declare -a suitesRPath=()  #the path relative to the input dir or parent suite
+declare -a executeSuite=() #true if this suite is to execute
+declare -a childSuites=()  #the array with the list of all sub-suites for every suite index
+declare casesIndex=0       #the global index of the next case
+declare -a casesPath=()    #the array with all case pathes
+declare -a casesRPath=()   #the path relative to suite or input dir (dummy suite)
+declare -a executeCase=()  #execute the case
+declare -a childCases=()  #the array with the list of all cases for each suite index
 if [[ -z $TTRO_reference ]]; then
-	searchSuites
-	if arrayHasKey "caseMap" "$TTRO_inputDir"; then
-		printErrorAndExit "No $TEST_SUITE_FILE allowed in input dir $TTRO_inputDir" $errRt
-	fi
-#	isDebug && printDebug "Enter Dummy Suite ${TTRO_inputDir}"
-#	caseMap["$TTRO_inputDir"]=''	#enter dummy suite
-#	noSuites=$((noSuites+1))
+	#initialize the globals for dummy suite
+	suitesIndex=1             #dummy suite is index 0
+	level0Suites='0 '         #dummy suite is the first level 0 suite
+	suitesPath[0]="$TTRO_inputDir" #the dummy suite path
+	suitesRPath[0]=''
+	childSuites[0]=''
+	childCases[0]=''
+	#global level 0 cild suites counter
+	declare childSuitesIndex=0
+	scan "$TTRO_inputDir" "0"
 fi
-isDebug && printDebug "$noSuites suites found"
-checkSuiteList # check nested suite and duplicate test suite names. This is considered an error
+declare -r noSuites=$((suitesIndex-1))
+isDebug && printDebug "$noSuites suites found $casesIndex cases found"
 # print suites
 if isDebug; then
-	printDebug "******************* test suites found *******************"
-	for x in ${!caseMap[@]}; do
-		if [[ "$TTRO_inputDir" == "$x" ]]; then
-			tmp='--'
-		else
-			tmp=${x##*/}
-			if [[ $tmp == '--' ]]; then
-				printErrorAndExit "Suite must not have name '--'" $errRt
-			fi
-		fi
-		printDebug "${tmp}\t\t${x}"
-	done
-fi
-
-#----------------------------------------------------------------------------------------------------
-#search test cases. Cases are sub directories in suites with a case definition file $TEST_CASE_FILE
-searchCases
-# print cases
-if isDebug; then
-	printDebug "******************* test cases found *******************"
-	for x in ${!caseMap[@]}; do
-		if [[ "$TTRO_inputDir" == "$x" ]]; then
-			tmp='--'
-		else
-			tmp=${x##*/}
-		fi
-		printDebug "Suite: $tmp"
-		for y in ${caseMap["$x"]}; do
-			printDebug "$y"
-		done
-	done
+	printDebug "******************* test suites/cases found *******************"
+	printSuitesCases 0 0
 fi
 
 #------------------------------------------
