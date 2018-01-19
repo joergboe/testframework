@@ -375,7 +375,9 @@ declare casesIndex=0       #the global index of the next case
 declare -a casesPath=()    #the array with all case pathes
 declare -a casesRPath=()   #the path relative to suite or input dir (dummy suite)
 declare -a executeCase=()  #execute the case
-declare -a childCases=()  #the array with the list of all cases for each suite index
+declare -a childCases=()   #the array with the list of all cases for each suite index
+declare noCases=0          #number of found cases
+declare noSuites=0         #number of found suites
 if [[ -z $TTRO_reference ]]; then
 	#initialize the globals for dummy suite
 	suitesIndex=1             #dummy suite is index 0
@@ -384,24 +386,30 @@ if [[ -z $TTRO_reference ]]; then
 	suitesRPath[0]=''
 	childSuites[0]=''
 	childCases[0]=''
+	executeSuite[0]=''
 	#global level 0 cild suites counter
 	declare childSuitesIndex=0
 	scan "$TTRO_inputDir" "0"
 fi
 declare -r noSuites=$((suitesIndex-1))
-isDebug && printDebug "$noSuites suites found $casesIndex cases found"
+declare -r noCases="$casesIndex"
+isDebug && printDebug "$noSuites suites found and $noCases cases found"
 # print suites
 if isDebug; then
-	printDebug "******************* test suites/cases found *******************"
-	printSuitesCases 0 0
+	printDebug "******************* test suites/cases found in $TTRO_inputDir *******************"
+	printSuitesCases 0 0 '' 'true'
+	printDebug "*********************************************************************************"
+	declare -p suitesPath
+	declare -p childSuites
+	declare -p casesPath
+	declare -p childCases
 fi
 
 #------------------------------------------
 #The final list with test cases to execute
-declare -A executionList=() # the cases to execute
-declare    usedCaseIndexList='' # the list with the found cases
-declare -i noCases=0
-declare -a sortedSuites=()
+declare -i noCasesToExecute=0
+declare -i noSuitesToExecute=0
+declare usedCaseIndexList=''
 #if the command line has no case list, all found cases are executed
 #otherwise all matching cases found are executed
 #if there is a case list on the command line, the skip attributes of test cases and suites are ignored
@@ -412,32 +420,31 @@ if [[ ${#cases[@]} -eq 0 ]]; then
 		declare -rx TTRO_skipIgnore=""
 	fi
 	takeAllCases="true"
+	for ((i=0; i<${#executeSuite[@]}; i++)); do
+		executeSuite[$i]='true'
+	done
+	for ((i=0; i<${#executeCase[@]}; i++)); do
+		executeCase[$i]='true'
+	done
 else
 	declare -rx TTRO_skipIgnore="true"
 	takeAllCases=""
-fi
-
-#-----------------------------------------
-#sort suites alphabetical
-isDebug && printDebug "****************** sort suites ***********************"
-tmp=$( { for x in ${!caseMap[@]}; do echo "$x"; done } | sort )
-
-sortedSuites+=( "${TTRO_inputDir}" ) # add dummy suite
-for x in $tmp; do
-	if [[ "$x" != "$TTRO_inputDir" ]]; then
-		sortedSuites+=( "${x}" )
-	fi
-done
-if isDebug; then
-	printDebug "Sorted suites count=${#sortedSuites[@]}"
-	for ((i=0; i<${#sortedSuites[@]}; i++)); do
-		printDebug ${sortedSuites[$i]}
+	for x in $level0Suites; do
+		declare caseToExecuteParent=''
+		checkCaseMatch "$x" '0' "${suitesRPath[$x]}"
+		if [[ -n $caseToExecuteParent ]]; then
+			executeSuite[$x]='true'
+		fi
 	done
 fi
+#declare -p executeSuite
+#declare -p executeCase
 
-#------------------------------------------
-#sort cases alphabetical
-sortCases
+for ((i=0; i<${#executeSuite[@]}; i++)); do
+	if [[ -n ${executeSuite[$i]} ]]; then
+		noSuitesToExecute=$((noSuitesToExecute+1))
+	fi
+done
 
 #--------------------------------------------------
 #check whether cases from input list are not found
@@ -456,24 +463,17 @@ done
 
 #--------------------------------------------------
 #guard the lists
-readonly noCases executionList sortedSuites
+readonly suitesIndex level0Suites suitesPath suitesRPath executeSuite childSuites
+readonly casesPath casesRPath executeCase childCases
+readonly noCases noSuites noCasesToExecute noSuitesToExecute
 
 #--------------------------------------------------
 # print final execution list and prompt
-echo "**** Collected Cases Summary: ${noCases} test cases to execute ****"
-for ((i=0; i<${#sortedSuites[@]}; i++)); do
-	suitePath="${sortedSuites[$i]}"
-	if [[ $suitePath == $TTRO_inputDir ]]; then
-		suite='--'
-	else
-		suite=${suitePath##*/}
-	fi
-	echo "Suite: $suite path=$suitePath ----"
-	for casePath in ${executionList[$suitePath]}; do
-		case=${casePath##*/}
-		echo -e "\tCase: $case path=${casePath}"
-	 done
-done
+if isDebug; then
+	echo "******************* $noSuitesToExecute (dummy) suites and $noCasesToExecute cases to execute in $TTRO_inputDir *******************"
+	printSuitesCases 0 0 'true' ''
+fi
+
 echo "********************************************************"
 if [[ $noprompt == "" ]]; then
 	while read -p "Continue or exit? y/e "; do

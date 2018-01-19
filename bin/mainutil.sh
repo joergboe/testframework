@@ -168,36 +168,85 @@ function scan {
 	return 0
 }
 
-# print found suites and cases
+# print found suites and cases recursiv
 # $1 suite index to print
 # $2 ident
+# $3 if true: print only the cases/suites to execute
+# $4 if true print debug
 function printSuitesCases {
-	isDebug && printDebug "******* $FUNCNAME $1 $2"
+	#isDebug && printDebug "******* $FUNCNAME $1 $2 $3 $4"
 	local ident="$2"
 	local spacer=''
 	local i
 	for ((i=0; i<ident; i++)); do spacer="${spacer}"$'\t'; done
-	printDebug "${spacer}S: ${suitesPath[$1]} rpath=${suitesRPath[$1]}"
+	if [[ -z $3 || -n ${executeSuite[$1]} ]]; then
+		if [[ -n $4 ]]; then
+			printDebug "${spacer}S: ${suitesPath[$1]} rpath=${suitesRPath[$1]}"
+		else
+			echo "${spacer}S: ${suitesRPath[$1]}"
+		fi
+	fi
 	local li=${childCases[$1]}
 	local x
 	for x in $li; do
-		printDebug "${spacer}C: ${casesPath[$x]} rpath=${casesRPath[$x]}"
+		if [[ -z $3 || -n ${executeCase[$x]} ]]; then
+			if [[ -n $4 ]]; then
+				printDebug "${spacer}  C: ${casesPath[$x]} rpath=${casesRPath[$x]}"
+			else
+				echo "${spacer}  C: ${casesRPath[$x]}"
+			fi
+		fi
 	done
 	li=${childSuites[$1]}
 	local x
 	local i2=$((ident+1))
 	for x in $li; do
-		printSuitesCases "$x" "i2"
+		printSuitesCases "$x" "i2" "$3" "$4"
 	done
 	return 0
 }
 
 # Checks for every case if there was a matching enty in cases array
 # $1 current suite index
+# $2 suite depth
+# $3 R path of parent suites
 function checkCaseMatch {
-	isDebug && printDebug "******* $FUNCNAME $1"
-	local i
-	#for ((i=0; i<
+	isDebug && printDebug "******* $FUNCNAME $*"
+	local i j
+	local y
+	local caseToExecuteHere=''
+	for i in ${childCases[$1]}; do
+		y="${3}::${casesRPath[$i]}"
+		isDebug && printDebug "search patter for case=$y"
+		for ((j=0; j<${#cases[*]}; j++)); do
+			local pattern="${cases[$j]}"
+			isDebug && printDebug "check match for case: ${pattern}"
+			if [[ $y == $pattern ]]; then
+				isDebug && printDebug "match found for case: ${pattern}"
+				executeCase[$i]='true'
+				usedCaseIndexList="$usedCaseIndexList $j"
+				noCasesToExecute=$((noCasesToExecute+1))
+				caseToExecuteHere='true'
+				break
+			fi
+		done
+	done
+	local newDeth=$(($2+1))
+	local x
+	local caseToExecuteInSuites=''
+	for x in ${childSuites[$1]}; do
+		local spath="$3/${suitesRPath[$x]}"
+		local caseToExecuteParent=''
+		checkCaseMatch "$x" "$newDeth" "$spath"
+		if [[ -n $caseToExecuteParent ]]; then
+			caseToExecuteInSuites='true'
+		fi
+	done
+	if [[ ( -n $caseToExecuteHere ) || ( -n $caseToExecuteInSuites ) ]]; then
+		isDebug && printDebug "execute suite $1 ${suitesRPath[$1]}"
+		caseToExecuteParent='true'
+		executeSuite[$1]='true'
+	fi
 }
 
 #
