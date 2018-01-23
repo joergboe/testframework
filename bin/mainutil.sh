@@ -191,9 +191,9 @@ function printSuitesCases {
 	for x in $li; do
 		if [[ -z $3 || -n ${executeCase[$x]} ]]; then
 			if [[ -n $4 ]]; then
-				printDebug "${spacer}  C: ${casesPath[$x]} rpath=${casesRPath[$x]}"
+				printDebug "${spacer}    C: ${casesPath[$x]} rpath=${casesRPath[$x]}"
 			else
-				echo "${spacer}  C: ${casesRPath[$x]}"
+				echo "${spacer}    C: ${casesRPath[$x]}"
 			fi
 		fi
 	done

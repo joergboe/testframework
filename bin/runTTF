@@ -470,7 +470,7 @@ readonly noCases noSuites noCasesToExecute noSuitesToExecute
 #--------------------------------------------------
 # print final execution list and prompt
 if isDebug; then
-	echo "******************* $noSuitesToExecute (dummy) suites and $noCasesToExecute cases to execute in $TTRO_inputDir *******************"
+	echo "******************* $noSuitesToExecute suites (incl dummy) and $noCasesToExecute cases to execute in $TTRO_inputDir *******************"
 	printSuitesCases 0 0 'true' ''
 fi
 
@@ -491,9 +491,15 @@ declare -xr TTRO_collection="${TTRO_inputDir##*/}"
 echo  "**** START: Test execution collection $TTRO_collection ******************************************************************"
 #-----------------------
 #export execution lists
-TTRO_sortedSuites=$(declare -p sortedSuites)
-TTRO_executionList=$(declare -p executionList)
-export TTRO_sortedSuites TTRO_executionList
+export TTRO_level0Suites="$level0Suites"
+export TTRO_suitesPath=$(declare -p suitesPath)
+export TTRO_suitesRPath=$(declare -p suitesRPath)
+export TTRO_executeSuite=$(declare -p executeSuite)
+export TTRO_childSuites=$(declare -p childSuites)
+export TTRO_casesPath=$(declare -p casesPath)
+export TTRO_casesRPath=$(declare -p casesRPath)
+export TTRO_executeCase=$(declare -p executeCase)
+export TTRO_childCases=$(declare -p childCases)
 
 #----------------
 #make output dir
