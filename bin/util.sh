@@ -89,6 +89,7 @@ TTRO_help_printTestframeEnvironment="
 # print special testrame environment"
 function printTestframeEnvironment {
 	echo "**** Testframe Environment ****"
+	echo "PWD=$PWD"
 	local x
 	for x in 'PREPS' 'STEPS' 'FINS'; do
 		if declare -p "$x" &> /dev/null; then
@@ -109,7 +110,9 @@ function printTestframeEnvironment {
 	for x in "${!TTPN_@}"; do
 		echo "${x}='${!x}'"
 	done
-	echo "PWD=$PWD"
+	for x in "${!TTXX_@}"; do
+		echo "${x}='${!x}'"
+	done
 	echo "*******************************"
 }
 

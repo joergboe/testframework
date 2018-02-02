@@ -91,13 +91,14 @@ function optionInParamSection {
 #
 # Function uses the global variables:
 # suitesIndex: It increments suitesIndex once the enterd directory is a suitesIndex
-#              suitesIndex=0 indicates the dummy suite
-# suitesPath: The array with the absolute pathes of the suites index=0 is the dunmy suite
-# level0Suites: The space separated list with the root suite indexes
+#              suitesIndex=0 indicates the root suite
+# suitesPath: The array with the absolute pathes of the suites index=0 is the root
+# suitesRPath: The logical name of the suite
 # childSuites: The global map: key is the index of the suite and value is the space separated list of child suite indexes
 # childCases:  The global map: key is the index of the suite and value is the space separated list of (child) case indexes 
 # casesIndex: The global index of the next cases
 # casesPath:  The array with the absolute pathes to the cases
+# casesName:  The logical name of the case
 #
 # Function uses the variables of the actual parent
 # childSuitesIndex: the index of the next child suite in the current suite
@@ -112,7 +113,7 @@ function scan {
 	local mySuiteIndex="$2"
 	local parentPath="${suitesPath[$parentSuite]}"
 	if [[ $1 == *[[:space:]]* ]]; then
-		printErrorAndExit "Pathes must not have spaces wrong component $1" ${errRt}
+		printErrorAndExit "Pathes must not have spaces! Wrong component is $1" ${errRt}
 	fi
 	for mypath in $1/*; do
 		isDebug && printDebug "'$mypath'"
@@ -123,23 +124,27 @@ function scan {
 			dirlist+=("$mypath")
 		else
 			if [[ $filename == $TEST_SUITE_FILE ]]; then
-				isSuite='true'
-				suitesPath[$suitesIndex]="$mybase"
-				childSuitesIndex=$((childSuitesIndex+1))
-				childSuites[$parentSuite]="${childSuites[$parentSuite]}$suitesIndex "
-				childSuites[$suitesIndex]=''
-				childCases[$suitesIndex]=''
-				mySuiteIndex="$suitesIndex"
-				if [[ parentSuite -eq 0 ]]; then
-					level0Suites="${level0Suites}${suitesIndex} "
+				if [[ $mybase == $TTRO_inputDir ]]; then
+					printWarning "$TEST_SUITE_FILE found in top level directory: Probably you start not from the root of your test collection $1"
+				else 
+					isSuite='true'
+					suitesPath[$suitesIndex]="$mybase"
+					childSuitesIndex=$((childSuitesIndex+1))
+					childSuites[$parentSuite]="${childSuites[$parentSuite]}$suitesIndex "
+					childSuites[$suitesIndex]=''
+					childCases[$suitesIndex]=''
+					mySuiteIndex="$suitesIndex"
+					local rpath="${mybase#$parentPath/}"
+					suitesName[$suitesIndex]="$rpath"
+					executeSuite[$suitesIndex]=''
+					suitesIndex=$((suitesIndex+1))
+					isDebug && printDebug "Suite found state of childSuites:"
+					#declare -p childSuites
 				fi
-				local rpath="${mybase#$parentPath/}"
-				suitesRPath[$suitesIndex]="$rpath"
-				executeSuite[$suitesIndex]=''
-				suitesIndex=$((suitesIndex+1))
-				isDebug && printDebug "Suite found state of childSuites:"
-				#declare -p childSuites
 			elif [[ $filename == $TEST_CASE_FILE ]]; then
+				if [[ $mybase == $TTRO_inputDir ]]; then
+					printErrorAndExit "$TEST_CASE_FILE is not allowed in top level directory $1" $errInvocation
+				fi
 				if [[ $isSuite ]]; then
 					printError "ERROR ignore Suite and Case in one directory in $mybase"
 				else
@@ -147,7 +152,7 @@ function scan {
 					casesPath[$casesIndex]="$mybase"
 					childCases[$parentSuite]="${childCases[$parentSuite]}$casesIndex "
 					local rpath="${mybase#$parentPath/}"
-					casesRPath[$casesIndex]="$rpath"
+					casesName[$casesIndex]="$rpath"
 					executeCase[$casesIndex]=''
 					casesIndex=$((casesIndex+1))
 					isDebug && printDebug "Case found state of childCases:"
@@ -181,9 +186,9 @@ function printSuitesCases {
 	for ((i=0; i<ident; i++)); do spacer="${spacer}"$'\t'; done
 	if [[ -z $3 || -n ${executeSuite[$1]} ]]; then
 		if [[ -n $4 ]]; then
-			printDebug "${spacer}S: ${suitesPath[$1]} rpath=${suitesRPath[$1]}"
+			printDebug "${spacer}S: ${suitesPath[$1]} rpath=${suitesName[$1]}"
 		else
-			echo "${spacer}S: ${suitesRPath[$1]}"
+			echo "${spacer}S: ${suitesName[$1]}"
 		fi
 	fi
 	local li=${childCases[$1]}
@@ -191,9 +196,9 @@ function printSuitesCases {
 	for x in $li; do
 		if [[ -z $3 || -n ${executeCase[$x]} ]]; then
 			if [[ -n $4 ]]; then
-				printDebug "${spacer}    C: ${casesPath[$x]} rpath=${casesRPath[$x]}"
+				printDebug "${spacer}    C: ${casesPath[$x]} rpath=${casesName[$x]}"
 			else
-				echo "${spacer}    C: ${casesRPath[$x]}"
+				echo "${spacer}    C: ${casesName[$x]}"
 			fi
 		fi
 	done
@@ -209,14 +214,15 @@ function printSuitesCases {
 # Checks for every case if there was a matching enty in cases array
 # $1 current suite index
 # $2 suite depth
-# $3 R path of parent suites
+# $3 Name of parent suites
+# use caseToExecuteParent from parent
 function checkCaseMatch {
 	isDebug && printDebug "******* $FUNCNAME $*"
 	local i j
 	local y
 	local caseToExecuteHere=''
 	for i in ${childCases[$1]}; do
-		y="${3}::${casesRPath[$i]}"
+		y="${3}::${casesName[$i]}"
 		isDebug && printDebug "search patter for case=$y"
 		for ((j=0; j<${#cases[*]}; j++)); do
 			local pattern="${cases[$j]}"
@@ -235,7 +241,7 @@ function checkCaseMatch {
 	local x
 	local caseToExecuteInSuites=''
 	for x in ${childSuites[$1]}; do
-		local spath="$3/${suitesRPath[$x]}"
+		local spath="$3/${suitesName[$x]}"
 		local caseToExecuteParent=''
 		checkCaseMatch "$x" "$newDeth" "$spath"
 		if [[ -n $caseToExecuteParent ]]; then
@@ -243,7 +249,7 @@ function checkCaseMatch {
 		fi
 	done
 	if [[ ( -n $caseToExecuteHere ) || ( -n $caseToExecuteInSuites ) ]]; then
-		isDebug && printDebug "execute suite $1 ${suitesRPath[$1]}"
+		isDebug && printDebug "execute suite $1 ${suitesName[$1]}"
 		caseToExecuteParent='true'
 		executeSuite[$1]='true'
 	fi
@@ -275,71 +281,6 @@ function printParams {
 		fi
 		echo "************"
 	fi
-}
-
-# Function execute collection variant
-# $1 is the variant
-# $2 is the collection variant workdir
-# $3 execute empty suites
-function exeCollection {
-	#make and cleanup collection varant work dir if a variant exists
-	local cworkdir="$2"
-	if [[ -n "$1" ]]; then
-		if [[ -e $cworkdir ]]; then
-			rm -rf "$cworkdir"
-		fi
-		mkdir -p "$cworkdir"
-	fi
-	collectionVariants=$(( collectionVariants + 1 ))
-	# execute
-	local result=0
-	if "${TTRO_scriptDir}/collection.sh" "${cworkdir}" "$1" "${3}" 2>&1 | tee -i "${cworkdir}/${TEST_LOG}"; then
-		result=0;
-	else
-		result=$?
-		if [[ $result -eq $errSigint ]]; then
-			printWarning "Set SIGINT Execution of collection variant $1 ended with result=$result"
-			interruptReceived="true"
-		else
-			printError "Execution of collection variant $1 ended with result=$result"
-			collectionErrors=$(( collectionErrors + 1 ))
-			builtin echo "$TTRO_collection:$1" >> "$TTRO_workDirMain/COLLECTION_ERROR_LIST"
-		fi
-	fi
-	#read result lists and transfer results to main dir in case of variants
-	local x
-	if [[ -n "$1" ]]; then
-		for x in VARIANT SUCCESS SKIP FAILURE ERROR; do
-			local inputFileName="${cworkdir}/${x}_LIST"
-			local outputFileName="${TTRO_workDirMain}/${x}_LIST"
-			if [[ -e ${inputFileName} ]]; then
-				{ while read; do
-					if [[ $REPLY != \#* ]]; then
-						echo "${TTRO_collection}:$REPLY" >> "$outputFileName"
-					fi
-				done } < "${inputFileName}"
-			else
-				printError "No result list $inputFileName in suite $cworkdir"
-			fi
-		done
-		local glob=$(<"$TTRO_workDirMain/.suiteVariants")
-		local svar=$(<"$cworkdir/.suiteVariants")
-		glob=$((glob + svar))
-		builtin echo -n "$glob" > "$TTRO_workDirMain/.suiteVariants"
-		svar=$(<"$cworkdir/.suiteErrors")
-		if [[ $svar -gt 0 ]]; then
-			glob=$(<"$TTRO_workDirMain/.suiteErrors")
-			glob=$((glob + svar))
-			builtin echo -n "$glob" > "$TTRO_workDirMain/.suiteErrors"
-			while read; do
-				[[ $REPLY == \#* ]] && continue
-				builtin echo "$TTRO_collection:${1}::$REPLY" >> "$TTRO_workDirMain/SUITE_ERROR_LIST"
-			done < "$cworkdir/SUITE_ERROR_LIST"
-		fi
-	fi
-	
-	echo "**** END Suite: collection variant='$1' *******************"
-	return 0
 }
 
 :

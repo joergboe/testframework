@@ -75,6 +75,7 @@ trap errorTrapFunc ERR
 source "${TTRO_scriptDir}/defs.sh"
 source "${TTRO_scriptDir}/mainutil.sh"
 source "${TTRO_scriptDir}/util.sh"
+source "${TTRO_scriptDir}/coreutil.sh"
 
 #--------------------------------------------------------------------------------------
 #The export check - checks whethere there are already vaiables exported with TT prefix
@@ -366,24 +367,22 @@ fi
 # search test suites. Suites are directories with a suite definition file $TEST_SUITE_FILE
 # globals for searches
 declare suitesIndex=0      #the global index of the next suite
-declare level0Suites=''    #the list of all level 0 suites
 declare -a suitesPath=()   #the array with all suites pathes
-declare -a suitesRPath=()  #the path relative to the input dir or parent suite
+declare -a suitesName=()   #the logical name of the suite (is the r-path from parent element if no link is involved)
 declare -a executeSuite=() #true if this suite is to execute
-declare -a childSuites=()  #the array with the list of all sub-suites for every suite index
+declare -a childSuites=()  #the array with the list of all sub-suite indexes for every suite index
 declare casesIndex=0       #the global index of the next case
 declare -a casesPath=()    #the array with all case pathes
-declare -a casesRPath=()   #the path relative to suite or input dir (dummy suite)
+declare -a casesName=()    #the logical name of the case
 declare -a executeCase=()  #execute the case
-declare -a childCases=()   #the array with the list of all cases for each suite index
+declare -a childCases=()   #the array with the list of all case indexes for each suite index
 declare noCases=0          #number of found cases
 declare noSuites=0         #number of found suites
 if [[ -z $TTRO_reference ]]; then
 	#initialize the globals for dummy suite
 	suitesIndex=1             #dummy suite is index 0
-	level0Suites='0 '         #dummy suite is the first level 0 suite
 	suitesPath[0]="$TTRO_inputDir" #the dummy suite path
-	suitesRPath[0]=''
+	suitesName[0]=''
 	childSuites[0]=''
 	childCases[0]=''
 	executeSuite[0]=''
@@ -400,9 +399,11 @@ if isDebug; then
 	printSuitesCases 0 0 '' 'true'
 	printDebug "*********************************************************************************"
 	declare -p suitesPath
+	declare -p suitesName
 	declare -p childSuites
-	declare -p casesPath
 	declare -p childCases
+	declare -p casesPath
+	declare -p casesName
 fi
 
 #------------------------------------------
@@ -414,6 +415,8 @@ declare usedCaseIndexList=''
 #otherwise all matching cases found are executed
 #if there is a case list on the command line, the skip attributes of test cases and suites are ignored
 if [[ ${#cases[@]} -eq 0 ]]; then
+	#the command line specified no cases -> all found cases are executed
+	#and skip attributes are honoured
 	if [[ -n ${skipIgnore} ]]; then
 		declare -rx TTRO_skipIgnore="true"
 	else
@@ -427,18 +430,17 @@ if [[ ${#cases[@]} -eq 0 ]]; then
 		executeCase[$i]='true'
 	done
 else
+	#the command line specifies a cases list
 	declare -rx TTRO_skipIgnore="true"
 	takeAllCases=""
-	for x in $level0Suites; do
-		declare caseToExecuteParent=''
-		checkCaseMatch "$x" '0' "${suitesRPath[$x]}"
-		if [[ -n $caseToExecuteParent ]]; then
-			executeSuite[$x]='true'
-		fi
-	done
+	declare caseToExecuteParent=''
+	checkCaseMatch '0' '0' ''
+	if [[ -n $caseToExecuteParent ]]; then
+		executeSuite[0]='true'
+	fi
 fi
-#declare -p executeSuite
-#declare -p executeCase
+declare -p executeSuite
+declare -p executeCase
 
 for ((i=0; i<${#executeSuite[@]}; i++)); do
 	if [[ -n ${executeSuite[$i]} ]]; then
@@ -463,8 +465,9 @@ done
 
 #--------------------------------------------------
 #guard the lists
-readonly suitesIndex level0Suites suitesPath suitesRPath executeSuite childSuites
-readonly casesPath casesRPath executeCase childCases
+readonly suitesIndex suitesPath suitesName executeSuite childSuites
+readonly casesPath casesName executeCase childCases
+
 readonly noCases noSuites noCasesToExecute noSuitesToExecute
 
 #--------------------------------------------------
@@ -491,34 +494,33 @@ declare -xr TTRO_collection="${TTRO_inputDir##*/}"
 echo  "**** START: Test execution collection $TTRO_collection ******************************************************************"
 #-----------------------
 #export execution lists
-export TTRO_level0Suites="$level0Suites"
-export TTRO_suitesPath=$(declare -p suitesPath)
-export TTRO_suitesRPath=$(declare -p suitesRPath)
-export TTRO_executeSuite=$(declare -p executeSuite)
-export TTRO_childSuites=$(declare -p childSuites)
-export TTRO_casesPath=$(declare -p casesPath)
-export TTRO_casesRPath=$(declare -p casesRPath)
-export TTRO_executeCase=$(declare -p executeCase)
-export TTRO_childCases=$(declare -p childCases)
+export TTXX_suitesPath=$(declare -p suitesPath)
+export TTXX_suitesName=$(declare -p suitesName)
+export TTXX_executeSuite=$(declare -p executeSuite)
+export TTXX_childSuites=$(declare -p childSuites)
+export TTXX_casesPath=$(declare -p casesPath)
+export TTXX_casesName=$(declare -p casesName)
+export TTXX_executeCase=$(declare -p executeCase)
+export TTXX_childCases=$(declare -p childCases)
 
 #----------------
 #make output dir
 if [[ $flat == 'true' ]]; then
-	TTRO_workDirMain="${workdir}"
+	TTRO_workDir="${workdir}"
 else
 	datestring=$(date +%Y%m%d-%H%M%S)
-	TTRO_workDirMain="${workdir}/${datestring}"
+	TTRO_workDir="${workdir}/${datestring}"
 fi
-if [[ $flat != 'true' && -e $TTRO_workDirMain ]]; then
-	printErrorAndExit "Output directory already exists $TTRO_workDirMain" $errRt
+if [[ $flat != 'true' && -e $TTRO_workDir ]]; then
+	printErrorAndExit "Output directory already exists $TTRO_workDir" $errRt
 fi
-if [[ -e $TTRO_workDirMain ]]; then
+if [[ -e $TTRO_workDir ]]; then
 	if [[ $noprompt == "true" ]]; then
-		rm -rf "$TTRO_workDirMain"
+		rm -rf "$TTRO_workDir"
 	else
-		while read -p "ERROR: Output directory already exists $TTRO_workDirMain: Remove it or not or exit? y/n/e "; do
+		while read -p "ERROR: Output directory already exists $TTRO_workDir: Remove it or not or exit? y/n/e "; do
 			if [[ $REPLY == y* || $REPLY == Y* ]]; then
-				rm -rf "$TTRO_workDirMain"
+				rm -rf "$TTRO_workDir"
 				break
 			elif [[ $REPLY == n* || $REPLY == N* ]]; then
 				break
@@ -528,12 +530,12 @@ if [[ -e $TTRO_workDirMain ]]; then
 		done
 	fi
 fi
-mkdir -p "$TTRO_workDirMain"
-echo "TTRO_workDirMain=$TTRO_workDirMain"
+mkdir -p "$TTRO_workDir"
+echo "TTRO_workDir=$TTRO_workDir"
 
 #------------------------------------------------
 # enter working dir
-cd "$TTRO_workDirMain"
+cd "$TTRO_workDir"
 
 #------------------------------------------------
 # source tools
@@ -544,6 +546,7 @@ if [[ -n $TT_tools ]]; then
 	for x in $TT_tools; do
 		isVerbose && echo "Source global tools file: $x"
 		if [[ -r $x ]]; then
+
 			source "$x"
 		else
 			printErrorAndExit "Tools file $x is required but this file is not readable" $errRt
@@ -570,27 +573,6 @@ if [[ -n $TTRO_reference ]]; then
 	exit 0
 fi
 
-#-----------------------------------
-#prepare result files
-for x in VARIANT SUCCESS SKIP FAILURE ERROR; do
-	tmp=${TTRO_workDirMain}/${x}_LIST
-	if [[ -e $tmp ]]; then
-		printError "Global result list exists list: $tmp"
-		rm -rf "$tmp"
-	fi
-	builtin echo "#collection[:variant]::suite[:variant]::case[:variant]" > "$tmp"
-done
-tmp=${TTRO_workDirMain}/RESULT
-if [[ -e $tmp ]]; then
-	printError "Global result file exists list: $tmp"
-	rm -rf "$tmp"
-fi
-touch "$tmp"
-builtin echo -n '0' > "$TTRO_workDirMain/.suiteVariants"
-builtin echo -n '0' > "$TTRO_workDirMain/.suiteErrors"
-touch "$TTRO_workDirMain/COLLECTION_ERROR_LIST"
-touch "$TTRO_workDirMain/SUITE_ERROR_LIST"
-
 #-----------------------------------------------------------
 #check if properties file exists - read properties and fixup
 if [[ -n $properties ]]; then
@@ -609,49 +591,23 @@ fixPropsVars # fix global properties and vars
 #------------------------------------------------
 # diagnostics
 isVerbose && printTestframeEnvironment
-tmp="${TTRO_workDirMain}/${TEST_ENVIRONMET_LOG}"
+tmp="${TTRO_workDir}/${TEST_ENVIRONMET_LOG}"
 printTestframeEnvironment > "$tmp"
 export >> "$tmp"
 
 #--------------------------------------------
-#execution loop over collection variants
-#isVerbose && echo "**** START Suite: $suite ************************************"
-declare -i collectionVariants=0 collectionErrors=0
-declare -i j
-declare x
-variantCount=""; variantList=""; splitter=""
-readVariantFile "$TTRO_inputDir/$TEST_COLLECTION_FILE" 'collection'
-if [[ -z $variantCount ]]; then
-	if [[ -z $variantList ]]; then
-		exeCollection "" "${TTRO_workDirMain}" "$takeAllCases"
-	else
-		for x in $variantList; do
-			exeCollection "$x" "${TTRO_workDirMain}/${x}" "$takeAllCases"
-			if [[ -n $interruptReceived ]]; then
-				echo "SIGINT: end Collection variant loop"
-				break
-			fi
-		done
-	fi
-else
-	if [[ -z $variantList ]]; then
-		for ((j=0; j<variantCount; j++)); do
-			exeCollection "$j" "${TTRO_workDirMain}/${j}" "$takeAllCases"
-			if [[ -n $interruptReceived ]]; then
-				echo "SIGINT: end Collection variant loop"
-				break
-			fi
-		done
-	else
-		printErrorAndExit "In collection we have both variant variables variantCount=$variantCount and variantList=$variantList !" $errRt
-	fi
+#execution loop over suites and variants
+declare -i suiteVariants=0 suiteErrors=0
+if [[ -z $interruptReceived ]]; then
+	isVerbose && echo "**** START Root Suite ************************************"
+	exeSuite '0' '' '-1' '' '' "${TTRO_workDir}"
+	isVerbose && echo "**** END Root Suite **************************************"
 fi
-unset x j
 
 #print result lists
 echo  "**** END Test execution *******************************************************************************"
-for x in VARIANT SUCCESS SKIP FAILURE ERROR; do
-	tmp="${TTRO_workDirMain}/${x}_LIST"
+for x in VARIANT SUCCESS SKIP FAILURE ERROR SUITE_VARIANT SUITE_ERROR; do
+	tmp="${TTRO_workDir}/${x}_LIST"
 	eval "${x}Count=0"
 	if isVerbose || [[ $x == 'FAILURE' || $x == 'ERROR' ]]; then echo "**** $x List : ****"; fi
 	if [[ -e ${tmp} ]]; then
@@ -668,36 +624,26 @@ for x in VARIANT SUCCESS SKIP FAILURE ERROR; do
 	fi
 done
 #put results to results file for information purose only 
-echo -e "VARIANT=$VARIANTCount\nSUCCESS=$SUCCESSCount\nSKIP=$SKIPCount\nFAILURE=$FAILURECount\nERROR=$ERRORCount" > "${TTRO_workDirMain}/RESULT"
-suiteVariants=$(<"$TTRO_workDirMain/.suiteVariants")
-suiteErrors=$(<"$TTRO_workDirMain/.suiteErrors")
+echo -e "VARIANT=$VARIANTCount\nSUCCESS=$SUCCESSCount\nSKIP=$SKIPCount\nFAILURE=$FAILURECount\nERROR=$ERRORCount" > "${TTRO_workDir}/RESULT"
+echo -e "SUITE_VARIANT=$SUITE_VARIANTCount SUITE_ERROR=$SUITE_ERRORCount"
 
-#Print suite errors ant collection
-if [[ $suiteErrors -gt 0 ]]; then
-	printError "Errors in $suiteErrors suites:"
-	cat "$TTRO_workDirMain/SUITE_ERROR_LIST"
+#Print suite errors and collection
+if [[ $SUITE_ERRORCount -gt 0 ]]; then
+	printError "Errors in $SUITE_ERRORCount suites:"
+	cat "$TTRO_workDir/SUITE_ERROR_LIST"
 fi
-if [[ $collectionErrors -gt 0 ]]; then
-	echo
-	printError "Errors in $collectionErrors collection variants:"
-	cat "$TTRO_workDirMain/COLLECTION_ERROR_LIST"
-fi
-
 
 echo
 printf "*******************************************************************************************************\n"
-printf "***** collection variants=%i errors during collection execution=%i\n" $collectionVariants $collectionErrors
-printf "***** suite variants=%i errors during suite execution=%i\n" $suiteVariants $suiteErrors
+printf "***** suite variants=%i errors during suite execution=%i\n" $SUITE_VARIANTCount $SUITE_ERRORCount
 printf "***** case variants=%i skipped=%i failures=%i errors=%i\n" $VARIANTCount $SKIPCount $FAILURECount $ERRORCount
-printf "***** used workdir: %s\n" "$TTRO_workDirMain"
+printf "***** used workdir: %s\n" "$TTRO_workDir"
 printf "*******************************************************************************************************\n"
 
 declare mainResult=0
 if [[ -n "$interruptReceived" ]]; then
 	mainResult=$errSigint
-elif [[ $collectionErrors -gt 0 ]]; then
-	mainResult=$errCollError
-elif [[ $suiteErrors -gt 0 ]]; then
+elif [[ $SUITE_ERRORCount -gt 0 ]]; then
 	mainResult=$errSuiteError
 elif [[ $ERRORCount -gt 0 ]]; then
 	mainResult=$errTestError
@@ -705,6 +651,6 @@ elif [[ $FAILURECount -gt 0 ]]; then
 	mainResult=$errTestFail
 fi
 
-builtin echo -n "$mainResult" > "$TTRO_workDirMain/DONE"
+builtin echo -n "$mainResult" > "$TTRO_workDir/DONE"
 
 exit $mainResult

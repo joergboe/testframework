@@ -66,34 +66,57 @@ trap errorTrapFunc ERR
 #include general files
 source "${TTRO_scriptDir}/defs.sh"
 source "${TTRO_scriptDir}/util.sh"
+source "${TTRO_scriptDir}/coreutil.sh"
 
 # usage and parameters
 function usage {
 	local command=${0##*/}
 	cat <<-EOF
 	
-	usage: ${command} suite suitePath suiteWorkdir suiteVariant [case [ case ...]];
+	usage: ${command} suiteIndex suiteVariant suiteWorkdir suiteNestingLevel suiteNestingPath suiteNestingString;
 	
+	Requires exported execution list variables
 	EOF
 }
 isDebug && printDebug "$0 $*"
-if [[ $# -lt 4 ]]; then
+if [[ $# -ne 6 ]]; then
 	usage
 	exit ${errInvocation}
 fi
 #move all parameters into named variables
-declare -rx TTRO_suite="$1"; shift
-declare -rx TTRO_inputDirSuite="$1"; shift
-declare -rx TTRO_workDirSuite="$1"; shift
+declare -rx TTRO_suiteIndex="$1"; shift
 declare -rx TTRO_variantSuite="$1"; shift
+declare -rx TTRO_workDirSuite="$1"; shift
+declare -rx TTRO_suiteNestingLevel="$1"; shift
+declare -rx TTRO_suiteNestingPath="$1"; shift
+declare -rx TTRO_suiteNestingString="$1"; shift
+
+#restore all execution lists from exports
+eval "$TTXX_suitesPath"
+eval "$TTXX_suitesName"
+eval "$TTXX_executeSuite"
+eval "$TTXX_childSuites"
+eval "$TTXX_casesPath"
+eval "$TTXX_casesName"
+eval "$TTXX_executeCase"
+eval "$TTXX_childCases"
+#more common vars
+declare -rx TTRO_suite="${suitesName[$TTRO_suiteIndex]}"
+declare -rx TTRO_inputDirSuite="${suitesPath[$TTRO_suiteIndex]}"
+
 declare -a cases=() # case pathes
+declare -a casesNames=() # the short path
 declare -i noCases=0
-while [[ $# -ge 1 ]]; do
-	cases[$noCases]="$1"
-	noCases=$((noCases+1))
-	shift
+declare x
+for x in ${childCases[$TTRO_suiteIndex]}; do
+	if [[ -n ${executeCase[$x]} ]]; then
+		cases+=( "${casesPath[$x]}" )
+		casesNames+=( "${casesName[$x]}" )
+		noCases=$((noCases+1))
+	fi
 done
-readonly cases noCases
+
+readonly cases casesNames noCases
 isDebug && printDebug "noCases=$noCases"
 
 #--------------------------------------------------
@@ -108,7 +131,7 @@ for x in $TT_tools; do
 	fixPropsVars
 done
 
-if [[ $TTRO_suite != '--' ]]; then
+if [[ $TTRO_suiteIndex -ne 0 ]]; then
 	tmp="${TTRO_inputDirSuite}/${TEST_SUITE_FILE}"
 	if [[ -e "$tmp" ]]; then
 		isVerbose && echo  "Source Suite file $tmp"
@@ -128,13 +151,17 @@ export >> "$tmp"
 
 #--------------------------------------------------
 # prepare output lists
-for x in VARIANT SUCCESS SKIP FAILURE ERROR; do
+for x in VARIANT SUCCESS SKIP FAILURE ERROR SUITE_VARIANT SUITE_ERROR; do
 	tmp="${TTRO_workDirSuite}/${x}_LIST"
 	if [[ -e $tmp ]]; then
 		printError "Result list exists in suite $TTRO_suite list: $tmp"
 		rm -rf "$tmp"
 	fi
-	builtin echo "#case[:variant]" > "$tmp"
+	if [[ $x == SUITE_* ]]; then
+		builtin echo "#suite[:variant][::suite[:variant]..]" > "$tmp"
+	else
+		builtin echo "#suite[:variant][::suite[:variant]..]::case[:variant]" > "$tmp"
+	fi
 done
 tmp="${TTRO_workDirSuite}/RESULT"
 if [[ -e $tmp ]]; then
@@ -389,7 +416,8 @@ while [[ -z $allJobsGone ]]; do
 						else
 							tmpCase="${tcase[$i]}"
 							tmpVariant="${tvariant[$i]}"
-							tmpCaseAndVariant="${tmpCase##*/}"
+							#tmpCaseAndVariant="${tmpCase##*/}"
+							tmpCaseAndVariant="${TTRO_suiteNestingPath}::${tmpCase}"
 							if [[ -n $tmpVariant ]]; then
 								tmpCaseAndVariant="${tmpCaseAndVariant}:${tmpVariant}"
 							fi
@@ -527,6 +555,54 @@ while [[ -z $allJobsGone ]]; do
 	fi
 done
 
+##execution loop over sub suites and variants
+declare -i suiteVariants=0 suiteErrors=0
+for sindex_xyza in ${childSuites[$TTRO_suiteIndex]}; do
+	suitePath="${suitesPath[$sindex_xyza]}"
+	suite="${suitesName[$sindex_xyza]}"
+	if [[ $interruptReceived -gt 0 ]]; then
+		echo "SIGINT: end Suites loop"
+		break
+	fi
+	isVerbose && echo "**** START Suite: $suite ************************************"
+	variantCount=""; variantList=""; splitter=""
+	readVariantFile "${suitePath}/${TEST_SUITE_FILE}" "suite"
+	if [[ -z $variantCount ]]; then
+		if [[ -z $variantList ]]; then
+ 			exeSuite "$sindex_xyza" "" "$TTRO_suiteNestingLevel" "$TTRO_suiteNestingPath" "$TTRO_suiteNestingString" "$TTRO_workDirSuite"
+		else
+			for x_xyza in $variantList; do
+				exeSuite "$sindex_xyza" "$x_xyza" "$TTRO_suiteNestingLevel" "$TTRO_suiteNestingPath" "$TTRO_suiteNestingString" "$TTRO_workDirSuite"
+				if [[ $interruptReceived -gt 0 ]]; then
+					echo "SIGINT: end Suites loop"
+					break
+				fi
+			done
+			unset x_xyza
+		fi
+	else
+		if [[ -z $variantList ]]; then
+			declare -i j_xyza
+			for ((j_xyza=0; j_xyza<variantCount; j_xyza++)); do
+				exeSuite "$sindex_xyza" "$j_xyza" "$TTRO_suiteNestingLevel" "$TTRO_suiteNestingPath" "$TTRO_suiteNestingString" "$TTRO_workDirSuite"
+				if [[ $interruptReceived -gt 0 ]]; then
+					echo "SIGINT: end Suites loop"
+					break
+				fi
+			done
+			unset j_xyza
+		else
+			printError "In suite $suite we have both variant variables variantCount=$variantCount and variantList=$variantList ! Suite is skipped"
+		fi
+	fi
+	isVerbose && echo "**** END Suite: $suite **************************************"
+	if [[ $interruptReceived -gt 0 ]]; then
+		echo "SIGINT: end Suites loop"
+		break
+	fi
+done
+unset sindex_xyza
+
 #test suite finalization
 declare -i executedTestFinSteps=0
 if isFunction 'testFinalization'; then
@@ -580,6 +656,7 @@ isVerbose && echo "$executedTestFinSteps Test Suite Finalisation steps executed"
 #-------------------------------------------------------
 #put results to results file for information purose only 
 echo -e "VARIANT=$jobIndex\nSUCCESS=$variantSuccess\nSKIP=$variantSkiped\nFAILURE=$variantFailures\nERROR=$variantErrors" > "${TTRO_workDirSuite}/RESULT"
+echo -e "SUITE_VARIANT=$suiteVariants\nSUITE_ERROR=$suiteErrors" >> "${TTRO_workDirSuite}/RESULT"
 
 #-------------------------------------------------------
 #Final verbose suite result printout
@@ -597,23 +674,8 @@ for x in VARIANT SUCCESS SKIP FAILURE ERROR; do
 		done
 	} < "$tmp"
 	tmp3="${x}_NO"
-	isDebug && printDebug "$x = ${!tmp3}"
+	isDebug && printDebug "Overall $x = ${!tmp3}"
 done
-
-#------------------------------------------
-#check internal result vars against obtained
-if [[ $VARIANT_NO -ne $jobIndex ]]; then
-	printError "Variant No not consistent: VARIANT_NO=$VARIANT_NO"
-fi
-if [[ $SKIP_NO -ne $variantSkiped ]]; then
-	printError "Skip No not consistent: SKIP_NO=$SKIP_NO"
-fi
-if [[ $FAILURE_NO -ne $variantFailures ]]; then
-	printError "Failure No not consistent: FAILURE_NO=$FAILURE_NO"
-fi
-if [[ $ERROR_NO -ne $variantErrors ]]; then
-	printError "Error No not consistent: ERROR_NO=$ERROR_NO"
-fi
 
 declare suiteResult=0
 if [[ $interruptReceived -gt 0 ]]; then
