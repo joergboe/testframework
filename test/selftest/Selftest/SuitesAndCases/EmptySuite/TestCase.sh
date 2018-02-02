@@ -11,8 +11,7 @@ function getOptions {
 
 function myEvaluate {
 	if ! linewisePatternMatch './STDERROUT1.log' 'true' '*\*\*\*\*\* case variants=0 skipped=0 failures=0 errors=0'\
-	                          '*\*\*\*\*\* suite variants=1 errors during suite execution=0'\
-	                          '*\*\*\*\*\* collection variants=1 errors during collection execution=0'; then
+	                          '*\*\*\*\*\* suite variants=1 errors during suite execution=0'; then
 		failureOccurred='true'
 	fi
 	return 0
