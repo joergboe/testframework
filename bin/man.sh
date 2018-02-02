@@ -25,7 +25,7 @@ function manpage () {
 	Suites may be omitted.
 	
 	One or more test suites and / or test cases form a Test Collection. A test collection is defined through a directory with the 
-	test collection file with name: '$TEST_COLLECTION_FILE'.
+	test collection file with name: 
 	The test collection file contains the necessary definitions and the script code to execute the test collection preparation 
 	and collection finalization. The test collection file may contain common code (functions must be exported).
 	A test collection may have a test properties file $TEST_PROPERTIES which should contain the definition of variables and 
@@ -54,7 +54,7 @@ function manpage () {
 	A summary is printed after test case execution.
 
 
-	## Test Case File '$TEST_CASE_FILE', Test Suite File '$TEST_SUITE_FILE' and the '$TEST_COLLECTION_FILE'
+	## Test Case File '$TEST_CASE_FILE' and Test Suite File '$TEST_SUITE_FILE'
 	=======================================================================================================
 	These files have in general two sections: The preamble and a script code section. Both sections may be empty.
 	
@@ -143,8 +143,7 @@ function manpage () {
 	
 	## Test Collection, Test Case and Test Suite variants
 	=====================================================
-	The variants of cases, suites and collections are defined in the preamble of the '$TEST_CASE_FILE', the '$TEST_SUITE_FILE' or
-	the $TEST_COLLECTION_FILE file.
+	The variants of cases, suites and collections are defined in the preamble of the '$TEST_CASE_FILE' or the '$TEST_SUITE_FILE' file.
 	The appropriate file must have either no variant variable, a variantCount variable or a variantList variable.
 	
 	The variantCount must be in the form:

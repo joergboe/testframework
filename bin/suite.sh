@@ -417,7 +417,7 @@ while [[ -z $allJobsGone ]]; do
 							tmpCase="${tcase[$i]}"
 							tmpVariant="${tvariant[$i]}"
 							#tmpCaseAndVariant="${tmpCase##*/}"
-							tmpCaseAndVariant="${TTRO_suiteNestingPath}::${tmpCase}"
+							tmpCaseAndVariant="${TTRO_suiteNestingString}::${tmpCase}"
 							if [[ -n $tmpVariant ]]; then
 								tmpCaseAndVariant="${tmpCaseAndVariant}:${tmpVariant}"
 							fi

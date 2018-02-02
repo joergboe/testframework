@@ -14,18 +14,18 @@ function exeSuite {
 	local suite="${suitesName[$1]}"
 	local suitePath="${suitesPath[$1]}"
 	local nestingLevel=$(($3+1))
-	local suiteNestingPath=''
-	local suiteNestingString=''
+	local suiteNestingPath="$4"
+	local suiteNestingString="$5"
 	if [[ $1 -ne 0 ]]; then
-		if [[ -z $4 ]]; then
+		if [[ -z $suiteNestingPath ]]; then
 			suiteNestingPath+="${suite}"
 		else
 			suiteNestingPath+="/${suite}"
 		fi
-		if [[ -z $5 ]]; then
-			suiteNestingString="$suite"
+		if [[ -z $suiteNestingString ]]; then
+			suiteNestingString+="$suite"
 		else
-			suiteNestingString="::$suite"
+			suiteNestingString+="::$suite"
 		fi
 	fi
 	if [[ -n $2 ]]; then
