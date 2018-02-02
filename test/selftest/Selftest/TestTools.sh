@@ -13,7 +13,7 @@ function copyAndModifyTestCollection {
 	if [[ -d $destDir ]]; then
 		cp -rp "$sourceDir" "$destDir"
 		local x
-		for x in $TEST_PROPERTIES $TEST_COLLECTION_FILE $TEST_SUITE_FILE $TEST_CASE_FILE; do
+		for x in $TEST_PROPERTIES $TEST_SUITE_FILE $TEST_CASE_FILE; do
 			renameInSubdirs "$destDir/testCollection" "T$x" "$x"
 		done
 	fi

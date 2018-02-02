@@ -214,12 +214,13 @@ function printSuitesCases {
 # Checks for every case if there was a matching enty in cases array
 # $1 current suite index
 # $2 suite depth
-# $3 Name of parent suites
-# use caseToExecuteParent from parent
+# $3 path of suites
+# $4 list of parent suite indexes
 function checkCaseMatch {
 	isDebug && printDebug "******* $FUNCNAME $*"
 	local i j
-	local y
+	local y x
+	local allSuiteIndexes="$4 $1"
 	local caseToExecuteHere=''
 	for i in ${childCases[$1]}; do
 		y="${3}::${casesName[$i]}"
@@ -237,22 +238,22 @@ function checkCaseMatch {
 			fi
 		done
 	done
-	local newDeth=$(($2+1))
-	local x
-	local caseToExecuteInSuites=''
-	for x in ${childSuites[$1]}; do
-		local spath="$3/${suitesName[$x]}"
-		local caseToExecuteParent=''
-		checkCaseMatch "$x" "$newDeth" "$spath"
-		if [[ -n $caseToExecuteParent ]]; then
-			caseToExecuteInSuites='true'
-		fi
-	done
-	if [[ ( -n $caseToExecuteHere ) || ( -n $caseToExecuteInSuites ) ]]; then
-		isDebug && printDebug "execute suite $1 ${suitesName[$1]}"
-		caseToExecuteParent='true'
-		executeSuite[$1]='true'
+	if [[ -n $caseToExecuteHere ]]; then
+		for x in $allSuiteIndexes; do
+			isDebug && printDebug "execute suite $x ${suitesName[$x]}"
+			executeSuite[$x]='true'
+		done
 	fi
+	local newDeth=$(($2+1))
+	for x in ${childSuites[$1]}; do
+		local spath="$3"
+		if [[ -z $spath ]]; then
+			spath="${suitesName[$x]}"
+		else
+			spath+="/${suitesName[$x]}"
+		fi
+		checkCaseMatch "$x" "$newDeth" "$spath" "$allSuiteIndexes" 
+	done
 }
 
 #

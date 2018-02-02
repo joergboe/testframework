@@ -3,7 +3,7 @@
 ###################################
 
 # register tool module
-registerTool "$TTRO_inputDir/TestTools.sh"
+registerTool "$TTRO_inputDirSuite/TestTools.sh"
 
 #Test collection preparation
 PREPS='modifyAll'
@@ -16,7 +16,7 @@ function modifyPrefix {
 	if [[ $1 == $2 ]]; then
 		printErrorAndExit "$FUNCNAME: Origin and destination must be different file" $errRt
 	fi
-	sed -e "s/TT_/TY_/g;s/TTRO_/TYRO_/g;s/TTP_/TYP_/g;s/TTPN_/TYPN_/g" "$1" > "$2"
+	sed -e "s/TT_/TY_/g;s/TTRO_/TYRO_/g;s/TTP_/TYP_/g;s/TTPN_/TYPN_/g;s/TTXX_/TYXX_/g" "$1" > "$2"
 }
 
 TTRO_help_modifyAll='

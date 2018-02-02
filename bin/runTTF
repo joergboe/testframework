@@ -434,7 +434,7 @@ else
 	declare -rx TTRO_skipIgnore="true"
 	takeAllCases=""
 	declare caseToExecuteParent=''
-	checkCaseMatch '0' '0' ''
+	checkCaseMatch '0' '0' '' ''
 	if [[ -n $caseToExecuteParent ]]; then
 		executeSuite[0]='true'
 	fi
@@ -624,8 +624,8 @@ for x in VARIANT SUCCESS SKIP FAILURE ERROR SUITE_VARIANT SUITE_ERROR; do
 	fi
 done
 #put results to results file for information purose only 
-echo -e "VARIANT=$VARIANTCount\nSUCCESS=$SUCCESSCount\nSKIP=$SKIPCount\nFAILURE=$FAILURECount\nERROR=$ERRORCount" > "${TTRO_workDir}/RESULT"
-echo -e "SUITE_VARIANT=$SUITE_VARIANTCount SUITE_ERROR=$SUITE_ERRORCount"
+#echo -e "VARIANT=$VARIANTCount\nSUCCESS=$SUCCESSCount\nSKIP=$SKIPCount\nFAILURE=$FAILURECount\nERROR=$ERRORCount" > "${TTRO_workDir}/RESULT"
+#echo -e "SUITE_VARIANT=$SUITE_VARIANTCount SUITE_ERROR=$SUITE_ERRORCount"
 
 #Print suite errors and collection
 if [[ $SUITE_ERRORCount -gt 0 ]]; then
