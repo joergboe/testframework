@@ -163,10 +163,10 @@ while [[ $# -ge 1 ]]; do
 		[[ -z $parametersection ]] || optionInParamSection $1
 		echo "$TTRO_version"
 		exit 0;;
-#	-t|--tools)
-#		[[ $# -ge 2 && $2 != -* ]] || missOptionArg $1;
-#		toolsFiles="$toolsFiles $2"
-#		shift;;
+	-t|--tools)
+		[[ $# -ge 2 && $2 != -* ]] || missOptionArg $1;
+		toolsFiles="$toolsFiles $2"
+		shift;;
 	-D)
 		[[ $# -ge 2 && $2 != -* ]] || missOptionArg $1;
 		vname=${2%%=*}
@@ -290,16 +290,16 @@ fi
 
 #-------------------------------------
 #tools file
-#if ! declare -p TTRO_tools &> /dev/null; then
-#	declare TTRO_tools=""
-#fi
-#for x in ${toolsFiles}; do
-#	tmp="$x"
-#	if [[ "${tmp:1:1}" != "/" ]]; then
-#		tmp=${currentDir}/${tmp}
-#	fi
-#	TTRO_tools="$TTRO_tools $tmp"
-#done
+if ! declare -p TT_tools &> /dev/null; then
+	declare TT_tools=""
+fi
+for x in ${toolsFiles}; do
+	tmp="$x"
+	if [[ "${tmp:1:1}" != "/" ]]; then
+		tmp=${currentDir}/${tmp}
+	fi
+	TT_tools="$TT_tools $tmp"
+done
 
 #----------------------------------
 #finally make option variables read only
@@ -539,9 +539,9 @@ cd "$TTRO_workDir"
 
 #------------------------------------------------
 # source tools
-#if isNotExisting 'TT_tools'; then
+if isNotExisting 'TT_tools'; then
 	declare -x TT_tools=''
-#fi
+fi
 if [[ -n $TT_tools ]]; then
 	for x in $TT_tools; do
 		isVerbose && echo "Source global tools file: $x"
