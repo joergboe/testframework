@@ -125,7 +125,8 @@ function scan {
 		else
 			if [[ $filename == $TEST_SUITE_FILE ]]; then
 				if [[ $mybase == $TTRO_inputDir ]]; then
-					printWarning "$TEST_SUITE_FILE found in top level directory: Probably you start not from the root of your test collection $1"
+					#printWarning "$TEST_SUITE_FILE found in top level directory: Probably you start not from the root of your test collection $1"
+					printErrorAndExit "$TEST_SUITE_FILE is not allowed in top level directory $1" $errInvocation
 				else 
 					isSuite='true'
 					suitesPath[$suitesIndex]="$mybase"
