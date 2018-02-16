@@ -49,10 +49,10 @@ function usage {
 	0     : Test Success
 	1     : fatal error ( failed command etc. )
 	${errTestFail}    : at least one test fails ( \${errTestFail} )
+	${errSkip}    : Test Case or Test Suite was skipped ( \${errSkip} internal used only )
 	${errTestError}    : at least one test error ( \${errTestError} )
 	${errVersion}    : Streams version is not supported ( \${errVersion} )
 	${errSuiteError}    : Error during suite execution ( \${errSuiteError} )
-	${errCollError}    : Error during collection execution ( \${errCollError} )
 	${errInvocation}    : Invocation error ( \${errInvocation} )
 	${errScript}    : Script error ( \${errScript} )
 	${errRt}    : Runntime error ( \${errRt} )

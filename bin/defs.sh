@@ -4,7 +4,7 @@
 ###############################################
 
 #exit code definitions
-declare -r errTestFail=20 errTestError=25 errSuiteError=26 errCollError=27
+declare -r errTestFail=20 errSkip=21 errTestError=25 errSuiteError=26
 declare -r errVersion=30 errInvocation=40 errScript=50 errRt=60 errEnv=70
 declare -r errSigint=130
 

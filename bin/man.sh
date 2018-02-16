@@ -25,7 +25,7 @@ function manpage () {
 	used in sub-suites or test cases).
 	Test cases may exists without a suite.
 	
-	One or more test suites and / or test cases form a Test Collection. A test collection is defined through a directory. 
+	One or more test suites and/or test cases form a Test Collection. A Test Collection is defined through a directory. 
 	A test collection may execute common code (functions must be registered).
 	A test collection may have a test properties file $TEST_PROPERTIES which should contain the definition of variables and 
 	properties which may be variable in different test environments.
@@ -42,9 +42,9 @@ function manpage () {
 
 	## Execution Environment
 	=========================
-	The test framework starts with the analysis of the input directory (list) (option -i|--directory).
+	The test framework starts with the analysis of the input directory (directory list) (option -i|--directory).
 	
-	If no cases list is given as command line parameter, all found test suites and test cases which are not marked with a 'skipped'
+	If no list with case wildcards is given as command line parameter, all found test suites and test cases which are not marked with a 'skipped'
 	property are executed. In this case all suites (also empty suites) are executed.
 	
 	If a cases list is given from the command line, all test cases with match the cases list are executed (pattern match). 
@@ -65,7 +65,7 @@ function manpage () {
 	
 	The preamble defines variables which are necessary before execution of appropriate artifacts starts.
 	A preamble statement starts with the character sequence '#--' and the variable definition must follow
-	immediately. (No spaces).
+	immediately. (No spaces allowd).
 	
 	The script code section is a bash script. In the script section, you can define required code for the initialization
 	and the custom functions for the test preparation, for the test step execution and the test finalization. 
@@ -76,21 +76,21 @@ function manpage () {
 	- Execution
 	- Finalization
 	
-	The script code of the main body is executed during initialization of the Test collection, of the Test suite or of the Test case.
+	The script code of the main body is executed during initialization of the Test Suite or of the Test Case.
 	
-	In the preparation phase of the artifact, functions that are defined through the optional variables and functions:
-	- TTRO_preps, TTRO_prepsSuite, TTRO_prepsCase,
+	In the preparation phase of Test Case or Suite, functions that are defined through the optional variables and functions:
+	- TTRO_prepsSuite or TTRO_prepsCase,
 	- PREPS
 	- function testPreparation
 	are executed sequentially.
-	The variables TTRO_preps, TTRO_prepsSuite and TTRO_prepsCase have global meaning. They may be defined at global level and are executed
+	The variables TTRO_prepsSuite, TTRO_prepsCase have global meaning. They may be defined at global level and are executed
 	during the the execution of the appropriate artifact. The variable PREPS and the function testPreparation have local meaning and are
 	defined in the appropriate script file.
 	
-	During execution phase of the Test Collection the framework iterates sequentially though all Test Suites
+	During execution phase of the Test Collection the framework iterates recursively though all defined Test Suites.
 	
-	During execution phase of the Test Suite the framework iterates though all Test Cases. Test Case execution may use parallel
-	execution.
+	During execution phase of the Test Suite the framework iterates though all Test Cases and then all defined Sub-Suites are executed. 
+	Test Case execution may use parallel execution. Test Suites are always sequentially executed.
 	
 	During execution phase of the Test Case the framework iterates sequentially though all Test Cases Steps.
 	Test steps are defined:
@@ -99,15 +99,15 @@ function manpage () {
 	- the local function testStep
 
 	In the finalization phase of the artifact, functions that are defined through the optional variables and functions:
-	- TTRO_fins, TTRO_finsSuite, TTRO_finsCase,
+	- TTRO_finsSuite, TTRO_finsCase,
 	- FINS
 	- function testFinalization
 	are executed sequentially.
-	The variables TTRO_fins, TTRO_finsSuite and TTRO_finsCase have global meaning. They may be defined at global level and are executed
+	The variables TTRO_finsSuite and TTRO_finsCase have global meaning. They may be defined at global level and are executed
 	during the the execution of the appropriate artifact. The variable FINS and the function testFinalization have local meaning and are
 	defined in the appropriate script file.
 	
-	If the variables TTPN_noPreps TTPN_noPrepsSuite TTPN_noPrepsCase TTPN_noFins TTPN_noFinsSuite TTPN_noFinsCase are set to a 
+	If the variables TTPN_noPrepsSuite TTPN_noPrepsCase TTPN_noFinsSuite TTPN_noFinsCase are set to a 
 	non empty value the preparation and the finalization of the appropriate artifact is supressed.
 
 
@@ -163,6 +163,8 @@ function manpage () {
 	the job is killed with SIGTERM (15). If the job still runs after additional time (TTP_additionalTime), 
 	the job is killed with SIGKILL (9).
 	If there is no individual timeout defined, the default values TTP_timeout is used.
+	If there is no individual timeout and no property TTP_timeout, the test case times out after $defaultTimeout seconds.
+	If there is no property TTP_additionalTime, the vaue $defaultAdditionalTime is used.
 
 
 	## Test Framework Variables and Properties
@@ -231,16 +233,12 @@ function manpage () {
 	                          and the test case variant is considered an error. When the execution of all test commands return success the 
 	                          test case variant is considered a success.
 	                        
-	- TTRO_preps            - This variable stores the list of global test collection preparation commands. If one command returns an failure (return code != 0), 
-	                          the test execution of the collection variant is stopped.
 	- TTRO_prepsSuite       - This variable stores the list of test suite preparation commands. If one command returns an failure (return code != 0), 
 	                          the test execution ot the suite is stopped.
 	- TTRO_prepsCase        - The space separated list of test case preparation commands. If one command returns an failure (return code != 0), 
 	                          the test execution is stopped and the test is considered an error.
 	- PREPS                 - The space separated list or an array of test preparation commands with local meaning.
 	
-	- TTRO_fins             - This variable stores the list of global test finalization commands. If one command returns an failure (return code != 0), 
-	                          the error is logged and execution is stopped
 	- TTRO_finsSuite        - This variables stores the list of test suite finalization commands. If one command returns an failure (return code != 0), 
 	                          the error is logged and the execution is stopped
 	- TTRO_finsCase         - This variable is designed to store the list of test case finalization commands. If one command returns an failure (return code != 0), 
@@ -265,10 +263,9 @@ function manpage () {
 	- TTRO_inputDir        - The input directory
 	- TTRO_inputDirSuite   - The input directory of the suite
 	- TTRO_inputDirCase    - The input directory of the case
-	- TTRO_collection      - The name of the collection
+	- TTRO_collection      - The name of the Test Collection (Last path element of the input dir)
 	- TTRO_suite           - The suite name
 	- TTRO_case            - The case name
-	- TTRO_variant         - The variant of the collection
 	- TTRO_variantSuite    - The variant of the suite
 	- TTRO_variantCase     - The variant of the case
 	- TTRO_scriptDir       - The scripts path
@@ -281,14 +278,10 @@ function manpage () {
 	- TTPN_noStart         - This property is provided with value "true" if the --no-start command line option is used. It is empty otherwise
 	- TTPN_noStop          - This  property is provided with value "true" if the --no-stop command line option is used. It is empty otherwise
 	- TTPN_link            - This  property is provided with value "true" if the --link command line option is used. It is empty otherwise
-	- TTPN_noPreps         - This property is provided with value "true" if the --no-start command line option is used. It is empty otherwise
-	                         If the property is true no Test Collection preparation is called
 	- TTPN_noPrepsSuite    - This property is provided with value "true" if the --no-start command line option is used. It is empty otherwise
 	                         If the property is true no Test Suite preparation is called
 	- TTPN_noPrepsCase     - This property is not provided.
 	                         If the property is true no Test Case preparation is called
-	- TTPN_noFins          - This property is provided with value "true" if the --no-stop command line option is used. It is empty otherwise
-	                         If the property is true no Test Collection finalization is called
 	- TTPN_noFinsSuite     - This property is provided with value "true" if the --no-stop command line option is used. It is empty otherwise
 	                         If the property is true no Test Suite finalization is called
 	- TTPN_noFinsCase      - This property is not provided.
@@ -341,7 +334,8 @@ function manpage () {
 	- In the initialization or preparation phase of an test suite variant - this disables all cases of this suite variant
 	- In the initialization phase of an test case (variant) - this disables only one case variant
 	
-	Alternatively the existence of an file SKIP in the test case directory inhibits this case (all variants)
+	Alternatively the existence of an file SKIP in the Test Case directory inhibits this case (all variants).
+	The existence of a file SKIP in a Test Suite directory skips all variants of the suite.
 
 
 	## Sequence Control
@@ -351,39 +345,43 @@ function manpage () {
 	
 	The test execution is done in the following order:
 	
-	- Scan input directory and collect all test suites and cases to execute
-	- Set properties and variables defined with command line parameter -D..
-	- Source all defined tools scripts
-	- Source properties file if required - set props and vars
-	- Evaluate Test Collection preamble - determine variants
-	- Loop over Collection variants
-	  - Start Test Collection Variant in inherited environment
-	  - Source all defined tools scripts
-	  - Source Test Collection file - executes initialization in the main body of the script / set props and vars
-	  - Execute all Test Collection preparation steps if required
-	  - Loop over all Suites
-	    - Evaluate Test Suite preamble - determine variants
-	    - Loop over all Suite variants
-	    - Start Test Suite Variant in inherited environment
-	      - Source all defined tools scripts
-	      - source Test Suite file - executes initialization in the main body of the script / set props and vars
-	      - Execute all Test Suite preparation steps if required
-	      - Evaluate all Test Collection preambles - determine all case variants of suite
-	      - Loop over all test cases - execute n cases parallel
-	        - Start Test Case Variant in inherited environment
-	        - Source all defined tools scripts
-	        - Source Test Case file - executes initialization in the main body of the script / set props and vars
-	        - Execute all Test Case preparation steps if required
-	        - Execute all test steps
-	        - Execute all test finalization steps
-	        - print test case result
-	      - End loop over all test cases
-	      - Execute all test Suite finalization steps if required
-	    - End loop over all Suite variants
-	  - End loop over all Suites
-	  - Execute all test collection finalization steps if required
-	- End loop over all Collection variants
-	- print result
+	The Test Collection:
 	
+	- Scan input directory and collect all test suites and cases to execute
+	- Set programm defined props/vars
+	- Set properties and variables defined with command line parameter -D..
+	- Source all defined tools scripts !!!??
+	- Source properties file if required - set props and vars !!!?
+	- Execute root suite in inherited environment
+	- print result
+
+	The Test Suite:
+	
+	- Source all defined tools scripts
+	- Source Test Suite file - executes initialization in the main body of the script / set props and vars
+	- Check is suite is to be skipped and end suite execution if required
+	- Execute all Test Suite preparation steps if required
+	- Evaluate all Test Collection preambles - determine all case variants of suite
+	- Loop over all test cases variants - execute n cases parallel
+	  - Start Test Case Variant in inherited environment
+	- End loop over all test cases
+	- Loop over all sub-suites
+	  - Evaluate Test Suite preamble - determine variants
+	  - Loop over all suite variants
+	    - Start sub-suite Variant in inherited environment
+	  - End loop over all suite variants
+	- End loop over all sub-suites
+	- Execute all Test Suite finalization steps if required
+	- print suite result
+	
+	The Test Case
+	
+	- Source all defined tools scripts
+	- Source Test Case file - executes initialization in the main body of the script / set props and vars
+	- Check is cuite is to be skipped and end cuite execution if required
+	- Execute all Test Case preparation steps if required
+	- Execute all test steps
+	- Execute all test finalization steps
+	- print Test Case result
 	EOF
 }
