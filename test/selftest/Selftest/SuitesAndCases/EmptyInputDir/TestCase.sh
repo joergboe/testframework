@@ -16,8 +16,8 @@ function executeCase {
 
 function myEvaluate {
 	if ! linewisePatternMatch './STDERROUT1.log' 'true'\
-		'\*\*\*\*\* suite variants=0 errors during suite execution=0'\
-		'\*\*\*\*\* case variants=0 skipped=0 failures=0 errors=0'; then
+		'\*\*\*\*\* suites executed=0 skipped=0 errors=0'\
+		'\*\*\*\*\* cases  executed=0 skipped=0 failures=0 errors=0'; then
 
 		#if ! linewisePatternMatch './STDERROUT1.log' '' '*ERROR: No test collection file *TestCollection.sh found*'; then
 		failureOccurred='true'

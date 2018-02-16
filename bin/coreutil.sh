@@ -32,7 +32,7 @@ function exeSuite {
 		suiteNestingString+=":$2"
 	fi
 	if [[ -z ${executeSuite[$1]} ]]; then
-		isDebug && printDebug "$FUNCNAME: skip empty suite $suitePath: variant='$2'"
+		isDebug && printDebug "$FUNCNAME: no execution of suite $suitePath: variant='$2'"
 		return 0
 	fi
 	echo "**** START Suite: ${suite} variant='$2' in ${suitePath} *****************"
@@ -54,10 +54,10 @@ function exeSuite {
 		mkdir -p "$sworkdir"
 	fi
 
-	# count execute suites
-	if [[ $1 -ne 0 ]]; then
+	# count execute suites but do not count the root suite
+	if [[ $nestingLevel -gt 0 ]]; then
 		suiteVariants=$((suiteVariants+1))
-		builtin echo "$suiteNestingString" >> "${6}/SUITE_VARIANT_LIST"
+		builtin echo "$suiteNestingString" >> "${6}/SUITE_EXECUTE"
 	fi
 
 	#execute suite variant
@@ -68,20 +68,24 @@ function exeSuite {
 		result=$?
 		if [[ $result -eq $errSigint ]]; then
 			printWarning "Set SIGINT Execution of suite ${suite} variant $2 ended with result=$result"
-			interruptReceived="true"
+			interruptReceived=$((interruptReceived+1))
 		else
-			printError "Execution of suite ${suite} variant $2 ended with result=$result"
-			suiteErrors=$(( suiteErrors + 1))
-			builtin echo "$suiteNestingString" >> "${6}/SUITE_ERROR_LIST"
+			if [[ $nestingLevel -gt 0 ]]; then
+				printError "Execution of suite ${suite} variant $2 ended with result=$result"
+				suiteErrors=$(( suiteErrors + 1))
+				builtin echo "$suiteNestingString" >> "${6}/SUITE_ERROR"
+			else
+				printErrorAndExit "Execution of root suite failed" $errRt
+			fi
 		fi
 	fi
 	
 	#read result lists and append results to the own list
 	local x
 	if [[ $1 -ne 0 ]]; then
-		for x in VARIANT SUCCESS SKIP FAILURE ERROR SUITE_ERROR SUITE_VARIANT; do
-			local inputFileName="${sworkdir}/${x}_LIST"
-			local outputFileName="${6}/${x}_LIST"
+		for x in CASE_EXECUTE CASE_SKIP CASE_FAILURE CASE_ERROR CASE_SUCCESS SUITE_EXECUTE SUITE_SKIP SUITE_ERROR; do
+			local inputFileName="${sworkdir}/${x}"
+			local outputFileName="${6}/${x}"
 			if [[ -e ${inputFileName} ]]; then
 				{ while read; do
 					if [[ $REPLY != \#* ]]; then

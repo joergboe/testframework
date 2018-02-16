@@ -13,40 +13,45 @@ function manpage () {
 	===============================================
 	A test case is comprised of a directory with the main test case file with name: '$TEST_CASE_FILE' and other necessary artifacts
 	which are necessary for the test execution.
-	The name of a test case is the last component of the path-name of the main test case file.
+	The name of a test case is the relative path from the containing entity to the main test case file.
 	The test case file contains the necessary definitions and the script code to execute the test.
 	
-	A test suite is a collection of test cases which are organized in a test suite directory. The directory sub tree
-	of the test suite may have an arbitrary depth.
+	A test suite is a collection of test cases, test suites and artifacts to prepare and finalize the execution of the suite.
+	The directory sub tree of the test suite may have an arbitrary depth.
 	A test suite is defined through a directory with the main suite file with name: '$TEST_SUITE_FILE'
-	The name of a test suite is the last component of the path-name of the main test suite file.
+	The name of a test suite is the relative path from the containing entity to the main test suite file.
 	The test suite file contains the necessary definitions and the script code to execute the test suite preparation 
-	and suite finalization. The test suite file may contain common suite code (functions must be exported).
-	Suites may be omitted.
+	and suite finalization. The test suite file may contain common suite code (you must register functions, that are to be
+	used in sub-suites or test cases).
+	Test cases may exists without a suite.
 	
-	One or more test suites and / or test cases form a Test Collection. A test collection is defined through a directory with the 
-	test collection file with name: 
-	The test collection file contains the necessary definitions and the script code to execute the test collection preparation 
-	and collection finalization. The test collection file may contain common code (functions must be exported).
+	One or more test suites and / or test cases form a Test Collection. A test collection is defined through a directory. 
+	A test collection may execute common code (functions must be registered).
 	A test collection may have a test properties file $TEST_PROPERTIES which should contain the definition of variables and 
 	properties which may be variable in different test environments.
 	The name of the test properties file may be changed by a command line parameter (--properties).
 	
-	Common used script code may be placed in separate script files, which must be registered during test run.
+	Common used script code may be placed in separate script files, which must be registered during test run (--tools command line option).
 	
-	Test suites must not be nested in other test suites or test cases.
 	Test cases must not be nested in other test case directories.
-	All path names of test cases and suites must not contain any white space characters. A test Suite must not have the name '--'.
+	All path names of test cases and suites must not contain any white space characters.
 	
-	Test Cases, Test Suites and Test Collections may define variants. This allows the repeated execution of the artifact with changed
+	Test Cases and Test Suites may define variants. This allows the repeated execution of the artifact with changed
 	parameter sets.
 
 
 	## Execution Environment
 	=========================
-	The test framework starts with the analysis of the input directory (option -i|--directory). If no cases list is given as
-	command line parameter, all found test cases which are not marked with a 'skipped' property are executed.
-	If a cases list is given from the command line, all test cases with match the cases list are executed (pattern match)
+	The test framework starts with the analysis of the input directory (list) (option -i|--directory).
+	
+	If no cases list is given as command line parameter, all found test suites and test cases which are not marked with a 'skipped'
+	property are executed. In this case all suites (also empty suites) are executed.
+	
+	If a cases list is given from the command line, all test cases with match the cases list are executed (pattern match). 
+	Additionally all suites are executed, which are necessary to reatch the cases with a pattern match. In this mode suites that 
+	do not include an active case are not executed.
+	
+	There is always an enveloping 'dummy' suite, which is always executed.
 	
 	All generated artifacts are stored in a sub-directory of the workdir (option -w|--workdir) for further analysis.
 	The sub-directory name is composed of the actual date and time when the test case execution starts.

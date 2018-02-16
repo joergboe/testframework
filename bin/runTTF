@@ -40,13 +40,13 @@ source "${TTRO_scriptDir}/version.sh"
 
 #-----------------------------------------------------
 # Shutdown and interrut vars and functions
-declare interruptReceived=""
+declare -i interruptReceived=0
 
 # Function interruptSignalMain
 function interruptSignalMain {
 	echo "SIGINT received in $commandname ********************"
-	if [[ -z $interruptReceived ]]; then
-		interruptReceived="true"
+	if [[ $interruptReceived -eq 0 ]]; then
+		interruptReceived=1
 	else
 		echo "Abort test"
 		exit $errSigint
@@ -435,9 +435,10 @@ else
 	takeAllCases=""
 	declare caseToExecuteParent=''
 	checkCaseMatch '0' '0' '' ''
-	if [[ -n $caseToExecuteParent ]]; then
-		executeSuite[0]='true'
-	fi
+	#if [[ -n $caseToExecuteParent ]]; then
+	#dummy suite is always executed
+	executeSuite[0]='true'
+	#fi
 fi
 declare -p executeSuite
 declare -p executeCase
@@ -472,13 +473,11 @@ readonly noCases noSuites noCasesToExecute noSuitesToExecute
 
 #--------------------------------------------------
 # print final execution list and prompt
-if isDebug; then
-	echo "******************* $noSuitesToExecute suites (incl dummy) and $noCasesToExecute cases to execute in $TTRO_inputDir *******************"
-	printSuitesCases 0 0 'true' ''
-fi
+echo "******************* $noSuitesToExecute suites (incl dummy) and $noCasesToExecute cases to execute in $TTRO_inputDir *******************"
+printSuitesCases 0 0 'true' ''
 
 echo "********************************************************"
-if [[ $noprompt == "" ]]; then
+if [[ -z $noprompt && -z $TTRO_reference ]]; then
 	while read -p "Continue or exit? y/e "; do
 		if [[ $REPLY == y* || $REPLY == Y* || $REPLY == c* || $REPLY == C* ]]; then
 			break
@@ -518,7 +517,7 @@ if [[ -e $TTRO_workDir ]]; then
 	if [[ $noprompt == "true" ]]; then
 		rm -rf "$TTRO_workDir"
 	else
-		while read -p "ERROR: Output directory already exists $TTRO_workDir: Remove it or not or exit? y/n/e "; do
+		while read -p "WARNING: Output directory already exists $TTRO_workDir: Remove it or not or exit? y/n/e "; do
 			if [[ $REPLY == y* || $REPLY == Y* ]]; then
 				rm -rf "$TTRO_workDir"
 				break
@@ -598,7 +597,7 @@ export >> "$tmp"
 #--------------------------------------------
 #execution loop over suites and variants
 declare -i suiteVariants=0 suiteErrors=0
-if [[ -z $interruptReceived ]]; then
+if [[ $interruptReceived -eq 0 ]]; then
 	isVerbose && echo "**** START Root Suite ************************************"
 	exeSuite '0' '' '-1' '' '' "${TTRO_workDir}"
 	isVerbose && echo "**** END Root Suite **************************************"
@@ -606,14 +605,14 @@ fi
 
 #print result lists
 echo  "**** END Test execution *******************************************************************************"
-for x in VARIANT SUCCESS SKIP FAILURE ERROR SUITE_VARIANT SUITE_ERROR; do
-	tmp="${TTRO_workDir}/${x}_LIST"
+for x in CASE_EXECUTE CASE_SKIP CASE_FAILURE CASE_ERROR CASE_SUCCESS SUITE_EXECUTE SUITE_SKIP SUITE_ERROR; do
+	tmp="${TTRO_workDir}/${x}"
 	eval "${x}Count=0"
-	if isVerbose || [[ $x == 'FAILURE' || $x == 'ERROR' ]]; then echo "**** $x List : ****"; fi
+	if isVerbose || [[ $x == *_FAILURE || $x == *_ERROR ]]; then echo "**** $x List : ****"; fi
 	if [[ -e ${tmp} ]]; then
 		{
 			while read; do
-				if isVerbose || [[ $x == 'FAILURE' || $x == 'ERROR' ]]; then echo "$REPLY "; fi
+				if isVerbose || [[ $x == *_FAILURE || $x == *_ERROR ]]; then echo "$REPLY "; fi
 				if [[ $REPLY != \#* ]]; then
 					eval "${x}Count=\$((\${x}Count+1))"
 				fi
@@ -630,13 +629,13 @@ done
 #Print suite errors and collection
 if [[ $SUITE_ERRORCount -gt 0 ]]; then
 	printError "Errors in $SUITE_ERRORCount suites:"
-	cat "$TTRO_workDir/SUITE_ERROR_LIST"
+	cat "$TTRO_workDir/SUITE_ERROR"
 fi
 
 echo
 printf "*******************************************************************************************************\n"
-printf "***** suite variants=%i errors during suite execution=%i\n" $SUITE_VARIANTCount $SUITE_ERRORCount
-printf "***** case variants=%i skipped=%i failures=%i errors=%i\n" $VARIANTCount $SKIPCount $FAILURECount $ERRORCount
+printf "***** suites executed=%i skipped=%i errors=%i\n" $SUITE_EXECUTECount $SUITE_SKIPCount $SUITE_ERRORCount
+printf "***** cases  executed=%i skipped=%i failures=%i errors=%i\n" $CASE_EXECUTECount $CASE_SKIPCount $CASE_FAILURECount $CASE_ERRORCount
 printf "***** used workdir: %s\n" "$TTRO_workDir"
 printf "*******************************************************************************************************\n"
 
@@ -645,9 +644,9 @@ if [[ -n "$interruptReceived" ]]; then
 	mainResult=$errSigint
 elif [[ $SUITE_ERRORCount -gt 0 ]]; then
 	mainResult=$errSuiteError
-elif [[ $ERRORCount -gt 0 ]]; then
+elif [[ $CASE_ERRORCount -gt 0 ]]; then
 	mainResult=$errTestError
-elif [[ $FAILURECount -gt 0 ]]; then
+elif [[ $CASE_FAILURECount -gt 0 ]]; then
 	mainResult=$errTestFail
 fi
 

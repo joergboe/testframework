@@ -180,35 +180,37 @@ function scan {
 # $3 if true: print only the cases/suites to execute
 # $4 if true print debug
 function printSuitesCases {
-	#isDebug && printDebug "******* $FUNCNAME $1 $2 $3 $4"
+	isDebug && printDebug "******* $FUNCNAME $1 $2 $3 $4"
 	local ident="$2"
 	local spacer=''
 	local i
-	for ((i=0; i<ident; i++)); do spacer="${spacer}"$'\t'; done
-	if [[ -z $3 || -n ${executeSuite[$1]} ]]; then
-		if [[ -n $4 ]]; then
-			printDebug "${spacer}S: ${suitesPath[$1]} rpath=${suitesName[$1]}"
-		else
-			echo "${spacer}S: ${suitesName[$1]}"
-		fi
-	fi
-	local li=${childCases[$1]}
-	local x
-	for x in $li; do
-		if [[ -z $3 || -n ${executeCase[$x]} ]]; then
+	if [[ ${#suitesPath[@]} -gt $1 ]]; then
+		for ((i=0; i<ident; i++)); do spacer="${spacer}"$'\t'; done
+		if [[ -z $3 || -n ${executeSuite[$1]} ]]; then
 			if [[ -n $4 ]]; then
-				printDebug "${spacer}    C: ${casesPath[$x]} rpath=${casesName[$x]}"
+				printDebug "${spacer}S: ${suitesPath[$1]} rpath=${suitesName[$1]}"
 			else
-				echo "${spacer}    C: ${casesName[$x]}"
+				echo "${spacer}S: ${suitesName[$1]}"
 			fi
 		fi
-	done
-	li=${childSuites[$1]}
-	local x
-	local i2=$((ident+1))
-	for x in $li; do
-		printSuitesCases "$x" "i2" "$3" "$4"
-	done
+		local li=${childCases[$1]}
+		local x
+		for x in $li; do
+			if [[ -z $3 || -n ${executeCase[$x]} ]]; then
+				if [[ -n $4 ]]; then
+					printDebug "${spacer}    C: ${casesPath[$x]} rpath=${casesName[$x]}"
+				else
+					echo "${spacer}    C: ${casesName[$x]}"
+				fi
+			fi
+		done
+		li=${childSuites[$1]}
+		local x
+		local i2=$((ident+1))
+		for x in $li; do
+			printSuitesCases "$x" "i2" "$3" "$4"
+		done
+	fi
 	return 0
 }
 

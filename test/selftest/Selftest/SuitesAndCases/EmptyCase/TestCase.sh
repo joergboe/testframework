@@ -10,8 +10,8 @@ TT_expectResult=$errTestError
 
 function myEvaluate {
 	if ! linewisePatternMatch './STDERROUT1.log' 'true'\
-			'*\*\*\*\*\* case variants=1 skipped=0 failures=0 errors=1'\
-			'*\*\*\*\*\* suite variants=1 errors during suite execution=0'; then
+			'*\*\*\*\*\* cases  executed=1 skipped=0 failures=0 errors=1'\
+			'*\*\*\*\*\* suites executed=1 skipped=0 errors=0'; then
 		failureOccurred='true'
 	fi
 	return 0

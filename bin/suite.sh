@@ -151,8 +151,8 @@ export >> "$tmp"
 
 #--------------------------------------------------
 # prepare output lists
-for x in VARIANT SUCCESS SKIP FAILURE ERROR SUITE_VARIANT SUITE_ERROR; do
-	tmp="${TTRO_workDirSuite}/${x}_LIST"
+for x in CASE_EXECUTE CASE_SKIP CASE_FAILURE CASE_ERROR CASE_SUCCESS SUITE_EXECUTE SUITE_SKIP SUITE_ERROR; do
+	tmp="${TTRO_workDirSuite}/${x}"
 	if [[ -e $tmp ]]; then
 		printError "Result list exists in suite $TTRO_suite list: $tmp"
 		rm -rf "$tmp"
@@ -294,8 +294,14 @@ else
 fi
 declare -i currentParralelJobs=TTRO_noParallelCases
 
-setVar 'TTP_timeout' "$defaultTimeout"
-setVar 'TTP_additionalTime' "$defaultAdditionalTime"
+declare thisTimeout="$defaultTimeout"
+if isExisting 'TTP_timeout'; then
+	thisTimeout="$TTP_timeout"
+fi
+declare thisAdditionalTime="$defaultAdditionalTime"
+if isExisting 'TTP_additionalTime'; then
+	thisAdditionalTime="$TTP_additionalTime"
+fi
 declare -a tjobid=()	#the job id of process group
 declare -a tpid=()		#pid of the case job this is the crucical value of the structure
 declare -a tcase=()		#the name of the running case
@@ -383,7 +389,7 @@ while [[ -z $allJobsGone ]]; do
 						killed[$i]="$now"
 					fi
 				else
-					tmp=$((${killed[$i]}+$TTP_additionalTime))
+					tmp=$((${killed[$i]}+$thisAdditionalTime))
 					if [[ $now -gt $tmp ]]; then
 						if [[ -z ${tjobid[$i]} ]]; then
 							tempjobspec="${tpid[$i]}"
@@ -421,7 +427,7 @@ while [[ -z $allJobsGone ]]; do
 							if [[ -n $tmpVariant ]]; then
 								tmpCaseAndVariant="${tmpCaseAndVariant}:${tmpVariant}"
 							fi
-							echo "$tmpCaseAndVariant" >> "${TTRO_workDirSuite}/VARIANT_LIST"
+							echo "$tmpCaseAndVariant" >> "${TTRO_workDirSuite}/CASE_EXECUTE"
 							#executeList+=("$tmpCaseAndVariant")
 							echo -n "END: Job i=$i pid=$pid jobid=$jobid case=${tmpCase} variant='${tmpVariant}'"
 							tpid[$i]=""
@@ -436,28 +442,28 @@ while [[ -z $allJobsGone ]]; do
 								tmp2=$(<"${tmp}")
 								case "$tmp2" in
 									SUCCESS )
-										echo "$tmpCaseAndVariant" >> "${TTRO_workDirSuite}/SUCCESS_LIST"
+										echo "$tmpCaseAndVariant" >> "${TTRO_workDirSuite}/CASE_SUCCESS"
 										variantSuccess=$((variantSuccess+1))
 										#successList+=("$tmpCaseAndVariant")
 									;;
 									SKIP )
-										echo "$tmpCaseAndVariant" >> "${TTRO_workDirSuite}/SKIP_LIST"
+										echo "$tmpCaseAndVariant" >> "${TTRO_workDirSuite}/CASE_SKIP"
 										variantSkiped=$((variantSkiped+1))
 										#skipList+=("$tmpCaseAndVariant")
 									;;
 									FAILURE )
-										echo "$tmpCaseAndVariant" >> "${TTRO_workDirSuite}/FAILURE_LIST"
+										echo "$tmpCaseAndVariant" >> "${TTRO_workDirSuite}/CASE_FAILURE"
 										variantFailures=$((variantFailures+1))
 										#failureList+=("$tmpCaseAndVariant")
 									;;
 									ERROR )
-										echo "$tmpCaseAndVariant" >> "${TTRO_workDirSuite}/ERROR_LIST"
+										echo "$tmpCaseAndVariant" >> "${TTRO_workDirSuite}/CASE_ERROR"
 										variantErrors=$((variantErrors+1))
 										#errorList+=("$tmpCaseAndVariant")
 									;;
 									* )
 										printError "${tmpCase}:${tmpVariant} : Invalid Case-variant result $tmp2 case workdir ${tcaseWorkDir[$i]}"
-										echo "$tmpCaseAndVariant" >> "${TTRO_workDirSuite}/ERROR_LIST"
+										echo "$tmpCaseAndVariant" >> "${TTRO_workDirSuite}/CASE_ERROR"
 										variantErrors=$((variantErrors+1))
 										#errorList+=("$tmpCaseAndVariant")
 										tmp2="ERROR"
@@ -465,7 +471,7 @@ while [[ -z $allJobsGone ]]; do
 								esac
 							else
 								printError "No RESULT file in case workdir ${tcaseWorkDir[$i]}"
-								echo "$tmpCaseAndVariant" >> "${TTRO_workDirSuite}/ERROR_LIST"
+								echo "$tmpCaseAndVariant" >> "${TTRO_workDirSuite}/CASE_ERROR"
 								variantErrors=$((variantErrors+1))
 								#errorList+=("$tmpCaseAndVariant")
 								tmp2="ERROR"
@@ -545,7 +551,7 @@ while [[ -z $allJobsGone ]]; do
 		startTime[$availableTpidIndex]="$tmp"
 		tmp1=${caseTimeout[$jobIndex]}
 		if [[ $tmp1 -eq 0 ]]; then
-			tmp1="$TTP_timeout"
+			tmp1="$thisTimeout"
 		fi
 		isVerbose && echo "Job timeout $tmp1"
 		endTime[$availableTpidIndex]=$((tmp+tmp1))
@@ -655,24 +661,28 @@ isVerbose && echo "$executedTestFinSteps Test Suite Finalisation steps executed"
 
 #-------------------------------------------------------
 #put results to results file for information purose only 
-echo -e "VARIANT=$jobIndex\nSUCCESS=$variantSuccess\nSKIP=$variantSkiped\nFAILURE=$variantFailures\nERROR=$variantErrors" > "${TTRO_workDirSuite}/RESULT"
-echo -e "SUITE_VARIANT=$suiteVariants\nSUITE_ERROR=$suiteErrors" >> "${TTRO_workDirSuite}/RESULT"
+echo -e "CASE_EXECUTE=$jobIndex\nCASE_SKIP=$variantSkiped\nCASE_FAILURE=$variantFailures\nCASE_ERROR=$variantErrors\nCASE_SUCCESS=$variantSuccess" > "${TTRO_workDirSuite}/RESULT"
+echo -e "SUITE_EXECUTE=$suiteVariants\nSUITE_SKIP=\nSUITE_ERROR=$suiteErrors" >> "${TTRO_workDirSuite}/RESULT"
 
 #-------------------------------------------------------
 #Final verbose suite result printout
 echo "**** Results Suite: $TTRO_suite ***********************************************"
-for x in VARIANT SUCCESS SKIP FAILURE ERROR; do
-	tmp="${TTRO_workDirSuite}/${x}_LIST"
+for x in CASE_EXECUTE CASE_SKIP CASE_FAILURE CASE_ERROR CASE_SUCCESS SUITE_EXECUTE SUITE_SKIP SUITE_ERROR; do
+	tmp="${TTRO_workDirSuite}/${x}"
 	eval "${x}_NO=0"
 	isVerbose && echo "**** $x List : ****"
-	{
-		while read; do
-			if [[ $REPLY != \#* ]]; then
-				eval "${x}_NO=\$((${x}_NO+1))"
-			fi
-			isVerbose && echo "$REPLY "
-		done
-	} < "$tmp"
+	if [[ -e ${tmp} ]]; then
+		{
+			while read; do
+				if [[ $REPLY != \#* ]]; then
+					eval "${x}_NO=\$((${x}_NO+1))"
+				fi
+				isVerbose && echo "$REPLY "
+			done
+		} < "$tmp"
+	else
+		printErrorAndExit "No result file ${tmp} exists" $errRt
+	fi
 	tmp3="${x}_NO"
 	isDebug && printDebug "Overall $x = ${!tmp3}"
 done
