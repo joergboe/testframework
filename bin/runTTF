@@ -640,7 +640,7 @@ printf "***** used workdir: %s\n" "$TTRO_workDir"
 printf "*******************************************************************************************************\n"
 
 declare mainResult=0
-if [[ -n "$interruptReceived" ]]; then
+if [[ $interruptReceived -ne 0 ]]; then
 	mainResult=$errSigint
 elif [[ $SUITE_ERRORCount -gt 0 ]]; then
 	mainResult=$errSuiteError
