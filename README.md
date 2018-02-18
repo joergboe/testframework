@@ -59,3 +59,6 @@ Version 0.2.0:
 - New test cases
 - Streams sample
 
+Version 2.0.0:
+- Remove concept of TestCollection.sh 
+- Introductio of nested Test Suites
