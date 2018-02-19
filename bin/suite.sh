@@ -169,6 +169,8 @@ if [[ -e $tmp ]]; then
 	rm -rf "$tmp"
 fi
 touch "$tmp"
+indexfilename="${TTRO_workDirSuite}/suite.html"
+createSuiteIndex "$indexfilename"
 
 #----------------------------------------------------------------------------------
 #extract test case variants from list and put all cases and variants into the lists
@@ -428,6 +430,7 @@ while [[ -z $allJobsGone ]]; do
 								tmpCaseAndVariant="${tmpCaseAndVariant}:${tmpVariant}"
 							fi
 							echo "$tmpCaseAndVariant" >> "${TTRO_workDirSuite}/CASE_EXECUTE"
+							
 							#executeList+=("$tmpCaseAndVariant")
 							echo -n "END: Job i=$i pid=$pid jobid=$jobid case=${tmpCase} variant='${tmpVariant}'"
 							tpid[$i]=""
@@ -445,27 +448,32 @@ while [[ -z $allJobsGone ]]; do
 										echo "$tmpCaseAndVariant" >> "${TTRO_workDirSuite}/CASE_SUCCESS"
 										variantSuccess=$((variantSuccess+1))
 										#successList+=("$tmpCaseAndVariant")
+										addCaseEntry "$indexfilename" "$tmpCase" "$tmpVariant" 'SUCCESS' '1' "${tcaseWorkDir[$i]}" 
 									;;
 									SKIP )
 										echo "$tmpCaseAndVariant" >> "${TTRO_workDirSuite}/CASE_SKIP"
 										variantSkiped=$((variantSkiped+1))
 										#skipList+=("$tmpCaseAndVariant")
+										addCaseEntry "$indexfilename" "$tmpCase" "$tmpVariant" 'SKIP' '1' "${tcaseWorkDir[$i]}"
 									;;
 									FAILURE )
 										echo "$tmpCaseAndVariant" >> "${TTRO_workDirSuite}/CASE_FAILURE"
 										variantFailures=$((variantFailures+1))
 										#failureList+=("$tmpCaseAndVariant")
+										addCaseEntry "$indexfilename" "$tmpCase" "$tmpVariant" 'FAILURE' '1' "${tcaseWorkDir[$i]}"
 									;;
 									ERROR )
 										echo "$tmpCaseAndVariant" >> "${TTRO_workDirSuite}/CASE_ERROR"
 										variantErrors=$((variantErrors+1))
 										#errorList+=("$tmpCaseAndVariant")
+										addCaseEntry "$indexfilename" "$tmpCase" "$tmpVariant" 'ERROR' '1' "${tcaseWorkDir[$i]}"
 									;;
 									* )
 										printError "${tmpCase}:${tmpVariant} : Invalid Case-variant result $tmp2 case workdir ${tcaseWorkDir[$i]}"
 										echo "$tmpCaseAndVariant" >> "${TTRO_workDirSuite}/CASE_ERROR"
 										variantErrors=$((variantErrors+1))
 										#errorList+=("$tmpCaseAndVariant")
+										addCaseEntry "$indexfilename" "$tmpCase" "$tmpVariant" 'ERROR' '1' "${tcaseWorkDir[$i]}"
 										tmp2="ERROR"
 									;;
 								esac
@@ -474,6 +482,7 @@ while [[ -z $allJobsGone ]]; do
 								echo "$tmpCaseAndVariant" >> "${TTRO_workDirSuite}/CASE_ERROR"
 								variantErrors=$((variantErrors+1))
 								#errorList+=("$tmpCaseAndVariant")
+								addCaseEntry "$indexfilename" "$tmpCase" "$tmpVariant" 'ERROR' '1' "${tcaseWorkDir[$i]}"
 								tmp2="ERROR"
 							fi
 							echo " Result: $tmp2"
@@ -560,6 +569,9 @@ while [[ -z $allJobsGone ]]; do
 		jobIndex=$((jobIndex+1))
 	fi
 done
+
+#fin 
+startSuiteList "$indexfilename"
 
 ##execution loop over sub suites and variants
 declare -i suiteVariants=0 suiteErrors=0
@@ -686,6 +698,9 @@ for x in CASE_EXECUTE CASE_SKIP CASE_FAILURE CASE_ERROR CASE_SUCCESS SUITE_EXECU
 	tmp3="${x}_NO"
 	isDebug && printDebug "Overall $x = ${!tmp3}"
 done
+
+# html 
+endSuiteIndex "$indexfilename"
 
 declare suiteResult=0
 if [[ $interruptReceived -gt 0 ]]; then

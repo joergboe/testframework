@@ -632,12 +632,19 @@ if [[ $SUITE_ERRORCount -gt 0 ]]; then
 	cat "$TTRO_workDir/SUITE_ERROR"
 fi
 
+indexfilename="${TTRO_workDir}/index.html"
 echo
 printf "*******************************************************************************************************\n"
 printf "***** suites executed=%i skipped=%i errors=%i\n" $SUITE_EXECUTECount $SUITE_SKIPCount $SUITE_ERRORCount
 printf "***** cases  executed=%i skipped=%i failures=%i errors=%i\n" $CASE_EXECUTECount $CASE_SKIPCount $CASE_FAILURECount $CASE_ERRORCount
 printf "***** used workdir: %s\n" "$TTRO_workDir"
+printf "***** Index in %s\n" "$indexfilename"
 printf "*******************************************************************************************************\n"
+
+#--------------------------------------------
+# prepare html docs
+#createCSS "${TTRO_workDir}/testframe.css"
+createGlobalIndex "$indexfilename"
 
 declare mainResult=0
 if [[ $interruptReceived -ne 0 ]]; then
@@ -651,5 +658,7 @@ elif [[ $CASE_FAILURECount -gt 0 ]]; then
 fi
 
 builtin echo -n "$mainResult" > "$TTRO_workDir/DONE"
+
+firefox "$indexfilename" &
 
 exit $mainResult

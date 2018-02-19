@@ -287,4 +287,54 @@ function printParams {
 	fi
 }
 
+#
+# Create the css-file 
+# $1 the file to create
+function createCSS {
+	cat <<-EOF > "$1"
+	/* Testframe CSS Document */
+	body {
+	font-family: Verdana, Arial, Helvetica, sans-serif; 
+	}
+
+	p, table, li {
+	font-size : 10pt;
+	}
+
+	h1 {
+	background-color : gray;
+	color : white;
+	}
+
+	h2, h3 {
+	color : rgb(0,0,153);
+	}
+
+	b {
+	color :read;
+	}
+
+	i {
+	color : read;
+	}
+
+	a:link {
+	color : rgb(0,0,153);
+	}
+
+	a:visited {
+	color : grey;
+	}
+
+	a:hover {
+	text-decoration : none;
+	color : red;
+	}
+
+	a:active {
+	color : black;
+	}
+	EOF
+}
+
 :

@@ -1,3 +1,7 @@
+#####################################################
+# Utilities for the core testframework script code
+#####################################################
+
 #
 # function to execute the variants of suites
 # $1 the suite index to execute
@@ -98,8 +102,120 @@ function exeSuite {
 		done
 	fi
 
+	# html
+	if [[ $nestingLevel -gt 0 ]]; then
+		addSuiteEntry "$indexfilename" "$suiteNestingString" "$result" "$suitePath" "${sworkdir}"
+	fi
+	
 	echo "**** END Suite: ${suite} variant='$2' in ${suitePath} *******************"
 	return 0
 } #/exeSuite
+
+#
+# Create the global index.html
+# $1 the file to create
+function createGlobalIndex {
+	cat <<-EOF > "$1"
+	<!DOCTYPE html>
+	<html>  
+	<head>    
+		<title>Test Report Collection '$TTRO_collection'</title>
+		<meta charset='utf-8'>
+	</head>  
+	<body>    
+		<h1 style="text-align: center;">Test Report Collection '$TTRO_collection'</h1>
+		<h2>Test Case execution Summary</h2>      
+		<p>
+		<hr>
+		***** suites executed=$SUITE_EXECUTECount skipped=$SUITE_SKIPCount errors=$SUITE_ERRORCount<br>
+		***** cases  executed=$CASE_EXECUTECount skipped=$CASE_SKIPCount failures=$CASE_FAILURECount errors=$CASE_ERRORCount<br>
+		***** used workdir: <a href="$TTRO_workDir">$TTRO_workDir</a><br>
+		<hr>
+		</p>      
+		<hr>      
+		<h3>The Suite Lists</h3>
+		<ul>
+		  <li><a href="suite.html">Global Dummy Suite</a></li>
+		</ul>
+		text
+		<div style="color: maroon">
+		warning
+		</div>
+		<div style="color: rgb(255,204,0)">
+		warning 2
+		</div>
+		<div style="color: red">error</div>
+	</body>
+	</html>
+	EOF
+}
+
+#
+# Create the suite index file
+# $1 the index file name
+function createSuiteIndex {
+	cat <<-EOF > "$1"
+	<!DOCTYPE html>
+	<html>  
+	<head>    
+		<title>Test Report Collection '$TTRO_collection'</title>
+		<meta charset='utf-8'>
+	</head>  
+	<body>    
+		<h1 style="text-align: center;">Test Suite '$TTRO_suite'</h1>
+		<p>
+		Suite input dir   <a href="$TTRO_inputDirSuite">$TTRO_inputDirSuite</a><br>
+		Suite working dir <a href="$TTRO_workDirSuite">$TTRO_workDirSuite</a><br>
+		<h2>Test Case execution:</h2>
+		<p>
+		<ul>
+	EOF
+}
+
+#
+# Add Case entry to suite index
+# $1 File name
+# $2 Case name
+# $3 Case variant
+# $4 Case result
+# $5 Case input dir
+# $6 Case work dir
+function addCaseEntry {
+	echo "<li><a href=\"$6\">$2:$3 </a> $4</li>" >> "$1"
+}
+
+#
+# Add Case entry to suite index
+# $1 File name
+function startSuiteList {
+	cat <<-EOF >> "$1"
+		</ul>
+		<h2>Test Suite execution:</h2>
+		<p>
+		<ul>
+	EOF
+}
+
+#
+# Add Suite entry to suite index
+# $1 File name
+# $2 Suite nesting string
+# $3 Suite result
+# $4 Suite input dir
+# $5 Suite work dir
+function addSuiteEntry {
+	echo "<li><a href=\"$5/suite.html\">$2 </a> $3 <a href=\"$5\"> work dir</a></li>" >> "$1"
+}
+
+#
+# end suite index html
+# $1 file name
+function endSuiteIndex {
+	cat <<-EOF >> "$1"
+		</ul>
+		</body>
+	</html>
+	EOF
+}
 
 :
