@@ -30,7 +30,10 @@ function usage {
 	-l|--link                : Content found in data directoy are linked to workspace not copied (Set TTPN_link=true)
 	--no-start               : Supress the execution of the start sequence (Set TTPN_noStart)
 	--no-stop                : Supress the execution of tear stop sequencd (Set TTPN_noStop)
-	--no-browser             : Do not start browser after test execution
+	--no-browser             : Do not start browser after test execution.
+	                           If this parameter is not set, the programm opens the web browser with a summary
+	                           of the test execution. The default browser command stored in environment BROWSER is used. If variable BROWSER is empty,
+	                           no browser is started at all. If environment BROWSER is missing command 'firefox' is used.
 	-D value                 : Set the specified TT_-, TTRO_-, TTP_- or TTPN_- variable value (Use one of varname=value)
 	-v|--verbose             : Be verbose to stdout
 	-V|--version             : Print the version string

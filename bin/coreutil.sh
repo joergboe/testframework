@@ -181,11 +181,22 @@ function createSuiteIndex {
 # $5 Case input dir
 # $6 Case work dir
 function addCaseEntry {
-	echo "<li><a href=\"$6\">$2:$3 </a> $4</li>" >> "$1"
+	case $4 in
+		SUCCESS ) 
+			echo "<li>$2:$3 workdir <a href=\"$6\">$6</a> $4</li>" >> "$1";;
+		ERROR )
+			echo "<li style=\"color: red\">$2:$3 workdir <a href=\"$6\">$6</a> $4</li>" >> "$1";;
+		FAILURE )
+			echo "<li style=\"color: yellow\">$2:$3 workdir <a href=\"$6\">$6</a> $4</li>" >> "$1";;
+		SKIP )
+			echo "<li style=\"color: blue\">$2:$3 workdir <a href=\"$6\">$6</a> $4</li>" >> "$1";;
+		*) 
+			printErrorAndExit "Wrong result string $4" $errRt
+	esac
 }
 
 #
-# Add Case entry to suite index
+# Start suite index and end case list
 # $1 File name
 function startSuiteList {
 	cat <<-EOF >> "$1"
@@ -204,7 +215,16 @@ function startSuiteList {
 # $4 Suite input dir
 # $5 Suite work dir
 function addSuiteEntry {
-	echo "<li><a href=\"$5/suite.html\">$2 </a> $3 <a href=\"$5\"> work dir</a></li>" >> "$1"
+	case $3 in
+		0 )
+			echo "<li><a href=\"$5/suite.html\">$2</a> result code: $3  work dir: <a href=\"$5\">$5</a></li>" >> "$1";;
+		$errSkip )
+			echo "<li style=\"color: blue\"><a href=\"$5/suite.html\">$2</a> result code: $3  work dir: <a href=\"$5\">$5</a></li>" >> "$1";;
+		$errSigint )
+			echo "<li style=\"color: yellow\"><a href=\"$5/suite.html\">$2</a> result code: $3  work dir: <a href=\"$5\">$5</a></li>" >> "$1";;
+		* )
+			echo "<li style=\"color: red\"><a href=\"$5/suite.html\">$2</a> result code: $3  work dir: <a href=\"$5\">$5</a></li>" >> "$1"
+	esac
 }
 
 #
