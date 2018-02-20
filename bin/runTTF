@@ -537,6 +537,21 @@ echo "TTRO_workDir=$TTRO_workDir"
 # enter working dir
 cd "$TTRO_workDir"
 
+#-----------------------------------------------------------
+#check if properties file exists - read properties and fixup
+if [[ -n $properties ]]; then
+	isVerbose && echo "Include global properties $properties"
+	#setProperties "${properties}"
+	source "${properties}"
+elif [[ -e "$TTRO_inputDir/$TEST_PROPERTIES" ]]; then
+	isVerbose && echo "Include global properties $TTRO_inputDir/$TEST_PROPERTIES"
+	#setProperties "$TTRO_inputDir/$TEST_PROPERTIES"
+	source "$TTRO_inputDir/$TEST_PROPERTIES"
+else
+	isVerbose && echo "No global properies file to evaluate"
+fi
+fixPropsVars # fix global properties and vars
+
 #------------------------------------------------
 # source tools
 if isNotExisting 'TT_tools'; then
@@ -572,21 +587,6 @@ if [[ -n $TTRO_reference ]]; then
 	} | less
 	exit 0
 fi
-
-#-----------------------------------------------------------
-#check if properties file exists - read properties and fixup
-if [[ -n $properties ]]; then
-	isVerbose && echo "Include global properties $properties"
-	#setProperties "${properties}"
-	source "${properties}"
-elif [[ -e "$TTRO_inputDir/$TEST_PROPERTIES" ]]; then
-	isVerbose && echo "Include global properties $TTRO_inputDir/$TEST_PROPERTIES"
-	#setProperties "$TTRO_inputDir/$TEST_PROPERTIES"
-	source "$TTRO_inputDir/$TEST_PROPERTIES"
-else
-	isVerbose && echo "No global properies file to evaluate"
-fi
-fixPropsVars # fix global properties and vars
 
 #------------------------------------------------
 # diagnostics

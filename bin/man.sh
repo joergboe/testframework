@@ -350,8 +350,8 @@ function manpage () {
 	- Scan input directory and collect all test suites and cases to execute
 	- Set programm defined props/vars
 	- Set properties and variables defined with command line parameter -D..
-	- Source all defined tools scripts !!!??
-	- Source properties file if required - set props and vars !!!?
+	- Source properties file if required - set props and vars
+	- Source all defined tools scripts
 	- Execute root suite in inherited environment
 	- print result
 
