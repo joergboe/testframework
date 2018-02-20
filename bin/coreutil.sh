@@ -13,8 +13,6 @@
 # expect suiteVariants suiteErrors
 function exeSuite {
 	isDebug && printDebug "******* $FUNCNAME $*"
-	#local suiteIndex="$1"
-	#local suiteVariant="$2"
 	local suite="${suitesName[$1]}"
 	local suitePath="${suitesPath[$1]}"
 	local nestingLevel=$(($3+1))
@@ -90,10 +88,12 @@ function exeSuite {
 		for x in CASE_EXECUTE CASE_SKIP CASE_FAILURE CASE_ERROR CASE_SUCCESS SUITE_EXECUTE SUITE_SKIP SUITE_ERROR; do
 			local inputFileName="${sworkdir}/${x}"
 			local outputFileName="${6}/${x}"
+			eval "local ${x}_Count=0"
 			if [[ -e ${inputFileName} ]]; then
 				{ while read; do
 					if [[ $REPLY != \#* ]]; then
 						echo "$REPLY" >> "$outputFileName"
+						eval "${x}_Count=$((${x}_Count+1))"
 					fi
 				done } < "${inputFileName}"
 			else
@@ -104,7 +104,8 @@ function exeSuite {
 
 	# html
 	if [[ $nestingLevel -gt 0 ]]; then
-		addSuiteEntry "$indexfilename" "$suiteNestingString" "$result" "$suitePath" "${sworkdir}"
+		addSuiteEntry "$indexfilename" "$suiteNestingString" "$result" "$suitePath" "${sworkdir}"\
+		$CASE_EXECUTE_Count $CASE_SKIP_Count $CASE_FAILURE_Count $CASE_ERROR_Count $CASE_SUCCESS_Count $SUITE_EXECUTE_Count $SUITE_SKIP_Count $SUITE_ERROR_Count
 	fi
 	
 	echo "**** END Suite: ${suite} variant='$2' in ${suitePath} *******************"
@@ -162,7 +163,7 @@ function createSuiteIndex {
 		<meta charset='utf-8'>
 	</head>  
 	<body>    
-		<h1 style="text-align: center;">Test Suite '$TTRO_suite'</h1>
+		<h1 style="text-align: center;">Test Suite '$TTRO_suiteNestingString'</h1>
 		<p>
 		Suite input dir   <a href="$TTRO_inputDirSuite">$TTRO_inputDirSuite</a><br>
 		Suite working dir <a href="$TTRO_workDirSuite">$TTRO_workDirSuite</a><br>
@@ -214,17 +215,25 @@ function startSuiteList {
 # $3 Suite result
 # $4 Suite input dir
 # $5 Suite work dir
+# $6 Cases executed
+# $7 Cases skipped
+# $8 Cases failed
+# $9 Cases error
+# $10 Suites executed
+# $11 Suites skipped
+# S12 Suites error
 function addSuiteEntry {
 	case $3 in
 		0 )
-			echo "<li><a href=\"$5/suite.html\">$2</a> result code: $3  work dir: <a href=\"$5\">$5</a></li>" >> "$1";;
+			echo -n "<li><a href=\"$5/suite.html\">$2</a> result code: $3  work dir: <a href=\"$5\">$5</a>" >> "$1";;
 		$errSkip )
-			echo "<li style=\"color: blue\"><a href=\"$5/suite.html\">$2</a> result code: $3  work dir: <a href=\"$5\">$5</a></li>" >> "$1";;
+			echo -n "<li style=\"color: blue\"><a href=\"$5/suite.html\">$2</a> result code: $3  work dir: <a href=\"$5\">$5</a>" >> "$1";;
 		$errSigint )
-			echo "<li style=\"color: yellow\"><a href=\"$5/suite.html\">$2</a> result code: $3  work dir: <a href=\"$5\">$5</a></li>" >> "$1";;
+			echo -n "<li style=\"color: yellow\"><a href=\"$5/suite.html\">$2</a> result code: $3  work dir: <a href=\"$5\">$5</a>" >> "$1";;
 		* )
-			echo "<li style=\"color: red\"><a href=\"$5/suite.html\">$2</a> result code: $3  work dir: <a href=\"$5\">$5</a></li>" >> "$1"
+			echo -n "<li style=\"color: red\"><a href=\"$5/suite.html\">$2</a> result code: $3  work dir: <a href=\"$5\">$5</a>" >> "$1"
 	esac
+	echo "      <b>Cases</b> executed=$6 skipped=$7 failures=$8 errors=$9 <b>Suites</b> executed=${10} skipped=${11} errors=${12}</li>" >> "$1"
 }
 
 #
