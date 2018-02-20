@@ -62,3 +62,7 @@ Version 0.2.0:
 Version 2.0.0:
 - Remove concept of TestCollection.sh 
 - Introductio of nested Test Suites
+
+Version 2.1.0:
+- New feature: Browser is started after test collection execution and execution index is displayed in browser
+
