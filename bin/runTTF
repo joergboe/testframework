@@ -39,7 +39,7 @@ source "${TTRO_scriptDir}/version.sh"
 #declare -x TTPN_verboseDisable=""
 
 #-----------------------------------------------------
-# Shutdown and interrut vars and functions
+# Shutdown and interrupt vars and functions
 declare -i interruptReceived=0
 
 # Function interruptSignalMain
@@ -171,11 +171,11 @@ while [[ $# -ge 1 ]]; do
 	-D)
 		[[ $# -ge 2 && $2 != -* ]] || missOptionArg $1;
 		vname=${2%%=*}
-		vvalue={2#=*}
+		vvalue=${2#*=}
 		if [[ $2 != $vname && $2 != $vvalue ]]; then
 			i=${#varNamesToSet[@]}
-			${varNamesToSet[$i]}="$vname"
-			${varValuesToSet[$i]}="$vvalue"
+			varNamesToSet[$i]="$vname"
+			varValuesToSet[$i]="$vvalue"
 			shift
 		else
 			printError "Invalid format in parameter -D $2 variable name=$vname variable value=$vvalue"
