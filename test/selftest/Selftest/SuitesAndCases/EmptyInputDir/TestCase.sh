@@ -3,7 +3,7 @@
 PREPS='copyAndModifyTestCollection'
 STEPS='executeCase myEvaluate'
 
-declare -a options=( '--noprompt' '--noprompt -j 1' '--noprompt -j 1 -v' '--noprompt -j 1 -v -d' )
+declare -a options=( '--noprompt --no-browser' '--noprompt -j 1 --no-browser' '--noprompt -j 1 -v --no-browser' '--noprompt -j 1 -v -d --no-browser' )
 
 function executeCase {
 	echo $TTRO_inputDirCase
