@@ -22,7 +22,8 @@ function copyAndModifyTestCollection {
 TTRO_help_runRunTTF='
 # Execute the test freamework with input directory testCollection intercept error
 #	TT_runOptions - additional options
-#	TT_caseList - the case list'
+#	TT_caseList - the case list
+#	TTexpectedResult - the expected result code a number or X when to be ignored'
 function runRunTTF {
 	isDebug && printDebug "$FUNCNAME $*"
 	local result
@@ -42,8 +43,8 @@ function runRunTTF {
 		if [[ $result -ne 0 ]]; then
 			return 0
 		else
-			printError "result is $result. Expected is $TT_expectResult"
-			failureOccurred='true'
+			printWarning "result is $result. Expected is $TT_expectResult"
+			return 0
 		fi
 	else
 		if [[ $TT_expectResult -eq $result ]]; then
