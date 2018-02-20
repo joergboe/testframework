@@ -110,6 +110,7 @@ declare -r -A singleOptions=(
 	['reference']='--ref'
 	['flat']='-f --flat'
 	['noprompt']='--noprompt'
+	['nobrowser']='--no-browser'
 )
 declare -r -A valueOptions=(
 	['workdir']='-w --workdir'
@@ -659,6 +660,20 @@ fi
 
 builtin echo -n "$mainResult" > "$TTRO_workDir/DONE"
 
-firefox "$indexfilename" &
+if [[ -z $nobrowser ]]; then
+	tmp='firefox'
+	if isExisting 'BROWSER'; then
+		tmp="$BROWSER"
+	fi
+	if [[ -z $tmp ]]; then
+		if isVerbose; then
+			echo "Empty BROWSER variable: no browser started"
+		fi
+	else
+		if ! "$tmp" "$indexfilename"; then
+			printError "Browser command $tmp failed"
+		fi
+	fi
+fi
 
 exit $mainResult

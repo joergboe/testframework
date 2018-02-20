@@ -30,6 +30,7 @@ function usage {
 	-l|--link                : Content found in data directoy are linked to workspace not copied (Set TTPN_link=true)
 	--no-start               : Supress the execution of the start sequence (Set TTPN_noStart)
 	--no-stop                : Supress the execution of tear stop sequencd (Set TTPN_noStop)
+	--no-browser             : Do not start browser after test execution
 	-D value                 : Set the specified TT_-, TTRO_-, TTP_- or TTPN_- variable value (Use one of varname=value)
 	-v|--verbose             : Be verbose to stdout
 	-V|--version             : Print the version string
