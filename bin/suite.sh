@@ -125,11 +125,11 @@ cd "$TTRO_workDirSuite"
 
 #-------------------------------------
 # include tools
-for x in $TT_tools; do
-	isVerbose && echo "Source global tools file: $x"
-	source "$x"
-	fixPropsVars
-done
+#for x in $TT_tools; do
+#	isVerbose && echo "Source global tools file: $x"
+#	source "$x"
+#	fixPropsVars
+#done
 
 if [[ $TTRO_suiteIndex -ne 0 ]]; then
 	tmp="${TTRO_inputDirSuite}/${TEST_SUITE_FILE}"

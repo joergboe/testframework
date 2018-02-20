@@ -167,11 +167,11 @@ cd "$TTRO_workDirCase"
 
 #-----------------------------------
 # tools
-for x in $TT_tools; do
-	isVerbose && echo "Source global tools file: $x"
-	source "$x"
-	fixPropsVars
-done
+#for x in $TT_tools; do
+#	isVerbose && echo "Source global tools file: $x"
+#	source "$x"
+#	fixPropsVars
+#done
 
 #-------------------------------------------------
 #include global, suite and case custom definitions
