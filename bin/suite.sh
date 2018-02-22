@@ -247,9 +247,9 @@ for name_xyza in 'TTRO_prepsSuite' 'PREPS'; do
 			for (( i_xyza=0; i_xyza<l_xyza; i_xyza++)); do
 				eval "step_xyza=\${$name_xyza[$i_xyza]}"
 				if isExistingAndTrue 'TTPN_noPrepsSuite'; then
-					isVerbose && echo "Suppress Suite Preparation: $step_xyza"
+					echo "Suppress Suite Preparation: $step_xyza"
 				else
-					isVerbose && echo "Execute Suite Preparation: $step_xyza"
+					echo "Execute Suite Preparation: $step_xyza"
 					executedTestPrepSteps=$((executedTestPrepSteps+1))
 					eval "$step_xyza"
 				fi
@@ -258,9 +258,9 @@ for name_xyza in 'TTRO_prepsSuite' 'PREPS'; do
 			isDebug && printDebug "$name_xyza=${!name_xyza}"
 			for x_xyza in ${!name_xyza}; do
 				if isExistingAndTrue 'TTPN_noPrepsSuite'; then
-					isVerbose && echo "Suppress Suite Preparation: $x_xyza"
+					echo "Suppress Suite Preparation: $x_xyza"
 				else
-					isVerbose && echo "Execute Suite Preparation: $x_xyza"
+					echo "Execute Suite Preparation: $x_xyza"
 					executedTestPrepSteps=$((executedTestPrepSteps+1))
 					eval "${x_xyza}"
 				fi
@@ -270,14 +270,14 @@ for name_xyza in 'TTRO_prepsSuite' 'PREPS'; do
 done
 if isFunction 'testPreparation'; then
 	if isExistingAndTrue 'TTPN_noPrepsSuite'; then
-		isVerbose && echo "Suppress Suite Preparation function testPreparation"
+		echo "Suppress Suite Preparation function testPreparation"
 	else
-		isVerbose && echo "Execute Suite Preparation function testPreparation"
+		echo "Execute Suite Preparation function testPreparation"
 		executedTestPrepSteps=$((executedTestPrepSteps+1))
 		testPreparation
 	fi
 fi
-isVerbose && echo "$executedTestPrepSteps Test Suite Preparation steps executed"
+echo "$executedTestPrepSteps Test Suite Preparation steps executed"
 
 #-------------------------------------------------
 #test case execution
@@ -632,9 +632,9 @@ for name_xyza in 'TTRO_finSuite' 'FINS'; do
 			for (( i_xyza=0; i_xyza<l_xyza; i_xyza++)); do
 				eval "step=\${$name_xyza[$i_xyza]}"
 				if isExistingAndTrue 'TTPN_noFinsSuite'; then
-					isVerbose && echo "Suppress Suite Finalization: $step"
+					echo "Suppress Suite Finalization: $step"
 				else
-					isVerbose && echo "Execute Suite Finalization: $step"
+					echo "Execute Suite Finalization: $step"
 					executedTestFinSteps=$((executedTestFinSteps+1))
 					eval "$step"
 				fi
@@ -643,9 +643,9 @@ for name_xyza in 'TTRO_finSuite' 'FINS'; do
 			isDebug && printDebug "$name_xyza=${!name_xyza}"
 			for x_xyza in ${!name_xyza}; do
 				if isExistingAndTrue 'TTPN_noFinsSuite'; then
-					isVerbose && echo "Suppress Suite Finalization: $x_xyza"
+					echo "Suppress Suite Finalization: $x_xyza"
 				else
-					isVerbose && echo "Execute Suite Finalization: $x_xyza"
+					echo "Execute Suite Finalization: $x_xyza"
 					executedTestFinSteps=$((executedTestFinSteps+1))
 					eval "${x_xyza}"
 				fi
@@ -655,14 +655,14 @@ for name_xyza in 'TTRO_finSuite' 'FINS'; do
 done
 if isFunction 'testFinalization'; then
 	if isExistingAndTrue 'TTPN_noFinsSuite'; then
-		isVerbose && echo "Suppress Suite Finalization function testFinalization"
+		echo "Suppress Suite Finalization function testFinalization"
 	else
-		isVerbose && echo "Execute Suite Finalization function testFinalization"
+		echo "Execute Suite Finalization function testFinalization"
 		executedTestFinSteps=$((executedTestFinSteps+1))
 		testFinalization
 	fi
 fi
-isVerbose && echo "$executedTestFinSteps Test Suite Finalisation steps executed"
+echo "$executedTestFinSteps Test Suite Finalisation steps executed"
 
 #-------------------------------------------------------
 #put results to results file for information purose only 
