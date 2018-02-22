@@ -674,7 +674,7 @@ if [[ -z $nobrowser ]]; then
 	if [[ -z $tmp ]]; then
 		isVerbose && printVerbose "Empty BROWSER variable: no browser started"
 	else
-		if ! "$tmp" "$indexfilename"; then
+		if ! startAsync2 "$tmp" "$indexfilename"; then
 			printError "Browser command $tmp failed"
 		fi
 	fi

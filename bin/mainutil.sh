@@ -345,4 +345,10 @@ function createCSS {
 	EOF
 }
 
+#
+# start a command async
+function startAsync2 {
+	"$1" "$2"&
+}
+
 :
