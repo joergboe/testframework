@@ -58,6 +58,7 @@ TTRO_help_streamsutilsInitialization='
 function streamsutilsInitialization {
 	echo "$FUNCNAME dummy function"
 }
+export -f streamsutilsInitialization
 
 TTRO_help_copyAndTransformSpl='
 # Function copyAndTransformSpl
@@ -66,6 +67,7 @@ TTRO_help_copyAndTransformSpl='
 function copyAndTransformSpl {
 	copyAndTransform "$TTRO_inputDirCase" "$TTRO_workDirCase" "$TTRO_variantCase" '*.spl'
 }
+export -f copyAndTransformSpl
 
 TTRO_help_compile='
 # Function compile
@@ -74,6 +76,7 @@ TTRO_help_compile='
 function compile {
 	echoAndExecute ${TTPN_splc} "$TTP_splcFlags" -M $TT_mainComposite -t "$TT_toolkitPath" -j $TTRO_treads
 }
+export -f compile
 
 TTRO_help_compileAndFile='
 # Function compileAndFile
@@ -83,6 +86,7 @@ TTRO_help_compileAndFile='
 function compileAndFile {
 	echoAndExecute ${TTPN_splc} "$TTP_splcFlags" -M $TT_mainComposite -t "$TT_toolkitPath" -j $TTRO_treads 2>&1 | tee "$TT_evaluationFile"
 }
+export -f compileAndFile 
 
 TTRO_help_compileAndIntercept='
 # Function compileAndIntercept
@@ -97,6 +101,7 @@ function compileAndIntercept {
 	fi
 	return 0
 }
+export -f compileAndIntercept
 
 TTRO_help_makeZkParameter='
 # Function makeZkParameter
@@ -109,6 +114,7 @@ function makeZkParameter {
 		zkParam="--zkconnect $1"
 	fi
 }
+export -f makeZkParameter 
 
 TTRO_help_mkDomain='
 # Function mkDomain
@@ -116,6 +122,7 @@ TTRO_help_mkDomain='
 function mkDomain {
 	mkDomainVariable "$TTPN_streamsZkConnect" "$TTPN_streamsDomainId" "$TTPN_swsPort" "$TTPN_jmxPort"
 }
+export -f mkDomain 
 
 TTRO_help_mkDomainVariable='
 # Function mkDomainVariable
@@ -127,7 +134,7 @@ TTRO_help_mkDomainVariable='
 function mkDomainVariable {
 	isDebug && printDebug "$FUNCNAME $*"
 	if [[ -n $TTPN_noStart ]]; then
-		echo "$FUNCNAME : function supressed"
+		printInfo "$FUNCNAME : function supressed"
 		return 0
 	fi
 	local zkParam
@@ -143,6 +150,7 @@ function mkDomainVariable {
 		return $errTestFail
 	fi
 }
+export -f mkDomainVariable 
 
 TTRO_help_startDomain='
 # Function startDomain
@@ -150,6 +158,7 @@ TTRO_help_startDomain='
 function startDomain {
 	startDomainVariable "$TTPN_streamsZkConnect" "$TTPN_streamsDomainId"
 }
+export -f startDomain 
 
 TTRO_help_startDomainVariable='
 # Function startDomainVariable
@@ -159,7 +168,7 @@ TTRO_help_startDomainVariable='
 function startDomainVariable {
 	isDebug && printDebug "$FUNCNAME $*"
 	if [[ -n $TTPN_noStart ]]; then
-		echo "$FUNCNAME : function supressed"
+		printInfo "$FUNCNAME : function supressed"
 		return 0
 	fi
 	local zkParam
@@ -169,6 +178,7 @@ function startDomainVariable {
 		return $errTestFail
 	fi
 }
+export -f startDomainVariable
 
 TTRO_help_mkInst='
 # Function mkInst
@@ -176,6 +186,7 @@ TTRO_help_mkInst='
 function mkInst {
 	mkInstVariable "$TTPN_streamsZkConnect" "$TTPN_streamsInstanceId" "$TTPN_numresources"
 }
+export -f mkInst
 
 TTRO_help_mkInstVariable='
 # Function mkInstVariable
@@ -186,7 +197,7 @@ TTRO_help_mkInstVariable='
 function mkInstVariable {
 	isDebug && printDebug "$FUNCNAME $*"
 	if [[ -n $TTPN_noStart ]]; then
-		echo "$FUNCNAME : function supressed"
+		printInfo "$FUNCNAME : function supressed"
 		return 0
 	fi
 	local zkParam
@@ -196,6 +207,7 @@ function mkInstVariable {
 		return $errTestFail
 	fi
 }
+export -f mkInstVariable
 
 TTRO_help_startInst='
 # Function startInst
@@ -203,6 +215,7 @@ TTRO_help_startInst='
 function startInst {
 	startInstVariable "$TTPN_streamsZkConnect" "$TTPN_streamsInstanceId"
 }
+export -f startInst
 
 TTRO_help_startInstVariable='
 # Function startInstVariable
@@ -212,7 +225,7 @@ TTRO_help_startInstVariable='
 function startInstVariable {
 	isDebug && printDebug "$FUNCNAME $*"
 	if [[ -n $TTPN_noStart ]]; then
-		echo "$FUNCNAME : function supressed"
+		printInfo "$FUNCNAME : function supressed"
 		return 0
 	fi
 	local zkParam
@@ -222,6 +235,7 @@ function startInstVariable {
 		return $errTestFail
 	fi
 }
+export -f startInstVariable
 
 TTRO_help_cleanUpInstAndDomainAtStart='
 # Function cleanUpInstAndDomainAtStart deprecated
@@ -229,6 +243,7 @@ TTRO_help_cleanUpInstAndDomainAtStart='
 function cleanUpInstAndDomainAtStart {
 	cleanUpInstAndDomainVariableOld "start" "$TTPN_streamsZkConnect" "$TTPN_streamsDomainId" "$TTPN_streamsInstanceId"
 }
+export -f cleanUpInstAndDomainAtStart
 
 TTRO_help_cleanUpInstAndDomainAtStop='
 # Function cleanUpInstAndDomainAtStop deprecated
@@ -236,6 +251,7 @@ TTRO_help_cleanUpInstAndDomainAtStop='
 function cleanUpInstAndDomainAtStop {
 	cleanUpInstAndDomainVariableOld "stop" "$TTPN_streamsZkConnect" "$TTPN_streamsDomainId" "$TTPN_streamsInstanceId"
 }
+export -f cleanUpInstAndDomainAtStop
 
 TTRO_help_cleanUpInstAndDomainVariableOld='
 # Function cleanUpInstAndDomainVariableOld deprecated
@@ -248,12 +264,12 @@ function cleanUpInstAndDomainVariableOld {
 	isDebug && printDebug "$FUNCNAME $*"
 	if [[ $1 == start ]]; then
 		if [[ -n $TTPN_noStart ]]; then
-			echo "$FUNCNAME : at start function supressed"
+			printInfo "$FUNCNAME : at start function supressed"
 			return 0
 		fi
 	elif [[ $1 == stop ]]; then
 		if [[ -n $TTPN_noStop ]]; then
-			echo "$FUNCNAME : at stop function supressed"
+			printInfo "$FUNCNAME : at stop function supressed"
 			return 0
 		fi
 	else
@@ -273,23 +289,24 @@ function cleanUpInstAndDomainVariableOld {
 					#TODO: check whether the retun code is fine here
 					echoAndExecute $TTPN_st stopinst "$zkParam" --force --domain-id "$3" --instance-id "$4"
 				else
-					isVerbose && echo "$FUNCNAME : no running instance $4 found in domain $3"
+					isVerbose && printVerbose "$FUNCNAME : no running instance $4 found in domain $3"
 				fi
 				echoAndExecute $TTPN_st rminst "$zkParam" --noprompt --domain-id "$3" --instance-id "$4"
 			else
-				isVerbose && echo "$FUNCNAME : no instance $4 found in domain $3"
+				isVerbose && printVerbose "$FUNCNAME : no instance $4 found in domain $3"
 			fi
 			#End Running domain found check instance
 			echoAndExecute $TTPN_st stopdomain "$zkParam" --force --domain-id "$3"
 		else
-			isVerbose && echo "$FUNCNAME : no running domain $3 found"
+			isVerbose && printVerbose "$FUNCNAME : no running domain $3 found"
 		fi
 		echoAndExecute $TTPN_st rmdomain "$zkParam" --noprompt --domain-id "$3"
 	else
-		isVerbose && echo "$FUNCNAME : no domain $3 found"
+		isVerbose && printVerbose "$FUNCNAME : no domain $3 found"
 	fi
 	return 0
 }
+export -f cleanUpInstAndDomainVariableOld
 
 TTRO_help_cleanUpInstAndDomain='
 # Function cleanUpInstAndDomain
@@ -297,6 +314,7 @@ TTRO_help_cleanUpInstAndDomain='
 function cleanUpInstAndDomain {
 	cleanUpInstAndDomainVariable "$TTPN_streamsZkConnect" "$TTPN_streamsDomainId" "$TTPN_streamsInstanceId"
 }
+export -f cleanUpInstAndDomain
 
 TTRO_help_cleanUpInstAndDomainVariable='
 # Function cleanUpInstAndDomainVariable
@@ -319,23 +337,24 @@ function cleanUpInstAndDomainVariable {
 					#TODO: check whether the retun code is fine here
 					echoAndExecute $TTPN_st stopinst "$zkParam" --force --domain-id "$2" --instance-id "$3"
 				else
-					isVerbose && echo "$FUNCNAME : no running instance $3 found in domain $2"
+					isVerbose && printVerbose "$FUNCNAME : no running instance $3 found in domain $2"
 				fi
 				echoAndExecute $TTPN_st rminst "$zkParam" --noprompt --domain-id "$2" --instance-id "$3"
 			else
-				isVerbose && echo "$FUNCNAME : no instance $3 found in domain $2"
+				isVerbose && printVerbose "$FUNCNAME : no instance $3 found in domain $2"
 			fi
 			#End Running domain found check instance
 			echoAndExecute $TTPN_st stopdomain "$zkParam" --force --domain-id "$2"
 		else
-			isVerbose && echo "$FUNCNAME : no running domain $2 found"
+			isVerbose && printVerbose "$FUNCNAME : no running domain $2 found"
 		fi
 		echoAndExecute $TTPN_st rmdomain "$zkParam" --noprompt --domain-id "$2"
 	else
-		isVerbose && echo "$FUNCNAME : no domain $2 found"
+		isVerbose && printVerbose "$FUNCNAME : no domain $2 found"
 	fi
 	return 0
 }
+export -f cleanUpInstAndDomainVariable
 
 TTRO_help_submitJobOld='
 # Function submitJobOld
@@ -344,6 +363,7 @@ TTRO_help_submitJobOld='
 function submitJobOld {
 	submitJobVariable "$TTPN_streamsZkConnect" "$TTPN_streamsDomainId" "$TTPN_streamsInstanceId" "$1" "$2"
 }
+export -f submitJobOld
 
 TTRO_help_submitJob='
 # Function submitJob
@@ -351,6 +371,7 @@ TTRO_help_submitJob='
 function submitJob {
 	submitJobVariable "$TTPN_streamsZkConnect" "$TTPN_streamsDomainId" "$TTPN_streamsInstanceId" "$TT_sabFile" "$TT_jobFile"
 }
+export -f submitJob
 
 TTRO_help_submitJobAndFile='
 # Function submitJobAndFile
@@ -359,6 +380,7 @@ TTRO_help_submitJobAndFile='
 function submitJobAndFile {
 	submitJobVariable "$TTPN_streamsZkConnect" "$TTPN_streamsDomainId" "$TTPN_streamsInstanceId" "$TT_sabFile" "$TT_jobFile" 2>&1 | tee "$TT_evaluationFile"
 }
+export -f submitJobAndFile
 
 TTRO_help_submitJobAndIntercept='
 # Function submitJobAndIntercept
@@ -373,6 +395,7 @@ function submitJobAndIntercept {
 	fi
 	return 0
 }
+export -f submitJobAndIntercept
 
 TTRO_help_submitJobVariable='
 # Function submitJobVariable
@@ -397,6 +420,7 @@ function submitJobVariable {
 		return $errTestFail
 	fi
 }
+export -f submitJobVariable
 declare jobno=''
 
 TTRO_help_cancelJob='
@@ -405,6 +429,7 @@ TTRO_help_cancelJob='
 function cancelJob {
 	cancelJobVariable "$TTPN_streamsZkConnect" "$TTPN_streamsDomainId" "$TTPN_streamsInstanceId" "$1"
 }
+export -f cancelJob
 
 TTRO_help_cancelJobVariable='
 # Function cancelJobVariable
@@ -422,5 +447,6 @@ function cancelJobVariable {
 		return $errTestFail
 	fi
 }
+export -f cancelJobVariable
 
 :

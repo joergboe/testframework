@@ -25,14 +25,14 @@ declare caseExecutionLoopRunning=''
 # Function handle SIGINT
 function handleSigint {
 	if [[ $interruptReceived -eq 0 ]]; then
-		echo "SIGINT: Test Suite will be stopped. To interrupt running test cases press ^C again"
+		printInfo "SIGINT: Test Suite will be stopped. To interrupt running test cases press ^C again"
 		interruptReceived=1
 	elif [[ $interruptReceived -eq 1 ]]; then
 		interruptReceived=$((interruptReceived+1))
-		echo "SIGINT: Test cases will be stopped"
+		printInfo "SIGINT: Test cases will be stopped"
 	elif [[ $interruptReceived -gt 2 ]]; then
 		interruptReceived=$((interruptReceived+1))
-		echo "SIGINT: Abort Suite"
+		printInfo "SIGINT: Abort Suite"
 		exit $errSigint
 	else
 		interruptReceived=$((interruptReceived+1))	
@@ -42,7 +42,7 @@ function handleSigint {
 
 # Function interruptSignalSuite
 function interruptSignalSuite {
-	echo "SIGINT received in test suite execution programm $commandname ********************"
+	printInfo "SIGINT received in test suite execution programm $commandname ********************"
 	handleSigint
 	return 0
 }
@@ -123,20 +123,13 @@ isDebug && printDebug "noCases=$noCases"
 # enter working dir
 cd "$TTRO_workDirSuite"
 
-#-------------------------------------
-# include tools
-for x in $TT_tools; do
-	isVerbose && echo "Source global tools file: $x"
-	source "$x"
-	fixPropsVars
-done
-
 if [[ $TTRO_suiteIndex -ne 0 ]]; then
 	tmp="${TTRO_inputDirSuite}/${TEST_SUITE_FILE}"
 	if [[ -e "$tmp" ]]; then
-		isVerbose && echo  "Source Suite file $tmp"
+		isVerbose && printVerbose  "Source Suite file $tmp"
 		source "$tmp"
 		fixPropsVars
+		writeProtectExportedFunctions
 	else
 		printErrorAndExit "No Suite file $tmp" $errScript
 	fi
@@ -232,7 +225,7 @@ done
 unset i casePath caseName
 unset timeout variantCount variantList
 
-isVerbose && echo "Execute Suite $TTRO_suite variant='$TTRO_variantSuite' in workdir $TTRO_workDirSuite number of cases=$noCases number of case variants=$noCaseVariants"
+isVerbose && printVerbose "Execute Suite $TTRO_suite variant='$TTRO_variantSuite' in workdir $TTRO_workDirSuite number of cases=$noCases number of case variants=$noCaseVariants"
 
 #------------------------------------------------
 # diagnostics
@@ -254,9 +247,9 @@ for name_xyza in 'TTRO_prepsSuite' 'PREPS'; do
 			for (( i_xyza=0; i_xyza<l_xyza; i_xyza++)); do
 				eval "step_xyza=\${$name_xyza[$i_xyza]}"
 				if isExistingAndTrue 'TTPN_noPrepsSuite'; then
-					isVerbose && echo "Suppress Suite Preparation: $step_xyza"
+					printInfo "Suppress Suite Preparation: $step_xyza"
 				else
-					isVerbose && echo "Execute Suite Preparation: $step_xyza"
+					printInfo "Execute Suite Preparation: $step_xyza"
 					executedTestPrepSteps=$((executedTestPrepSteps+1))
 					eval "$step_xyza"
 				fi
@@ -265,9 +258,9 @@ for name_xyza in 'TTRO_prepsSuite' 'PREPS'; do
 			isDebug && printDebug "$name_xyza=${!name_xyza}"
 			for x_xyza in ${!name_xyza}; do
 				if isExistingAndTrue 'TTPN_noPrepsSuite'; then
-					isVerbose && echo "Suppress Suite Preparation: $x_xyza"
+					printInfo "Suppress Suite Preparation: $x_xyza"
 				else
-					isVerbose && echo "Execute Suite Preparation: $x_xyza"
+					printInfo "Execute Suite Preparation: $x_xyza"
 					executedTestPrepSteps=$((executedTestPrepSteps+1))
 					eval "${x_xyza}"
 				fi
@@ -277,14 +270,14 @@ for name_xyza in 'TTRO_prepsSuite' 'PREPS'; do
 done
 if isFunction 'testPreparation'; then
 	if isExistingAndTrue 'TTPN_noPrepsSuite'; then
-		isVerbose && echo "Suppress Suite Preparation function testPreparation"
+		printInfo "Suppress Suite Preparation function testPreparation"
 	else
-		isVerbose && echo "Execute Suite Preparation function testPreparation"
+		printInfo "Execute Suite Preparation function testPreparation"
 		executedTestPrepSteps=$((executedTestPrepSteps+1))
 		testPreparation
 	fi
 fi
-isVerbose && echo "$executedTestPrepSteps Test Suite Preparation steps executed"
+printInfo "$executedTestPrepSteps Test Suite Preparation steps executed"
 
 #-------------------------------------------------
 #test case execution
@@ -340,12 +333,12 @@ while [[ -z $allJobsGone ]]; do
 		casePath="${caseVariantPathes[$jobIndex]}"
 		caseName="${casePath##*/}"	#a new case is to be started
 		caseVariant="${caseVariantIds[$jobIndex]}"
-		isVerbose && echo "jobIndex=$jobIndex Try to start $caseName variant '$caseVariant'"
+		isVerbose && printVerbose "jobIndex=$jobIndex Try to start $caseName variant '$caseVariant'"
 	else
 		casePath=""
 		caseName=""		#no new case to start
 		caseVariant=""
-		isVerbose && echo "Last job of suite $TTRO_suite reached ****"
+		isVerbose && printVerbose "Last job of suite $TTRO_suite reached ****"
 	fi
 	availableTpidIndex=""
 	isDebug && printDebug "Loop precond availableTpidIndex='${availableTpidIndex}' allJobsGone='${allJobsGone}' caseName='${caseName}' variant='${caseVariant}'"
@@ -356,7 +349,7 @@ while [[ -z $allJobsGone ]]; do
 			casePath=""
 			caseName=""		#no new case to start
 			caseVariant=""
-			isVerbose && echo "Interrupt suite $TTRO_suite interruptReceived=$interruptReceived ****"
+			isVerbose && printVerbose "Interrupt suite $TTRO_suite interruptReceived=$interruptReceived ****"
 		fi
 		#during normal run check for one available job space
 		if [[ -n $caseName ]]; then
@@ -383,7 +376,7 @@ while [[ -z $allJobsGone ]]; do
 						else
 							tempjobspec="%${tjobid[$i]}"
 						fi
-						echo "INFO: Timeout Kill job i=${i} jobspec=${tempjobspec} with SIGTERM"
+						printInfo "INFO: Timeout Kill job i=${i} jobspec=${tempjobspec} with SIGTERM"
 						#SIGINT and SIGHUP seems not to work can not install handler for both signals in case.sh
 						if ! kill "${tempjobspec}"; then
 							printWarning "Can not kill job i=${i} jobspec=${tempjobspec} Gone?"
@@ -432,7 +425,7 @@ while [[ -z $allJobsGone ]]; do
 							echo "$tmpCaseAndVariant" >> "${TTRO_workDirSuite}/CASE_EXECUTE"
 							
 							#executeList+=("$tmpCaseAndVariant")
-							echo -n "END: Job i=$i pid=$pid jobid=$jobid case=${tmpCase} variant='${tmpVariant}'"
+							printInfon "END: Job i=$i pid=$pid jobid=$jobid case=${tmpCase} variant='${tmpVariant}'"
 							tpid[$i]=""
 							tjobid[$i]=""
 							#if there is a new job to start: take only the first free index and only if less than currentParralelJobs
@@ -485,7 +478,7 @@ while [[ -z $allJobsGone ]]; do
 								addCaseEntry "$indexfilename" "$tmpCase" "$tmpVariant" 'ERROR' '1' "${tcaseWorkDir[$i]}"
 								tmp2="ERROR"
 							fi
-							echo " Result: $tmp2"
+							printInfo " Result: $tmp2"
 						fi
 					fi
 				fi
@@ -515,7 +508,7 @@ while [[ -z $allJobsGone ]]; do
 			else
 				cresult=$?
 				if [[ $cresult -eq 130 ]]; then
-					echo "SIGINT received in sleep in programm $commandname ********************"
+					printInfo "SIGINT received in sleep in programm $commandname ********************"
 				else
 					printError "Unhandled result $cresult after sleep"
 				fi
@@ -534,7 +527,7 @@ while [[ -z $allJobsGone ]]; do
 			mkdir -p "$cworkdir"
 		fi
 		cmd="${TTRO_scriptDir}/case.sh"
-		echo "START: jobIndex=$jobIndex case=$caseName variant=$caseVariant index=$availableTpidIndex"
+		printInfo "START: jobIndex=$jobIndex case=$caseName variant=$caseVariant index=$availableTpidIndex"
 		#Start job connect output to stdout in single thread case
 		if [[ "$TTRO_noParallelCases" -eq 1 ]]; then
 			$cmd "$casePath" "$cworkdir" "$caseVariant" 2>&1 | tee -i "${cworkdir}/${TEST_LOG}" &
@@ -562,7 +555,7 @@ while [[ -z $allJobsGone ]]; do
 		if [[ $tmp1 -eq 0 ]]; then
 			tmp1="$thisTimeout"
 		fi
-		isVerbose && echo "Job timeout $tmp1"
+		isVerbose && printVerbose "Job timeout $tmp1"
 		endTime[$availableTpidIndex]=$((tmp+tmp1))
 		timeout[$availableTpidIndex]="$tmp1"
 		tcaseWorkDir[$availableTpidIndex]="$cworkdir"
@@ -579,10 +572,10 @@ for sindex_xyza in ${childSuites[$TTRO_suiteIndex]}; do
 	suitePath="${suitesPath[$sindex_xyza]}"
 	suite="${suitesName[$sindex_xyza]}"
 	if [[ $interruptReceived -gt 0 ]]; then
-		echo "SIGINT: end Suites loop"
+		printInfo "SIGINT: end Suites loop"
 		break
 	fi
-	isVerbose && echo "**** START Suite: $suite ************************************"
+	isVerbose && printVerbose "**** START Suite: $suite ************************************"
 	variantCount=""; variantList=""; splitter=""
 	readVariantFile "${suitePath}/${TEST_SUITE_FILE}" "suite"
 	if [[ -z $variantCount ]]; then
@@ -592,7 +585,7 @@ for sindex_xyza in ${childSuites[$TTRO_suiteIndex]}; do
 			for x_xyza in $variantList; do
 				exeSuite "$sindex_xyza" "$x_xyza" "$TTRO_suiteNestingLevel" "$TTRO_suiteNestingPath" "$TTRO_suiteNestingString" "$TTRO_workDirSuite"
 				if [[ $interruptReceived -gt 0 ]]; then
-					echo "SIGINT: end Suites loop"
+					printInfo "SIGINT: end Suites loop"
 					break
 				fi
 			done
@@ -604,7 +597,7 @@ for sindex_xyza in ${childSuites[$TTRO_suiteIndex]}; do
 			for ((j_xyza=0; j_xyza<variantCount; j_xyza++)); do
 				exeSuite "$sindex_xyza" "$j_xyza" "$TTRO_suiteNestingLevel" "$TTRO_suiteNestingPath" "$TTRO_suiteNestingString" "$TTRO_workDirSuite"
 				if [[ $interruptReceived -gt 0 ]]; then
-					echo "SIGINT: end Suites loop"
+					printInfo "SIGINT: end Suites loop"
 					break
 				fi
 			done
@@ -613,9 +606,9 @@ for sindex_xyza in ${childSuites[$TTRO_suiteIndex]}; do
 			printError "In suite $suite we have both variant variables variantCount=$variantCount and variantList=$variantList ! Suite is skipped"
 		fi
 	fi
-	isVerbose && echo "**** END Suite: $suite **************************************"
+	isVerbose && printVerbose "**** END Suite: $suite **************************************"
 	if [[ $interruptReceived -gt 0 ]]; then
-		echo "SIGINT: end Suites loop"
+		printInfo "SIGINT: end Suites loop"
 		break
 	fi
 done
@@ -639,9 +632,9 @@ for name_xyza in 'TTRO_finSuite' 'FINS'; do
 			for (( i_xyza=0; i_xyza<l_xyza; i_xyza++)); do
 				eval "step=\${$name_xyza[$i_xyza]}"
 				if isExistingAndTrue 'TTPN_noFinsSuite'; then
-					isVerbose && echo "Suppress Suite Finalization: $step"
+					printInfo "Suppress Suite Finalization: $step"
 				else
-					isVerbose && echo "Execute Suite Finalization: $step"
+					printInfo "Execute Suite Finalization: $step"
 					executedTestFinSteps=$((executedTestFinSteps+1))
 					eval "$step"
 				fi
@@ -650,9 +643,9 @@ for name_xyza in 'TTRO_finSuite' 'FINS'; do
 			isDebug && printDebug "$name_xyza=${!name_xyza}"
 			for x_xyza in ${!name_xyza}; do
 				if isExistingAndTrue 'TTPN_noFinsSuite'; then
-					isVerbose && echo "Suppress Suite Finalization: $x_xyza"
+					printInfo "Suppress Suite Finalization: $x_xyza"
 				else
-					isVerbose && echo "Execute Suite Finalization: $x_xyza"
+					printInfo "Execute Suite Finalization: $x_xyza"
 					executedTestFinSteps=$((executedTestFinSteps+1))
 					eval "${x_xyza}"
 				fi
@@ -662,14 +655,14 @@ for name_xyza in 'TTRO_finSuite' 'FINS'; do
 done
 if isFunction 'testFinalization'; then
 	if isExistingAndTrue 'TTPN_noFinsSuite'; then
-		isVerbose && echo "Suppress Suite Finalization function testFinalization"
+		printInfo "Suppress Suite Finalization function testFinalization"
 	else
-		isVerbose && echo "Execute Suite Finalization function testFinalization"
+		printInfo "Execute Suite Finalization function testFinalization"
 		executedTestFinSteps=$((executedTestFinSteps+1))
 		testFinalization
 	fi
 fi
-isVerbose && echo "$executedTestFinSteps Test Suite Finalisation steps executed"
+printInfo "$executedTestFinSteps Test Suite Finalisation steps executed"
 
 #-------------------------------------------------------
 #put results to results file for information purose only 
@@ -678,18 +671,18 @@ echo -e "SUITE_EXECUTE=$suiteVariants\nSUITE_SKIP=\nSUITE_ERROR=$suiteErrors" >>
 
 #-------------------------------------------------------
 #Final verbose suite result printout
-echo "**** Results Suite: $TTRO_suite ***********************************************"
+printInfo "**** Results Suite: $TTRO_suite ***********************************************"
 for x in CASE_EXECUTE CASE_SKIP CASE_FAILURE CASE_ERROR CASE_SUCCESS SUITE_EXECUTE SUITE_SKIP SUITE_ERROR; do
 	tmp="${TTRO_workDirSuite}/${x}"
 	eval "${x}_NO=0"
-	isVerbose && echo "**** $x List : ****"
+	isVerbose && printVerbose "**** $x List : ****"
 	if [[ -e ${tmp} ]]; then
 		{
 			while read; do
 				if [[ $REPLY != \#* ]]; then
 					eval "${x}_NO=\$((${x}_NO+1))"
 				fi
-				isVerbose && echo "$REPLY "
+				isVerbose && printVerbose "$REPLY "
 			done
 		} < "$tmp"
 	else

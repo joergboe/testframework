@@ -1,2 +1,2 @@
 ##-----------the required tools ---------------------
-registerTool "$TTRO_scriptDir/streamsutils.sh"
+import "$TTRO_scriptDir/streamsutils.sh"

@@ -35,6 +35,7 @@ trap errorTrapFunc ERR
 #includes
 source "${TTRO_scriptDir}/defs.sh"
 source "${TTRO_scriptDir}/util.sh"
+source "${TTRO_scriptDir}/coreutil.sh"
 
 #usage and parameters
 function usage {
@@ -46,7 +47,7 @@ function usage {
 	
 	EOF
 }
-isDebug && echo "$0 $*"
+isDebug && printDebug "$0 $*"
 if [[ $# -ne 3 ]]; then
 	usage
 	exit ${errInvocation}
@@ -64,6 +65,7 @@ declare -i executedTestPrepSteps=0
 declare -i executedTestFinSteps=0
 declare errorOccurred=''
 declare failureOccurred=''
+declare skipcase=""
 
 #test finalization function
 function caseFinalization {
@@ -83,9 +85,9 @@ function caseFinalization {
 						local step_xyza
 						eval "step_xyza=\${$name_xyza[$i_xyza]}"
 						if isExistingAndTrue 'TTPN_noFinsCase'; then
-							isVerbose && echo "Suppress Case Finalization: $step_xyza"
+							printInfo "Suppress Case Finalization: $step_xyza"
 						else
-							isVerbose && echo "Execute Case Finalization: $step_xyza"
+							printInfo "Execute Case Finalization: $step_xyza"
 							executedTestFinSteps=$((executedTestFinSteps+1))
 							eval "${step_xyza}"
 						fi
@@ -95,9 +97,9 @@ function caseFinalization {
 					local x_xyza
 					for x_xyza in ${!name_xyza}; do
 						if isExistingAndTrue 'TTPN_noFinsCase'; then
-							isVerbose && echo "Suppress Case Finalization: $x_xyza"
+							printInfo "Suppress Case Finalization: $x_xyza"
 						else
-							isVerbose && echo "Execute Case Finalization: $x_xyza"
+							printInfo "Execute Case Finalization: $x_xyza"
 							executedTestFinSteps=$((executedTestFinSteps+1))
 							eval "${x_xyza}"
 						fi
@@ -107,14 +109,14 @@ function caseFinalization {
 		done
 		if isFunction 'testFinalization'; then
 			if isExistingAndTrue 'TTPN_noFinsCase'; then
-				isVerbose && echo "Suppress Case Finalization function testFinalization"
+				printInfo "Suppress Case Finalization function testFinalization"
 			else
-				isVerbose && echo "Execute Case Finalization function testFinalization"
+				printInfo "Execute Case Finalization function testFinalization"
 				executedTestFinSteps=$((executedTestFinSteps+1))
 				testFinalization
 			fi
 		fi
-		isVerbose && echo "$executedTestFinSteps Case Test Finalization steps executed"
+		printInfo "$executedTestFinSteps Case Test Finalization steps executed"
 	else
 		isDebug && printDebug "No execution caseFinalization case $TTRO_case variant '$TTRO_variantCase'"
 	fi
@@ -136,52 +138,45 @@ trap caseExitFunction EXIT
 function successExit {
 	echo "SUCCESS" > "${TTRO_workDirCase}/RESULT"
 	caseFinalization
-	isVerbose && echo "**** END Case case=${TTRO_case} variant='${TTRO_variantCase}' SUCCESS *****"
+	printInfo "**** END Case case=${TTRO_case} variant='${TTRO_variantCase}' SUCCESS *****"
 	exit 0
 }
 function skipExit {
 	echo "SKIP" > "${TTRO_workDirCase}/RESULT"
-	isVerbose && echo "**** END Case case=${TTRO_case} variant='${TTRO_variantCase}' SKIP **********"
+	printInfo "**** END Case case=${TTRO_case} variant='${TTRO_variantCase}' SKIP **********"
 	exit 0
 }
 function failureExit {
 	echo "FAILURE" > "${TTRO_workDirCase}/RESULT"
 	caseFinalization
-	isVerbose && echo "**** END Case case=${TTRO_case} variant='${TTRO_variantCase}' FAILURE ********" >&2
+	printInfo "**** END Case case=${TTRO_case} variant='${TTRO_variantCase}' FAILURE ********" >&2
 	exit 0
 }
 function errorExit {
 	echo "ERROR" > "${TTRO_workDirCase}/RESULT"
 	caseFinalization
-	isVerbose && echo "END Case case=${TTRO_case} variant='${TTRO_variantCase}' ERROR ***************" >&2
+	printInfo "END Case case=${TTRO_case} variant='${TTRO_variantCase}' ERROR ***************" >&2
 	exit ${errTestError}
 }
 
 #####################################################################################################
 #Start of main testcase body
-isVerbose && echo "**** START Case $TTRO_case variant $TTRO_variantCase in workdir $TTRO_workDirCase ********************"
+isVerbose && printVerbose "**** START Case $TTRO_case variant $TTRO_variantCase in workdir $TTRO_workDirCase ********************"
 
 #----------------------------------
 # enter working dir
 cd "$TTRO_workDirCase"
 
-#-----------------------------------
-# tools
-for x in $TT_tools; do
-	isVerbose && echo "Source global tools file: $x"
-	source "$x"
-	fixPropsVars
-done
-
 #-------------------------------------------------
 #include global, suite and case custom definitions
 tmp="${TTRO_inputDirCase}/${TEST_CASE_FILE}"
 if [[ -e $tmp ]]; then
-	isVerbose && echo  "Source Case test tools file $tmp"
+	isVerbose && printVerbose  "Source Test Case file $tmp"
 	source "$tmp"
 	fixPropsVars
+	writeProtectExportedFunctions
 else
-	printErrorAndExit "No Case test tools file $tmp" $errScript
+	printErrorAndExit "No Test Case file $tmp" $errScript
 fi
 
 #------------------------------------------------
@@ -192,7 +187,6 @@ printTestframeEnvironment > "$tmp"
 export >> "$tmp"
 
 #check skip
-declare skipcase=""
 if [[ -e "${TTRO_inputDirCase}/SKIP" ]]; then
 	skipcase="true"
 fi
@@ -207,7 +201,7 @@ if declare -p TTPN_skipIgnore &> /dev/null; then
 	fi
 fi
 if [[ -n $skipcase ]]; then
-	isVerbose && echo "SKIP variable set; Skip execution case=$TTRO_case variant=$TTRO_variantCase"
+	printInfo "SKIP variable set; Skip execution case=$TTRO_case variant=$TTRO_variantCase"
 	skipExit
 fi
 
@@ -223,9 +217,9 @@ for name_xyza in 'TTRO_prepsCase' 'PREPS'; do
 			for (( i_xyza=0; i_xyza<l_xyza; i_xyza++)); do
 				eval "step_xyza=\${$name_xyza[$i_xyza]}"
 				if isExistingAndTrue 'TTPN_noPrepsCase'; then
-					isVerbose && echo "Suppress Case Preparation: $step_xyza"
+					printInfo "Suppress Case Preparation: $step_xyza"
 				else
-					isVerbose && echo "Execute Case Preparation: $step_xyza"
+					printInfo "Execute Case Preparation: $step_xyza"
 					executedTestPrepSteps=$((executedTestPrepSteps+1))
 					eval "$step_xyza"
 				fi
@@ -234,9 +228,9 @@ for name_xyza in 'TTRO_prepsCase' 'PREPS'; do
 			isDebug && printDebug "$name_xyza=${!name_xyza}"
 			for x_xyza in ${!name_xyza}; do
 				if isExistingAndTrue 'TTPN_noPrepsCase'; then
-					isVerbose && echo "Suppress Case Preparation: $x_xyza"
+					printInfo "Suppress Case Preparation: $x_xyza"
 				else
-					isVerbose && echo "Execute Case Preparation: $x_xyza"
+					printInfo "Execute Case Preparation: $x_xyza"
 					executedTestPrepSteps=$((executedTestPrepSteps+1))
 					eval "${x_xyza}"
 				fi
@@ -246,14 +240,14 @@ for name_xyza in 'TTRO_prepsCase' 'PREPS'; do
 done
 if isFunction 'testPreparation'; then
 	if isExistingAndTrue 'TTPN_noPrepsCase'; then
-		isVerbose && echo "Suppress Case Preparation function testPreparation"
+		printInfo "Suppress Case Preparation function testPreparation"
 	else
-		isVerbose && echo "Execute Case Preparation function testPreparation"
+		printInfo "Execute Case Preparation function testPreparation"
 		executedTestPrepSteps=$((executedTestPrepSteps+1))
 		testPreparation
 	fi
 fi
-isVerbose && echo "$executedTestPrepSteps Case Test Preparation steps executed"
+printInfo "$executedTestPrepSteps Case Test Preparation steps executed"
 
 #test execution
 for name_xyza in 'TTRO_stepsCase' 'STEPS'; do
@@ -266,14 +260,14 @@ for name_xyza in 'TTRO_stepsCase' 'STEPS'; do
 			eval "l_xyza=\${#$name_xyza[@]}"
 			for (( i_xyza=0; i_xyza<l_xyza; i_xyza++)); do
 				eval "step_xyza=\${$name_xyza[$i_xyza]}"
-				isVerbose && echo "Execute Case Test Step: $step_xyza"
+				printInfo "Execute Case Test Step: $step_xyza"
 				executedTestSteps=$((executedTestSteps+1))
 				eval "$step_xyza"
 			done
 		else
 			isDebug && printDebug "$name_xyza=${!name_xyza}"
 			for x_xyza in ${!name_xyza}; do
-				isVerbose && echo "Execute Case Test Step: $x_xyza"
+				printInfo "Execute Case Test Step: $x_xyza"
 				executedTestSteps=$((executedTestSteps+1))
 				eval "${x_xyza}"
 			done
@@ -281,7 +275,7 @@ for name_xyza in 'TTRO_stepsCase' 'STEPS'; do
 	fi
 done
 if isFunction 'testStep'; then
-	isVerbose && echo "Execute Case Test Step function testStep"
+	printInfo "Execute Case Test Step function testStep"
 	executedTestSteps=$((executedTestSteps+1))
 	testStep
 fi
@@ -289,7 +283,7 @@ if [[ $executedTestSteps -eq 0 ]]; then
 	printError "No test Case step defined"
 	errorOccurred="true"
 else
-	isVerbose && echo "$executedTestSteps Case test steps executed"
+	printInfo "$executedTestSteps Case test steps executed"
 fi
 
 if [[ -n $errorOccurred ]]; then

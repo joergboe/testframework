@@ -119,21 +119,23 @@ function manpage () {
 	command line parameter --properties or the environment TT_properties is evaluated. The properties file is a bash script.
 
 
-	## Test Tools and Modules
-	=========================
-	If your test collection requires special functions, you must source the appropriate modules from the test collection file. 
-	Especially the streamsutils.sh must be sourced at the beginning of the main body of the test collection file:
+	## Test Tools
+	=============
+	If your test collection requires special functions, you must import the appropriate script module in the initialization part of a 
+	Test Suite or Test Case file. The test Tools Script may define user defined variables, properties and functions. The defined 
+	functions in a Tools Script must be exported like:
 	
-	registerTool "\$TTRO_scriptDir/streamsutils.sh"\n
-	or\n
-	setVar 'TT_tools' "\$TT_tools \$TTRO_scriptDir/streamsutils.sh"\n
+	export -f fname
 	
-	The first form sources the script 'streamsutils.sh' and modifies the TT_tools variable.
-	The second form modifies the TT_tools variable only. The utilities script is sourced during start up of the called artifact.
+	The defined tool artifacs are available in nested Suites and nested cases.
+	Once a function has been defined, it can not be re-defined in a nested element.
 	
-	If the initialization of a tool module  depends on other properties, the module must not use eager initialization. In such 
-	a case the tool module must provide an separate initialization function. This initialization function must be called in the test 
-	collection initialization. (The framework sources the tools modules before the propertie file is sourced)
+	Especially the streamsutils.sh must be imported at the beginning of the main body of the outermost Test Suite file:
+	
+	import "\$TTRO_scriptDir/streamsutils.sh"\n
+	
+	An alternative way to import a Test Tools module is the command line options --tools, which imports one Tools script.
+	Or you may define a colon separated list of Test Tools files in variable TTRO_tools.
 
 
 	## Test File Preamble
@@ -350,8 +352,8 @@ function manpage () {
 	- Scan input directory and collect all test suites and cases to execute
 	- Set programm defined props/vars
 	- Set properties and variables defined with command line parameter -D..
-	- Source all defined tools scripts !!!??
-	- Source properties file if required - set props and vars !!!?
+	- Source properties file if required - set props and vars
+	- Source all defined tools scripts
 	- Execute root suite in inherited environment
 	- print result
 

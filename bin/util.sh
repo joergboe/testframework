@@ -1,6 +1,6 @@
 ######################################################
 # Utilities for testframework
-#
+# (public utilities)
 ######################################################
 
 TTRO_help_printErrorAndExit="
@@ -31,7 +31,8 @@ TTRO_help_printWarning="
 #	prints an warning message
 #	\$1 the warning to print"
 function printWarning {
-	echo -e "\033[33mWARNING: $1\033[0m" >&2
+	local dd=$(date "+%T %N")
+	echo -e "\033[33m$dd WARNING: $1\033[0m" >&2
 }
 
 TTRO_help_printDebug="
@@ -60,6 +61,42 @@ function printDebugn {
 		stackInfo="$stackInfo ${FUNCNAME[$i]}"
 	done
 	echo -en "\033[32m$dd DEBUG:${commandname}${stackInfo}: ${1}\033[0m"
+}
+
+TTRO_help_printInfo="
+# Function printInfo
+#	prints info info
+#	\$1 the info to print"
+function printInfo {
+	local dd=$(date "+%T %N")
+	echo -e "$dd INFO: ${1}"
+}
+
+TTRO_help_printInfon="
+# Function printInfon
+#	prints info info without newline
+#	\$1 the info to print"
+function printInfon {
+	local dd=$(date "+%T %N")
+	echo -en "$dd INFO: ${1}"
+}
+
+TTRO_help_printVerbose="
+# Function printVerbose
+#	prints verbose info
+#	\$1 the info to print"
+function printVerbose {
+	local dd=$(date "+%T %N")
+	echo -e "$dd VERBOSE: ${1}"
+}
+
+TTRO_help_printVerbosen="
+# Function printVerbosen
+#	prints verbose info without newline
+#	\$1 the info to print"
+function printVerbosen {
+	local dd=$(date "+%T %N")
+	echo -en "$dd VERBOSE: ${1}"
 }
 
 TTRO_help_isDebug="
@@ -225,14 +262,14 @@ function readVariantFile {
 								if ! isPureDigit "$variantCount"; then
 									printErrorAndExit "${FUNCNAME} : variantCount is no digit in file=$1 line=$lineno '$REPLY'" ${errRt}
 								fi
-								isVerbose && echo "variantCount='${variantCount}'"
+								isVerbose && printVerbose "variantCount='${variantCount}'"
 							;;
 							variantList )
 								unq=$(dequote "${value}")
 								if ! variantList="${unq}"; then
 									printErrorAndExit "${FUNCNAME} : Invalid value in file=$1 line=$lineno '$REPLY'" ${errRt}
 								fi
-								isVerbose && echo "variantList='${variantList}'"
+								isVerbose && printVerbose "variantList='${variantList}'"
 							;;
 							timeout )
 								unq=$(dequote "${value}")
@@ -242,7 +279,7 @@ function readVariantFile {
 								if ! isPureDigit "$timeout"; then
 									printErrorAndExit "${FUNCNAME} : timeout is no digit in file=$1 line=$lineno '$REPLY'" ${errRt}
 								fi
-								isVerbose && echo "timeout='${timeout}'"
+								isVerbose && printVerbose "timeout='${timeout}'"
 							;;
 							* )
 								#other property or variable
@@ -293,10 +330,10 @@ function setProperties {
 									if [[ $internalResult -ne 0 ]]; then
 										printErrorAndExit "${FUNCNAME} : Invalid expansion in case- or suit-efile file=$1 line=$lineno varname=${varname} value=${value} '$REPLY'" ${errRt}
 									else
-										isVerbose && echo "${varname}='${!varname}'"
+										isVerbose && printVerbose "${varname}='${!varname}'"
 									fi
 								else
-									isVerbose && echo "$FUNCNAME ignore value for ${varname} in file=$1 line=$lineno"
+									isVerbose && printVerbose "$FUNCNAME ignore value for ${varname} in file=$1 line=$lineno"
 								fi
 							;;
 							TTP_* )
@@ -310,10 +347,10 @@ function setProperties {
 									if [[ $internalResult -ne 0 ]]; then
 										printErrorAndExit "${FUNCNAME} : Invalid expansion in case- or suite-file file=$1 line=$lineno varname=${varname} value=${value} '$REPLY' file=$1" ${errRt}
 									else
-										isVerbose && echo "${varname}='${!varname}'"
+										isVerbose && printVerbose "${varname}='${!varname}'"
 									fi
 								else
-									isVerbose && echo "$FUNCNAME ignore value for ${varname} in file=$1 line=$lineno"
+									isVerbose && printVerbose "$FUNCNAME ignore value for ${varname} in file=$1 line=$lineno"
 								fi
 							;;
 							TTRO_* )
@@ -326,7 +363,7 @@ function setProperties {
 								if [[ $internalResult -ne 0 ]]; then
 									printErrorAndExit "${FUNCNAME} : Invalid expansion in case- or suite-file file=$1 line=$lineno varname=${varname} value=${value} '$REPLY' file=$1" ${errRt}
 								else
-									isVerbose && echo "${varname}='${!varname}'"
+									isVerbose && printVerbose "${varname}='${!varname}'"
 								fi
 							;;
 							TT_* )
@@ -339,7 +376,7 @@ function setProperties {
 								if [[ $internalResult -ne 0 ]]; then
 									printErrorAndExit "${FUNCNAME} : Invalid expansion in case- or suite-file file=$1 line=$lineno varname=${varname} value=${value} '$REPLY' file=$1" ${errRt}
 								else
-									isVerbose && echo "${varname}='${!varname}'"
+									isVerbose && printVerbose "${varname}='${!varname}'"
 								fi
 							;;
 							variantCount|variantList )
@@ -422,11 +459,11 @@ function setVar {
 				if ! eval export \'${1}\'='"${2}"'; then
 					printErrorAndExit "${FUNCNAME} : Invalid expansion in varname=${1} value=${2}" ${errRt}
 				else
-					isVerbose && echo "${FUNCNAME} : ${1}='${!1}'"
+					isVerbose && printVerbose "${FUNCNAME} : ${1}='${!1}'"
 				fi
 				readonly ${1}
 			else
-				isVerbose && echo "$FUNCNAME ignore value for ${1}"
+				isVerbose && printVerbose "$FUNCNAME ignore value for ${1}"
 			fi
 		;;
 		TTP_* )
@@ -435,17 +472,17 @@ function setVar {
 				if ! eval export \'${1}\'='"${2}"'; then
 					printErrorAndExit "${FUNCNAME} : Invalid expansion varname=${1} value=${2}" ${errRt}
 				else
-					isVerbose && echo "${FUNCNAME} : ${1}='${!1}'"
+					isVerbose && printVerbose "${FUNCNAME} : ${1}='${!1}'"
 				fi
 				readonly ${1}
 			else
-				isVerbose && echo "$FUNCNAME ignore value for ${1}"
+				isVerbose && printVerbose "$FUNCNAME ignore value for ${1}"
 			fi
 		;;
 		TTRO_* )
 			#set a global readonly variable
 			if eval export \'${1}\'='"${2}"'; then
-				isVerbose && echo "${FUNCNAME} : ${1}='${!1}'"
+				isVerbose && printVerbose "${FUNCNAME} : ${1}='${!1}'"
 			else
 				printErrorAndExit "${FUNCNAME} : Invalid expansion varname=${1} value=${2}" ${errRt}
 			fi
@@ -456,7 +493,7 @@ function setVar {
 			if ! eval export \'${1}\'='"${2}"'; then
 				printErrorAndExit "${FUNCNAME} : Invalid expansion varname=${1} value=${2}" ${errRt}
 			else
-				isVerbose && echo "${FUNCNAME} : ${1}='${!1}'"
+				isVerbose && printVerbose "${FUNCNAME} : ${1}='${!1}'"
 			fi
 		;;
 		* )
@@ -658,7 +695,7 @@ function copyAndTransform {
 			dest="${x#$1}"
 			dest="$2/$dest"
 			if [[ match -eq 1 ]]; then
-				isVerbose && echo "transform $x to $dest"
+				isVerbose && printVerbose "transform $x to $dest"
 				#if ! sed -e "s/\/\/*_${3}//g" "$x" > "$dest"; then
 				#	printErrorAndExit "$FUNCNAME Can not transform input=$x dest=$dest variant=$4" $errRt
 				#fi
@@ -827,8 +864,8 @@ TTRO_help_echoAndExecute='
 #	$1 the command string
 #	$2 the parameters as one string - during execution expansion and word splitting is applied'
 function echoAndExecute {
-	echo "${FUNCNAME[1]}: $*"
-	eval echo "${FUNCNAME[1]}: $*"
+	printInfo "${FUNCNAME[1]}: $*"
+	eval printInfo "${FUNCNAME[1]}: $*"
 	eval "$*"
 }
 
@@ -879,20 +916,21 @@ function isInList {
 	fi
 }
 
-TTRO_help_registerTool='
+TTRO_help_import='
 # Function registerTool
 #	Treats the input as filename and adds it to TT_tools if not already there
 #	sources the file if it was not in TT_tools
-#	return false if filename is already in TT_tools'
-function registerTool {
+#	return the result code of the source command'
+function import {
 	isDebug && printDebug "$FUNCNAME $*"
-	if isInList "$1" "$TT_tools"; then
-		printError "file $1 is already registerd in TT_tools=$TT_tools"
-		return 1
+	local tmp=$(readlink -m "$1")
+	if isInList "$tmp" "$TTXX_tools"; then
+		printWarning "file $tmp is already registerd in TTXX_tools=$TTXX_tools"
+		return 0
 	else
-		TT_tools="$TT_tools $1"
-		export TT_tools
-		source "$1"
+		TTXX_tools="$TTXX_tools $tmp"
+		export TTXX_tools
+		source "$tmp"
 	fi
 }
 

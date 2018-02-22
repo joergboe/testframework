@@ -39,5 +39,6 @@ function useCpu {
 		return 0
 	fi
 }
+export -f useCpu
 
 :

@@ -18,6 +18,7 @@ function copyAndModifyTestCollection {
 		done
 	fi
 }
+export -f copyAndModifyTestCollection
 
 TTRO_help_runRunTTF='
 # Execute the test freamework with input directory testCollection intercept error
@@ -55,6 +56,7 @@ function runRunTTF {
 		fi
 	fi
 }
+export -f runRunTTF
 
 #define required variables default
 setVar 'TT_expectResult' 0

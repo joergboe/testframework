@@ -37,7 +37,7 @@ function exeSuite {
 		isDebug && printDebug "$FUNCNAME: no execution of suite $suitePath: variant='$2'"
 		return 0
 	fi
-	echo "**** START Suite: ${suite} variant='$2' in ${suitePath} *****************"
+	printInfo "**** START Suite: ${suite} variant='$2' in ${suitePath} *****************"
 	#make and cleanup suite work dir
 	local sworkdir="$TTRO_workDir"
 	if [[ -n $suiteNestingPath ]]; then
@@ -69,11 +69,11 @@ function exeSuite {
 	else
 		result=$?
 		if [[ $result -eq $errSigint ]]; then
-			printWarning "Set SIGINT Execution of suite ${suite} variant $2 ended with result=$result"
+			printWarning "Set SIGINT Execution of suite ${suite} variant '$2' ended with result=$result"
 			interruptReceived=$((interruptReceived+1))
 		else
 			if [[ $nestingLevel -gt 0 ]]; then
-				printError "Execution of suite ${suite} variant $2 ended with result=$result"
+				printError "Execution of suite ${suite} variant '$2' ended with result=$result"
 				suiteErrors=$(( suiteErrors + 1))
 				builtin echo "$suiteNestingString" >> "${6}/SUITE_ERROR"
 			else
@@ -108,9 +108,21 @@ function exeSuite {
 		$CASE_EXECUTE_Count $CASE_SKIP_Count $CASE_FAILURE_Count $CASE_ERROR_Count $CASE_SUCCESS_Count $SUITE_EXECUTE_Count $SUITE_SKIP_Count $SUITE_ERROR_Count
 	fi
 	
-	echo "**** END Suite: ${suite} variant='$2' in ${suitePath} *******************"
+	printInfo "**** END Suite: ${suite} variant='$2' in ${suitePath} *******************"
 	return 0
 } #/exeSuite
+
+#
+# write protect all exported fuinctions
+function writeProtectExportedFunctions {
+	local functions=$(declare -Fx)
+	local IFS=$'\n'
+	local x fname
+	for x in $functions; do
+		fname="${x##* }"
+		readonly -f "$fname"
+	done
+}
 
 #
 # Create the global index.html
@@ -138,14 +150,6 @@ function createGlobalIndex {
 		<ul>
 		  <li><a href="suite.html">Global Dummy Suite</a></li>
 		</ul>
-		text
-		<div style="color: maroon">
-		warning
-		</div>
-		<div style="color: rgb(255,204,0)">
-		warning 2
-		</div>
-		<div style="color: red">error</div>
 	</body>
 	</html>
 	EOF
