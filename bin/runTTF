@@ -293,15 +293,17 @@ for ((i=0; i<${#propertyFiles[@]}; i++)); do
 	tmp="${propertyFiles[$i]}"
 	if [[ ${tmp:0:1} != "/" ]]; then
 		tmp="${currentDir}/${tmp}"
-		propertyFiles[$i]="$tmp"
 	fi
+	tmp2=$(readlink -m "$tmp")
+	propertyFiles[$i]="$tmp2"
 done
 for ((i=0; i<${#toolsFiles[@]}; i++)); do
 	tmp="${toolsFiles[$i]}"
 	if [[ ${tmp:0:1} != "/" ]]; then
 		tmp="${currentDir}/${tmp}"
-		toolsFiles[$i]="$tmp"
 	fi
+	tmp2=$(readlink -m "$tmp")
+	toolsFiles[$i]="$tmp2"
 done
 readonly propertyFiles toolsFiles
 

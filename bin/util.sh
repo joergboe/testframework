@@ -886,13 +886,14 @@ TTRO_help_import='
 #	return the result code of the source command'
 function import {
 	isDebug && printDebug "$FUNCNAME $*"
-	if isInList "$1" "$TTXX_tools"; then
-		printWarning "file $1 is already registerd in TTXX_tools=$TTXX_tools"
+	local tmp=$(readlink -m "$1")
+	if isInList "$tmp" "$TTXX_tools"; then
+		printWarning "file $tmp is already registerd in TTXX_tools=$TTXX_tools"
 		return 0
 	else
-		TTXX_tools="$TTXX_tools $1"
+		TTXX_tools="$TTXX_tools $tmp"
 		export TTXX_tools
-		source "$1"
+		source "$tmp"
 	fi
 }
 
