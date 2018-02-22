@@ -35,6 +35,7 @@ trap errorTrapFunc ERR
 #includes
 source "${TTRO_scriptDir}/defs.sh"
 source "${TTRO_scriptDir}/util.sh"
+source "${TTRO_scriptDir}/coreutil.sh"
 
 #usage and parameters
 function usage {
@@ -64,6 +65,7 @@ declare -i executedTestPrepSteps=0
 declare -i executedTestFinSteps=0
 declare errorOccurred=''
 declare failureOccurred=''
+declare skipcase=""
 
 #test finalization function
 function caseFinalization {
@@ -165,14 +167,6 @@ isVerbose && echo "**** START Case $TTRO_case variant $TTRO_variantCase in workd
 # enter working dir
 cd "$TTRO_workDirCase"
 
-#-----------------------------------
-# tools
-#for x in $TT_tools; do
-#	isVerbose && echo "Source global tools file: $x"
-#	source "$x"
-#	fixPropsVars
-#done
-
 #-------------------------------------------------
 #include global, suite and case custom definitions
 tmp="${TTRO_inputDirCase}/${TEST_CASE_FILE}"
@@ -180,6 +174,7 @@ if [[ -e $tmp ]]; then
 	isVerbose && echo  "Source Case test tools file $tmp"
 	source "$tmp"
 	fixPropsVars
+	writeProtectExportedFunctions
 else
 	printErrorAndExit "No Case test tools file $tmp" $errScript
 fi
@@ -192,7 +187,6 @@ printTestframeEnvironment > "$tmp"
 export >> "$tmp"
 
 #check skip
-declare skipcase=""
 if [[ -e "${TTRO_inputDirCase}/SKIP" ]]; then
 	skipcase="true"
 fi

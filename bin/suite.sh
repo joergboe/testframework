@@ -123,20 +123,13 @@ isDebug && printDebug "noCases=$noCases"
 # enter working dir
 cd "$TTRO_workDirSuite"
 
-#-------------------------------------
-# include tools
-#for x in $TT_tools; do
-#	isVerbose && echo "Source global tools file: $x"
-#	source "$x"
-#	fixPropsVars
-#done
-
 if [[ $TTRO_suiteIndex -ne 0 ]]; then
 	tmp="${TTRO_inputDirSuite}/${TEST_SUITE_FILE}"
 	if [[ -e "$tmp" ]]; then
 		isVerbose && echo  "Source Suite file $tmp"
 		source "$tmp"
 		fixPropsVars
+		writeProtectExportedFunctions
 	else
 		printErrorAndExit "No Suite file $tmp" $errScript
 	fi

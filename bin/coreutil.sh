@@ -69,11 +69,11 @@ function exeSuite {
 	else
 		result=$?
 		if [[ $result -eq $errSigint ]]; then
-			printWarning "Set SIGINT Execution of suite ${suite} variant $2 ended with result=$result"
+			printWarning "Set SIGINT Execution of suite ${suite} variant '$2' ended with result=$result"
 			interruptReceived=$((interruptReceived+1))
 		else
 			if [[ $nestingLevel -gt 0 ]]; then
-				printError "Execution of suite ${suite} variant $2 ended with result=$result"
+				printError "Execution of suite ${suite} variant '$2' ended with result=$result"
 				suiteErrors=$(( suiteErrors + 1))
 				builtin echo "$suiteNestingString" >> "${6}/SUITE_ERROR"
 			else
@@ -111,6 +111,18 @@ function exeSuite {
 	echo "**** END Suite: ${suite} variant='$2' in ${suitePath} *******************"
 	return 0
 } #/exeSuite
+
+#
+# write protect all exported fuinctions
+function writeProtectExportedFunctions {
+	local functions=$(declare -Fx)
+	local IFS=$'\n'
+	local x fname
+	for x in $functions; do
+		fname="${x##* }"
+		readonly -f "$fname"
+	done
+}
 
 #
 # Create the global index.html

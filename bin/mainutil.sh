@@ -20,9 +20,8 @@ function usage {
 	--noprompt               : Do not prompt berfore an existing working directory is removed.
 	-i|--directory VALUE     : The input directory - the test collection directory. There is no default. This option must be entered.
 	-p|--properties VALUE    : This specifies the file with the global property values. Default is file $TEST_PROPERTIES in input directory.
-	                           If this path is an relative path, it is expanded relative to the input directory.
-	-t|--tools VALUE         : Includes (source) files with test tool scripts. This option can be given more than one time. This overwrites then
-	                           TTRO_tools environment.
+	                           This option can be given more than one time. 
+	-t|--tools VALUE         : Includes (source) files with test tool scripts. This option can be given more than one time.
 	-n|--no-checks           : The script omits the checkes for the streams environment and does not attempt to start domain/instance. Saves time
 	-s|--skip-ignore         : If this option is given the ignore attribute of the cases are ignored
 	-j|--threads VALUE       : The number of parallel test executions. (you have ${noCpus} (virtual) cores this is default)
@@ -277,8 +276,13 @@ function printParams {
 		for x in ${!valueOptions[@]}; do
 			printDebug "${x}=${!x}"
 		done
-		printDebug "toolsFiles=$toolsFiles"
 		local -i i
+		for ((i=0; i<${#propertyFiles[@]}; i++)); do
+			printDebug "propertyFiles[$i]=${propertyFiles[$i]}"
+		done
+		for ((i=0; i<${#toolsFiles[@]}; i++)); do
+			printDebug "toolsFiles[$i]=${toolsFiles[$i]}"
+		done
 		for ((i=0; i<${#varNamesToSet[@]}; i++)); do
 			printDebug "-D ${varNamesToSet[$i]}=${varValuesToSet[$i]}"
 		done

@@ -1,6 +1,6 @@
 ######################################################
 # Utilities for testframework
-#
+# (public utilities)
 ######################################################
 
 TTRO_help_printErrorAndExit="
@@ -879,19 +879,19 @@ function isInList {
 	fi
 }
 
-TTRO_help_registerTool='
+TTRO_help_import='
 # Function registerTool
 #	Treats the input as filename and adds it to TT_tools if not already there
 #	sources the file if it was not in TT_tools
-#	return false if filename is already in TT_tools'
-function registerTool {
+#	return the result code of the source command'
+function import {
 	isDebug && printDebug "$FUNCNAME $*"
-	if isInList "$1" "$TT_tools"; then
-		printError "file $1 is already registerd in TT_tools=$TT_tools"
-		return 1
+	if isInList "$1" "$TTXX_tools"; then
+		printWarning "file $1 is already registerd in TTXX_tools=$TTXX_tools"
+		return 0
 	else
-		TT_tools="$TT_tools $1"
-		export TT_tools
+		TTXX_tools="$TTXX_tools $1"
+		export TTXX_tools
 		source "$1"
 	fi
 }

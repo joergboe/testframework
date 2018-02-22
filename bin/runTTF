@@ -116,7 +116,6 @@ declare -r -A valueOptions=(
 	['workdir']='-w --workdir'
 	['directory']='-i --directory'
 	['skipIgnore']='-s --skip-ignore'
-	['properties']='-p --properties'
 	['threads']='-j --threads'
 )
 for x in ${!singleOptions[@]}; do
@@ -125,7 +124,8 @@ done
 for x in ${!valueOptions[@]}; do
 	declare ${x}=""
 done
-declare toolsFiles="" #The with tools fies to include
+declare -a toolsFiles=() #The with tools fies to include
+declare -a propertyFiles=() # The property files
 declare -a varNamesToSet=() #The list with variable names to set
 declare -a varValuesToSet=() #The list with variables values to set
 declare -a cases=() # the list of cases from command line
@@ -166,7 +166,13 @@ while [[ $# -ge 1 ]]; do
 		exit 0;;
 	-t|--tools)
 		[[ $# -ge 2 && $2 != -* ]] || missOptionArg $1;
-		toolsFiles="$toolsFiles $2"
+		tmp="${#toolsFiles[@]}"
+		toolsFiles[$tmp]="$2"
+		shift;;
+	-p|--properties)
+		[[ $# -ge 2 && $2 != -* ]] || missOptionArg $1;
+		tmp="${#propertyFiles[@]}"
+		propertyFiles[$tmp]="$2"
 		shift;;
 	-D)
 		[[ $# -ge 2 && $2 != -* ]] || missOptionArg $1;
@@ -282,25 +288,22 @@ else
 fi
 
 #-------------------------------------
-#properties file : if no path element is given use the input dir as prefix
-if [[ -n  ${properties} ]]; then
-	if [[ ( ${properties:1:1} != "/" ) && (${properties:1:1} != \. ) ]]; then
-		properties=${directory}/${properties}
+#properties file / tools file: if no path element is given use the input dir as prefix
+for ((i=0; i<${#propertyFiles[@]}; i++)); do
+	tmp="${propertyFiles[$i]}"
+	if [[ ${tmp:0:1} != "/" ]]; then
+		tmp="${currentDir}/${tmp}"
+		propertyFiles[$i]="$tmp"
 	fi
-fi
-
-#-------------------------------------
-#tools file
-if ! declare -p TT_tools &> /dev/null; then
-	declare TT_tools=""
-fi
-for x in ${toolsFiles}; do
-	tmp="$x"
-	if [[ "${tmp:1:1}" != "/" ]]; then
-		tmp=${currentDir}/${tmp}
-	fi
-	TT_tools="$TT_tools $tmp"
 done
+for ((i=0; i<${#toolsFiles[@]}; i++)); do
+	tmp="${toolsFiles[$i]}"
+	if [[ ${tmp:0:1} != "/" ]]; then
+		tmp="${currentDir}/${tmp}"
+		toolsFiles[$i]="$tmp"
+	fi
+done
+readonly propertyFiles toolsFiles
 
 #----------------------------------
 #finally make option variables read only
@@ -345,7 +348,6 @@ else
 fi
 setVar TTPN_noPrepsCase ''
 setVar TTPN_noFinsCase ''
-
 fixPropsVars
 
 #--------------------------------
@@ -356,13 +358,14 @@ printParams
 
 #-----------------------------------------------------------------------------------------
 # Check test properies file if properties parameter was given
-if [[ -n "$properties" ]]; then
-	if [[ -r "$properties" ]]; then
-		isVerbose && echo "Found readable test properties file $properties"
+for ((i=0; i<${#propertyFiles[@]}; i++)) do
+	x="$${propertyFiles[$i]}"
+	if [[ -r "$x" ]]; then
+		isVerbose && echo "Found readable test properties file $x"
 	else
-		printErrorAndExit "No test properties file $properties found"
+		printErrorAndExit "No test properties file $x found"
 	fi
-fi
+done
 
 #-----------------------------------------------------------------------------------------
 # search test suites. Suites are directories with a suite definition file $TEST_SUITE_FILE
@@ -539,30 +542,30 @@ cd "$TTRO_workDir"
 
 #-----------------------------------------------------------
 #check if properties file exists - read properties and fixup
-if [[ -n $properties ]]; then
-	isVerbose && echo "Include global properties $properties"
-	#setProperties "${properties}"
-	source "${properties}"
+if [[ ${#propertyFiles[@]} -gt 0 ]]; then
+	for ((i=0; i<${#propertyFiles[@]}; i++)); do
+		x="${propertyFiles[$i]}"
+		isVerbose && echo "Include global properties $x"
+		source "${x}"
+	done
 elif [[ -e "$TTRO_inputDir/$TEST_PROPERTIES" ]]; then
 	isVerbose && echo "Include global properties $TTRO_inputDir/$TEST_PROPERTIES"
-	#setProperties "$TTRO_inputDir/$TEST_PROPERTIES"
 	source "$TTRO_inputDir/$TEST_PROPERTIES"
 else
 	isVerbose && echo "No global properies file to evaluate"
 fi
 fixPropsVars # fix global properties and vars
+writeProtectExportedFunctions
 
 #------------------------------------------------
 # source tools
-if isNotExisting 'TT_tools'; then
-	declare -x TT_tools=''
-fi
-if [[ -n $TT_tools ]]; then
-	for x in $TT_tools; do
+declare -x TTXX_tools=''
+if [[ ${#toolsFiles[@]} -gt 0 ]]; then
+	for ((i=0; i<${#toolsFiles[@]}; i++)); do
+		x="${toolsFiles[$i]}"
 		isVerbose && echo "Source global tools file: $x"
 		if [[ -r $x ]]; then
-
-			source "$x"
+			import "$x"
 		else
 			printErrorAndExit "Tools file $x is required but this file is not readable" $errRt
 		fi
@@ -571,6 +574,7 @@ else
 	isDebug && printDebug "No additional global test tools files defined"
 fi
 fixPropsVars # fix global properties and var
+writeProtectExportedFunctions
 
 #-----------------------------------------------
 if [[ -n $TTRO_reference ]]; then
