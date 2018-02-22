@@ -66,3 +66,5 @@ Version 2.0.0:
 Version 2.1.0:
 - New feature: Browser is started after test collection execution and execution index is displayed in browser
 
+Version 2.2.0:
+- Simple initialization of test tools. Test tools are now imported one at the beginning of tests. Test tools function must be exported.

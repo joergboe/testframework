@@ -52,14 +52,6 @@ setVar 'TT_jobFile' './jobno.log'
 #########################################################
 # Functions section
 
-TTRO_help_streamsutilsInitialization='
-# Module initialization
-#	Function call is not required since all initialization is done in main body'
-function streamsutilsInitialization {
-	echo "$FUNCNAME dummy function"
-}
-export -f streamsutilsInitialization
-
 TTRO_help_copyAndTransformSpl='
 # Function copyAndTransformSpl
 #	Copy all files from input directory to workdir and
