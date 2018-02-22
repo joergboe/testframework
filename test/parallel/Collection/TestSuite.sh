@@ -1,7 +1,7 @@
 setVar 'TTRO_preps' "testPreparation"
 setVar 'TTRO_fins' 'testFinalization'
 
-registerTool "$TTRO_scriptDir/testutils.sh"
+import "$TTRO_scriptDir/testutils.sh"
 
 function testPreparation {
 	echo "$FUNCNAME : Running global test preparation"

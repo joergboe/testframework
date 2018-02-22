@@ -3,7 +3,7 @@
 ###################################
 
 # register tool module
-registerTool "$TTRO_inputDirSuite/TestTools.sh"
+import "$TTRO_inputDirSuite/TestTools.sh"
 
 #Test collection preparation
 PREPS='modifyAll'
@@ -18,6 +18,7 @@ function modifyPrefix {
 	fi
 	sed -e "s/TT_/TY_/g;s/TTRO_/TYRO_/g;s/TTP_/TYP_/g;s/TTPN_/TYPN_/g;s/TTXX_/TYXX_/g" "$1" > "$2"
 }
+export -f modifyPrefix
 
 TTRO_help_modifyAll='
 # This function copies the bin dir into workdir/bin
@@ -35,3 +36,4 @@ function modifyAll {
 		fi
 	done
 }
+export -f modifyAll

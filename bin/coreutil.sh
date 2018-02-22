@@ -150,14 +150,6 @@ function createGlobalIndex {
 		<ul>
 		  <li><a href="suite.html">Global Dummy Suite</a></li>
 		</ul>
-		text
-		<div style="color: maroon">
-		warning
-		</div>
-		<div style="color: rgb(255,204,0)">
-		warning 2
-		</div>
-		<div style="color: red">error</div>
 	</body>
 	</html>
 	EOF

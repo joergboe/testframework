@@ -425,7 +425,7 @@ while [[ -z $allJobsGone ]]; do
 							echo "$tmpCaseAndVariant" >> "${TTRO_workDirSuite}/CASE_EXECUTE"
 							
 							#executeList+=("$tmpCaseAndVariant")
-							printInfon -n "END: Job i=$i pid=$pid jobid=$jobid case=${tmpCase} variant='${tmpVariant}'"
+							printInfon "END: Job i=$i pid=$pid jobid=$jobid case=${tmpCase} variant='${tmpVariant}'"
 							tpid[$i]=""
 							tjobid[$i]=""
 							#if there is a new job to start: take only the first free index and only if less than currentParralelJobs
