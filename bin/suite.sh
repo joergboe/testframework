@@ -478,7 +478,7 @@ while [[ -z $allJobsGone ]]; do
 								addCaseEntry "$indexfilename" "$tmpCase" "$tmpVariant" 'ERROR' '1' "${tcaseWorkDir[$i]}"
 								tmp2="ERROR"
 							fi
-							printInfo " Result: $tmp2"
+							echo " Result: $tmp2"
 						fi
 					fi
 				fi
