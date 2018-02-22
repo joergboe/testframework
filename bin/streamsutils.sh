@@ -134,7 +134,7 @@ TTRO_help_mkDomainVariable='
 function mkDomainVariable {
 	isDebug && printDebug "$FUNCNAME $*"
 	if [[ -n $TTPN_noStart ]]; then
-		echo "$FUNCNAME : function supressed"
+		printInfo "$FUNCNAME : function supressed"
 		return 0
 	fi
 	local zkParam
@@ -168,7 +168,7 @@ TTRO_help_startDomainVariable='
 function startDomainVariable {
 	isDebug && printDebug "$FUNCNAME $*"
 	if [[ -n $TTPN_noStart ]]; then
-		echo "$FUNCNAME : function supressed"
+		printInfo "$FUNCNAME : function supressed"
 		return 0
 	fi
 	local zkParam
@@ -197,7 +197,7 @@ TTRO_help_mkInstVariable='
 function mkInstVariable {
 	isDebug && printDebug "$FUNCNAME $*"
 	if [[ -n $TTPN_noStart ]]; then
-		echo "$FUNCNAME : function supressed"
+		printInfo "$FUNCNAME : function supressed"
 		return 0
 	fi
 	local zkParam
@@ -225,7 +225,7 @@ TTRO_help_startInstVariable='
 function startInstVariable {
 	isDebug && printDebug "$FUNCNAME $*"
 	if [[ -n $TTPN_noStart ]]; then
-		echo "$FUNCNAME : function supressed"
+		printInfo "$FUNCNAME : function supressed"
 		return 0
 	fi
 	local zkParam
@@ -264,12 +264,12 @@ function cleanUpInstAndDomainVariableOld {
 	isDebug && printDebug "$FUNCNAME $*"
 	if [[ $1 == start ]]; then
 		if [[ -n $TTPN_noStart ]]; then
-			echo "$FUNCNAME : at start function supressed"
+			printInfo "$FUNCNAME : at start function supressed"
 			return 0
 		fi
 	elif [[ $1 == stop ]]; then
 		if [[ -n $TTPN_noStop ]]; then
-			echo "$FUNCNAME : at stop function supressed"
+			printInfo "$FUNCNAME : at stop function supressed"
 			return 0
 		fi
 	else
@@ -289,20 +289,20 @@ function cleanUpInstAndDomainVariableOld {
 					#TODO: check whether the retun code is fine here
 					echoAndExecute $TTPN_st stopinst "$zkParam" --force --domain-id "$3" --instance-id "$4"
 				else
-					isVerbose && echo "$FUNCNAME : no running instance $4 found in domain $3"
+					isVerbose && printVerbose "$FUNCNAME : no running instance $4 found in domain $3"
 				fi
 				echoAndExecute $TTPN_st rminst "$zkParam" --noprompt --domain-id "$3" --instance-id "$4"
 			else
-				isVerbose && echo "$FUNCNAME : no instance $4 found in domain $3"
+				isVerbose && printVerbose "$FUNCNAME : no instance $4 found in domain $3"
 			fi
 			#End Running domain found check instance
 			echoAndExecute $TTPN_st stopdomain "$zkParam" --force --domain-id "$3"
 		else
-			isVerbose && echo "$FUNCNAME : no running domain $3 found"
+			isVerbose && printVerbose "$FUNCNAME : no running domain $3 found"
 		fi
 		echoAndExecute $TTPN_st rmdomain "$zkParam" --noprompt --domain-id "$3"
 	else
-		isVerbose && echo "$FUNCNAME : no domain $3 found"
+		isVerbose && printVerbose "$FUNCNAME : no domain $3 found"
 	fi
 	return 0
 }
@@ -337,20 +337,20 @@ function cleanUpInstAndDomainVariable {
 					#TODO: check whether the retun code is fine here
 					echoAndExecute $TTPN_st stopinst "$zkParam" --force --domain-id "$2" --instance-id "$3"
 				else
-					isVerbose && echo "$FUNCNAME : no running instance $3 found in domain $2"
+					isVerbose && printVerbose "$FUNCNAME : no running instance $3 found in domain $2"
 				fi
 				echoAndExecute $TTPN_st rminst "$zkParam" --noprompt --domain-id "$2" --instance-id "$3"
 			else
-				isVerbose && echo "$FUNCNAME : no instance $3 found in domain $2"
+				isVerbose && printVerbose "$FUNCNAME : no instance $3 found in domain $2"
 			fi
 			#End Running domain found check instance
 			echoAndExecute $TTPN_st stopdomain "$zkParam" --force --domain-id "$2"
 		else
-			isVerbose && echo "$FUNCNAME : no running domain $2 found"
+			isVerbose && printVerbose "$FUNCNAME : no running domain $2 found"
 		fi
 		echoAndExecute $TTPN_st rmdomain "$zkParam" --noprompt --domain-id "$2"
 	else
-		isVerbose && echo "$FUNCNAME : no domain $2 found"
+		isVerbose && printVerbose "$FUNCNAME : no domain $2 found"
 	fi
 	return 0
 }
