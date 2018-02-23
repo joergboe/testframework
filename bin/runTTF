@@ -107,6 +107,7 @@ declare -r -A singleOptions=(
 	['noChecks']='-n --no-checks'
 	['noStart']='--no-start'
 	['noStop']='--no-stop'
+	['skipIgnore']='-s --skip-ignore'
 	['flat']='-f --flat'
 	['noprompt']='--noprompt'
 	['nobrowser']='--no-browser'
@@ -114,7 +115,6 @@ declare -r -A singleOptions=(
 declare -r -A valueOptions=(
 	['workdir']='-w --workdir'
 	['directory']='-i --directory'
-	['skipIgnore']='-s --skip-ignore'
 	['threads']='-j --threads'
 	['reference']='--ref'
 )
@@ -207,7 +207,11 @@ while [[ $# -ge 1 ]]; do
 					if [[ $1 == ${ex} ]]; then
 						if [[ -n ${!option} ]]; then duplicateOption "${1}"; fi
 						[[ $# -ge 2 && $2 != -* ]] || missOptionArg $1;
-						eval "${option}=$2"
+						if [[ $option == reference && -z $2 ]]; then
+							reference="${TTRO_scriptDir}/util.sh"
+						else
+							eval "${option}=$2"
+						fi
 						optionFound="true"
 						shift
 						break 2
@@ -241,12 +245,40 @@ unset -v parametersection
 #	exit ${errRt}
 #fi
 unset -v exportCheckFailed
-#echo "*******************************************************************************************************"
-echo  "**** START test case collection ***********************************************************************"
+
+#-----------------------------------------------
 declare -x TTRO_reference=""
-if isExisting 'reference' ; then
+if [[ -n $reference ]]; then
 	TTRO_reference="true"
 fi
+readonly TTRO_reference
+if [[ -n $TTRO_reference ]]; then
+	list1=$(echo "${!TTRO_help@} " | sort)
+	list3=''
+	if [[ $reference != "${TTRO_scriptDir}/util.sh" ]]; then
+		source "$reference"
+		list2=$(echo "${!TTRO_help@} " | sort)
+		for x in $list2; do
+			if ! isInList "$x" "$list1"; then
+				list3="$list3 $x"
+			fi
+		done
+	else
+		list3="$list1"
+	fi
+	{
+		for x in $list3; do
+			name="${x#TTRO_help_}"
+			echo "#######################################"
+			echo -n "#		$name"
+			echo "${!x}"
+			echo
+			echo
+		done
+	} | less
+	exit 0
+fi
+
 #---------------------------------------------------------
 #set the number of threads to noCpus if not set otherwise
 if [[ -z $threads ]]; then
@@ -369,6 +401,7 @@ for ((i=0; i<${#propertyFiles[@]}; i++)) do
 	fi
 done
 
+echo  "**** START test case collection ***********************************************************************"
 #-----------------------------------------------------------------------------------------
 # search test suites. Suites are directories with a suite definition file $TEST_SUITE_FILE
 # globals for searches
@@ -537,34 +570,6 @@ if [[ -e $TTRO_workDir ]]; then
 fi
 mkdir -p "$TTRO_workDir"
 printInfo "TTRO_workDir=$TTRO_workDir"
-
-#-----------------------------------------------
-if [[ -n $TTRO_reference ]]; then
-	list1=$(echo "${!TTRO_help@} " | sort)
-	list3=''
-	if [[ -n $reference ]]; then
-		source "$reference"
-		list2=$(echo "${!TTRO_help@} " | sort)
-		for x in $list2; do
-			if ! isInList "$x" "$list1"; then
-				list3="$list3 $x"
-			fi
-		done
-	else
-		list3="$list1"
-	fi
-	{
-		for x in $list3; do
-			name="${x#TTRO_help_}"
-			echo "#######################################"
-			echo -n "#		$name"
-			echo "${!x}"
-			echo
-			echo
-		done
-	} | less
-	exit 0
-fi
 
 #------------------------------------------------
 # enter working dir

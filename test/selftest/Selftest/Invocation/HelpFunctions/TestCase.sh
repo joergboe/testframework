@@ -10,7 +10,8 @@ case $TTRO_variantCase in
 					'OPTIONS:*'
 					'-h|--help                : display this help'
 					'--man                    : display man page'
-					'--ref                    : display function reference. This function requires a specified input directory.'
+					'--ref VALUE              : display function reference. If value is the empty value, the reference of the internal functions is displayed.'
+					'                           If value assigns a Test Tools module the reference of the module is displayed.'
 					'-w|--workdir  VALUE      : The working directory. Here are all work files and results are stored. Default is*'
 					'-f|--flat                : Use flat working directory - does not include the date/time string into the workdir path'
 					'--noprompt               : Do not prompt berfore an existing working directory is removed.'
@@ -46,30 +47,25 @@ case $TTRO_variantCase in
 					 'The ro attribute (and others) is not availble in the child shell*')
 		;;
 	ref)
-		patternList=('# Function copyAndTransform*'
-					'#	Copy and change all files from input dirextory into workdir'
-					'#	Filenames that match one of the transformation pattern are transformed. All other files are copied.'
-					'#	In case of transformation the pattern //_<varid> is removed if varid equals*'
-					'#	In case of transformation the pattern //!<varid> is removed if varid is different than*'
-					'#	If the variant identifier is empty, the pattern list sould be also empty and the function is a pure copy function'
-					'#	If $3 is empty and $4 .. do not exist, this function is a pure copy'
-					'#	$1 - input dir'
-					'#	$2 - output dir'
-					'#	$3 - the variant identifier'
-					'#	$4 ... pattern for file names to be transformed')
+		patternList=('############################*')
 		;;
 esac
 
 function executeCase {
 	local tmp="--$TTRO_variantCase"
 	if [[ $TTRO_variantCase == "ref" ]]; then
-		tmp="--ref --directory $TTRO_inputDirCase/test --noprompt"
-	fi
-	echo "$tmp"
-	if $TTPN_binDir/runTTF $tmp 2>&1 | tee STDERROUT1.log; then
-		return 0
+		if $TTPN_binDir/runTTF '--ref' '' '--directory' "$TTRO_inputDirCase/test" '--noprompt' '-d' 2>&1 | tee STDERROUT1.log; then
+			return 0
+		else
+			return $errTestFail
+		fi
 	else
-		return $errTestFail
+		echo "$tmp"
+		if $TTPN_binDir/runTTF $tmp 2>&1 | tee STDERROUT1.log; then
+			return 0
+		else
+			return $errTestFail
+		fi
 	fi
 }
 
