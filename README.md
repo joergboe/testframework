@@ -68,3 +68,6 @@ Version 2.1.0:
 
 Version 2.2.0:
 - Simple initialization of test tools. Test tools are now imported one at the beginning of tests. Test tools function must be exported.
+
+New Version:
+- Changed reference display handling: The parameter --ref requires now the name of the module to display.

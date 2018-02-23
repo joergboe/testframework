@@ -107,7 +107,6 @@ declare -r -A singleOptions=(
 	['noChecks']='-n --no-checks'
 	['noStart']='--no-start'
 	['noStop']='--no-stop'
-	['reference']='--ref'
 	['flat']='-f --flat'
 	['noprompt']='--noprompt'
 	['nobrowser']='--no-browser'
@@ -117,6 +116,7 @@ declare -r -A valueOptions=(
 	['directory']='-i --directory'
 	['skipIgnore']='-s --skip-ignore'
 	['threads']='-j --threads'
+	['reference']='--ref'
 )
 for x in ${!singleOptions[@]}; do
 	declare ${x}=""
@@ -244,7 +244,7 @@ unset -v exportCheckFailed
 #echo "*******************************************************************************************************"
 echo  "**** START test case collection ***********************************************************************"
 declare -x TTRO_reference=""
-if [[ $reference == "true" ]]; then
+if isExisting 'reference' ; then
 	TTRO_reference="true"
 fi
 #---------------------------------------------------------
@@ -538,6 +538,34 @@ fi
 mkdir -p "$TTRO_workDir"
 printInfo "TTRO_workDir=$TTRO_workDir"
 
+#-----------------------------------------------
+if [[ -n $TTRO_reference ]]; then
+	list1=$(echo "${!TTRO_help@} " | sort)
+	list3=''
+	if [[ -n $reference ]]; then
+		source "$reference"
+		list2=$(echo "${!TTRO_help@} " | sort)
+		for x in $list2; do
+			if ! isInList "$x" "$list1"; then
+				list3="$list3 $x"
+			fi
+		done
+	else
+		list3="$list1"
+	fi
+	{
+		for x in $list3; do
+			name="${x#TTRO_help_}"
+			echo "#######################################"
+			echo -n "#		$name"
+			echo "${!x}"
+			echo
+			echo
+		done
+	} | less
+	exit 0
+fi
+
 #------------------------------------------------
 # enter working dir
 cd "$TTRO_workDir"
@@ -577,22 +605,6 @@ else
 fi
 fixPropsVars # fix global properties and var
 writeProtectExportedFunctions
-
-#-----------------------------------------------
-if [[ -n $TTRO_reference ]]; then
-	list=$(echo "${!TTRO_help@} " | sort)
-	{
-		for x in $list; do
-			name="${x#TTRO_help_}"
-			echo "#######################################"
-			echo -n "#		$name"
-			echo "${!x}"
-			echo
-			echo
-		done
-	} | less
-	exit 0
-fi
 
 #------------------------------------------------
 # diagnostics

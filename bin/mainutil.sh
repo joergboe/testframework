@@ -14,7 +14,8 @@ function usage {
 	OPTIONS:
 	-h|--help                : display this help
 	--man                    : display man page
-	--ref                    : display function reference. This function requires a specified input directory.
+	--ref VALUE              : display function reference. If value is the empty value, the reference of the internal functions is displayed.
+	                           If value assigns a Test Tools module the reference of the module is displayed.
 	-w|--workdir  VALUE      : The working directory. Here are all work files and results are stored. Default is ./${DEFAULT_WORKDIR} .
 	-f|--flat                : Use flat working directory - does not include the date/time string into the workdir path
 	--noprompt               : Do not prompt berfore an existing working directory is removed.
