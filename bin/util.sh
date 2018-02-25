@@ -3,11 +3,20 @@
 # (public utilities)
 ######################################################
 
+TTRO_help_setFailure='
+# Function setFailure
+#	set the failure condition
+#	to be used in failed test cases'
+function setFailure {
+	failureOccurred='true'
+}
+
 TTRO_help_printErrorAndExit="
 # Function printErrorAndExit
 # 	prints an error message and exits
 #	\$1 the error message to print
-#	\$2 the exit code"
+#	\$2 the exit code
+#	returns: never"
 function printErrorAndExit {
 	printError "$1"
 	exit $2
@@ -16,20 +25,28 @@ function printErrorAndExit {
 TTRO_help_printError="
 # Function printError
 #	prints an error message
-#	\$1 the error message to print"
+#	\$1 the error message to print
+#	returns:
+#		success (0)
+#		error	in exceptional cases"
 function printError {
 	echo -e "\033[31mERROR: $1\033[0m" >&2
-	local -i depth=${#FUNCNAME[@]}
-	local -i i
-	for ((i=depth-2; i>=0; i--)); do
-		caller $i
-	done
+	#local -i depth=${#FUNCNAME[@]}
+	#local -i i
+	#echo $depth
+	#for ((i=depth-2; i>=0; i--)); do
+#		echo xcxcxcxcxcx
+	#	caller $i
+	#done
 }
 
 TTRO_help_printWarning="
 # Function printWarning
 #	prints an warning message
-#	\$1 the warning to print"
+#	\$1 the warning to print
+#	returns:
+#		success (0)
+#		error	in exceptional cases"
 function printWarning {
 	local dd=$(date "+%T %N")
 	echo -e "\033[33m$dd WARNING: $1\033[0m" >&2
@@ -38,7 +55,10 @@ function printWarning {
 TTRO_help_printDebug="
 # Function printDebug
 #	prints debug info
-#	\$1 the debug info to print"
+#	\$1 the debug info to print
+#	returns:
+#		success (0)
+#		error	in exceptional cases"
 function printDebug {
 	local -i i
 	local stackInfo=''
@@ -52,7 +72,10 @@ function printDebug {
 TTRO_help_printDebugn="
 # Function printDebugn
 #	prints debug info without newline
-#	\$1 the debug info to print"
+#	\$1 the debug info to print
+#	returns:
+#		success (0)
+#		error	in exceptional cases"
 function printDebugn {
 	local -i i
 	local stackInfo=''
@@ -66,7 +89,10 @@ function printDebugn {
 TTRO_help_printInfo="
 # Function printInfo
 #	prints info info
-#	\$1 the info to print"
+#	\$1 the info to print
+#	returns:
+#		success (0)
+#		error	in exceptional cases"
 function printInfo {
 	local dd=$(date "+%T %N")
 	echo -e "$dd INFO: ${1}"
@@ -75,7 +101,10 @@ function printInfo {
 TTRO_help_printInfon="
 # Function printInfon
 #	prints info info without newline
-#	\$1 the info to print"
+#	\$1 the info to print
+#	returns:
+#		success (0)
+#		error	in exceptional cases"
 function printInfon {
 	local dd=$(date "+%T %N")
 	echo -en "$dd INFO: ${1}"
@@ -84,7 +113,10 @@ function printInfon {
 TTRO_help_printVerbose="
 # Function printVerbose
 #	prints verbose info
-#	\$1 the info to print"
+#	\$1 the info to print
+#	returns:
+#		success (0)
+#		error	in exceptional cases"
 function printVerbose {
 	local dd=$(date "+%T %N")
 	echo -e "$dd VERBOSE: ${1}"
@@ -93,7 +125,10 @@ function printVerbose {
 TTRO_help_printVerbosen="
 # Function printVerbosen
 #	prints verbose info without newline
-#	\$1 the info to print"
+#	\$1 the info to print
+#	returns:
+#		success (0)
+#		error	in exceptional cases"
 function printVerbosen {
 	local dd=$(date "+%T %N")
 	echo -en "$dd VERBOSE: ${1}"
@@ -101,7 +136,9 @@ function printVerbosen {
 
 TTRO_help_isDebug="
 # Function isDebug
-# 	returns true if debug is enabled"
+# 	returns:
+#		success(0) if debug is enabled
+#		error(1)   otherwise "
 function isDebug {
 	if [[ -n $TTPN_debug && -z $TTPN_debugDisable ]]; then
 		return 0	# 0 is true in bash
@@ -112,7 +149,9 @@ function isDebug {
 
 TTRO_help_isVerbose="
 # Function isVerbose
-#	returns true if verbose is enabled"
+#	returns
+#		success(0) if debug is enabled
+#		error(1)   otherwise "
 function isVerbose {
 	if [[ ( -n $TTPN_verbose && -z $TTPN_verboseDisable ) || (-n $TTPN_debug && -z $TTPN_debugDisable) ]]; then
 		return 0
@@ -123,7 +162,10 @@ function isVerbose {
 
 TTRO_help_printTestframeEnvironment="
 # Function printTestframeEnvironment
-# print special testrame environment"
+# 	print special testrame environment
+#	returns:
+#		success (0)
+#		error	in exceptional cases"
 function printTestframeEnvironment {
 	echo "**** Testframe Environment ****"
 	echo "PWD=$PWD"
@@ -156,16 +198,46 @@ function printTestframeEnvironment {
 TTRO_help_dequote='
 # Removes the sorounding quotes
 #	and prints result to stdout
-#	$1 the value to dequote'
+#	to be used withg care unquoted whitespaces are removed
+#	$1 the value to dequote
+#	returns:
+#		success (0)
+#		error	in exceptional cases'
 function dequote {
 	#eval printf %s "$1" 2> /dev/null
 	eval printf %s "$1"
 }
 
-TTRO_help_isPureDigit='
-# Checks whether the input string is a pure digit'
-function isPureDigit {
+TTRO_help_isPureNumber='
+# Checks whether the input string is a ubsigned number [0-9]+
+# $1 the string to check
+# returns
+#	success(0)  if the input are digits only
+#	error(1)    otherwise'
+function isPureNumber {
 	if [[ $1 =~ [0-9]+ ]]; then
+		if [[ "${BASH_REMATCH[0]}" == "$1" ]]; then
+			isDebug && printDebug "$FUNCNAME '$1' return 0"
+			return 0
+		fi
+	fi
+	isDebug && printDebug "$FUNCNAME '$1' return 1"
+	return 1
+}
+
+TTRO_help_isNumber='
+# Checks whether the input string is a signed or unsigned number ([-+])[0-9]+
+# $1 the string to check
+# returns
+#	success(0)  if the input is a number
+#	error(1)    otherwise'
+function isNumber {
+	if [[ $1 =~ [0-9]+ ]]; then
+		if [[ "${BASH_REMATCH[0]}" == "$1" ]]; then
+			isDebug && printDebug "$FUNCNAME '$1' return 0"
+			return 0
+		fi
+	elif [[ $1 =~ [-+][0-9]+ ]]; then
 		if [[ "${BASH_REMATCH[0]}" == "$1" ]]; then
 			isDebug && printDebug "$FUNCNAME '$1' return 0"
 			return 0
@@ -184,10 +256,13 @@ TTRO_help_splitVarValue='
 #	ignore empty lines and lines with only spaces
 #	varname must not be empty and must not contain any blank characters
 #	$1 the input line (only one line without nl)
-#	returns varname
-#		 value
-#        splitter
-# returns true in case of success false otherwise'
+#	return variables:
+#		varname
+#		value
+#       splitter
+#	returns
+#		success(0) if the function succeeds
+#		error(1)   otherwise'
 function splitVarValue {
 	isDebug && printDebug "$FUNCNAME \$1='$1'"
 	if [[ $1 == \#--* ]]; then
@@ -228,185 +303,15 @@ function splitVarValue {
 	fi
 }
 
-#
-# Read a test case or a test suite file and extracts the variables
-# variantCount and variantList and conditional the type; ignore the rest
-# $1 is the filename to read
-# return 0 in success case
-# exits with ${errRt} if an invalid line was read;
-# results are returned in global variables variantCount; variantList
-function readVariantFile {
-	isDebug && printDebug "$FUNCNAME $1"
-	if [[ ! -r $1 ]]; then
-		printErrorAndExit "${FUNCNAME} : Can not open file=$1 for read" ${errRt}
-	fi
-	variantCount=""; variantList=""; splitter=""
-	declare -i lineno=1
-	{
-		local varname=
-		local value=
-		local result=0
-		local unq
-		while [[ result -eq 0 ]]; do
-			if ! read -r; then result=1; fi
-			if [[ ( result -eq 0 ) || ( ${#REPLY} -gt 0 ) ]]; then #do not eval the last and empty line
-				if splitVarValue "$REPLY"; then
-					if [[ -n $varname ]] ; then
-						isDebug && printDebug "$FUNCNAME prepare for variant encoding varname=$varname value=$value"
-						case $varname in
-							variantCount )
-								unq=$(dequote "${value}")
-								if ! variantCount="${unq}"; then
-									printErrorAndExit "${FUNCNAME} : Invalid value in file=$1 line=$lineno '$REPLY'" ${errRt}
-								fi
-								if ! isPureDigit "$variantCount"; then
-									printErrorAndExit "${FUNCNAME} : variantCount is no digit in file=$1 line=$lineno '$REPLY'" ${errRt}
-								fi
-								isVerbose && printVerbose "variantCount='${variantCount}'"
-							;;
-							variantList )
-								unq=$(dequote "${value}")
-								if ! variantList="${unq}"; then
-									printErrorAndExit "${FUNCNAME} : Invalid value in file=$1 line=$lineno '$REPLY'" ${errRt}
-								fi
-								isVerbose && printVerbose "variantList='${variantList}'"
-							;;
-							timeout )
-								unq=$(dequote "${value}")
-								if ! timeout="${unq}"; then
-									printErrorAndExit "${FUNCNAME} : Invalid value in file=$1 line=$lineno '$REPLY'" ${errRt}
-								fi
-								if ! isPureDigit "$timeout"; then
-									printErrorAndExit "${FUNCNAME} : timeout is no digit in file=$1 line=$lineno '$REPLY'" ${errRt}
-								fi
-								isVerbose && printVerbose "timeout='${timeout}'"
-							;;
-							* )
-								#other property or variable
-								isDebug && printDebug "${FUNCNAME} : Ignore varname='$varname' in file $1 line=$lineno"
-							;;
-						esac
-					else
-						printErrorAndExit "${FUNCNAME} : Invalid line or property name in case or suitefile file=$1 line=$lineno '$REPLY'" ${errRt}
-					fi
-				fi
-					#isDebug && printDebug "Ignore line file=$1 line=$lineno '$REPLY'"
-				lineno=$((lineno+1))
-			fi
-		done
-	} < "$1"
-	return 0
-}
-
-# prepares the properties and readonly properties for the export and sets all variables
-# read from the testcase/suite file
-# expects that fixPropsVars is called afer
-# outputs the variables
-# input $1 : must be the filename
-function setProperties {
-	isDebug && printDebug "$FUNCNAME $1"
-	if [[ ! -r $1 ]]; then
-		printErrorAndExit "${FUNCNAME} : Can not open file=$1 for read" ${errRt}
-	fi
-	declare -i lineno=1
-	{
-		local varname="" value="" splitter=""
-		local result=0 internalResult=0
-		while [[ result -eq 0 ]]; do
-			if ! read -r; then result=1; fi
-			if [[ ( result -eq 0 ) || ( ${#REPLY} -gt 0 ) ]]; then #do not eval the last and empty line
-				if splitVarValue "$REPLY"; then
-					if [[ -n $varname ]] ; then
-						isDebug && printDebug "$FUNCNAME prepare for export varname=$varname value=$value splitter=$splitter"
-						case $varname in
-							TTPN_* )
-								#set property only if it is unset or null
-								if ! declare -p ${varname} &> /dev/null || [[ -z ${!varname} ]]; then
-									if [[ $splitter == ":=" ]]; then
-										if eval export \'${varname}\'='"${value}"'; then internalResult=0; else internalResult=1; fi
-									else
-										if eval export \'${varname}\'="${value}"; then internalResult=0; else internalResult=1; fi
-									fi
-									if [[ $internalResult -ne 0 ]]; then
-										printErrorAndExit "${FUNCNAME} : Invalid expansion in case- or suit-efile file=$1 line=$lineno varname=${varname} value=${value} '$REPLY'" ${errRt}
-									else
-										isVerbose && printVerbose "${varname}='${!varname}'"
-									fi
-								else
-									isVerbose && printVerbose "$FUNCNAME ignore value for ${varname} in file=$1 line=$lineno"
-								fi
-							;;
-							TTP_* )
-								#set property only if it is unset
-								if ! declare -p "${varname}" &> /dev/null; then
-									if [[ $splitter == ":=" ]]; then
-										if eval export \'${varname}\'='"${value}"'; then internalResult=0; else internalResult=1; fi
-									else
-										if eval export \'${varname}\'="${value}"; then internalResult=0; else internalResult=1; fi
-									fi
-									if [[ $internalResult -ne 0 ]]; then
-										printErrorAndExit "${FUNCNAME} : Invalid expansion in case- or suite-file file=$1 line=$lineno varname=${varname} value=${value} '$REPLY' file=$1" ${errRt}
-									else
-										isVerbose && printVerbose "${varname}='${!varname}'"
-									fi
-								else
-									isVerbose && printVerbose "$FUNCNAME ignore value for ${varname} in file=$1 line=$lineno"
-								fi
-							;;
-							TTRO_* )
-								#set a global readonly variable
-								if [[ $splitter == ":=" ]]; then
-									if eval export \'${varname}\'='"${value}"'; then internalResult=0; else internalResult=1; fi
-								else
-									if eval export \'${varname}\'="${value}"; then internalResult=0; else internalResult=1; fi
-								fi
-								if [[ $internalResult -ne 0 ]]; then
-									printErrorAndExit "${FUNCNAME} : Invalid expansion in case- or suite-file file=$1 line=$lineno varname=${varname} value=${value} '$REPLY' file=$1" ${errRt}
-								else
-									isVerbose && printVerbose "${varname}='${!varname}'"
-								fi
-							;;
-							TT_* )
-								#set a global variable
-								if [[ $splitter == ":=" ]]; then
-									if eval export \'${varname}\'='"${value}"'; then internalResult=0; else internalResult=1; fi
-								else
-									if eval export \'${varname}\'="${value}"; then internalResult=0; else internalResult=1; fi
-								fi
-								if [[ $internalResult -ne 0 ]]; then
-									printErrorAndExit "${FUNCNAME} : Invalid expansion in case- or suite-file file=$1 line=$lineno varname=${varname} value=${value} '$REPLY' file=$1" ${errRt}
-								else
-									isVerbose && printVerbose "${varname}='${!varname}'"
-								fi
-							;;
-							variantCount|variantList )
-								#ignore test variant variables
-								isDebug && printDebug "Ignore $varname in file=$1 line=$lineno"
-							;;
-							* )
-								#other variables
-								printErrorAndExit "${FUNCNAME} : Invalid property or variable in case- or suite-file file=$1 line=$lineno varname=${varname} value=${value} '$REPLY' file=$1" ${errRt}
-							;;
-						esac
-					else
-						printErrorAndExit "${FUNCNAME} : Invalid line or property name in case- or suite-file file=$1 line=$lineno '$REPLY'" ${errRt}
-					fi
-				else
-					isDebug && printDebug "Ignore line file=$1 line=$lineno '$REPLY'"
-				fi
-				lineno=$((lineno+1))
-			fi
-		done
-	} < "$1"
-}
-
 TTRO_help_fixPropsVars='
 # Function fixPropsVars
-#	This function fixes all ro-variables and propertie variables after process start
+#	This function fixes all ro-variables and propertie variables
 #	Property and variables setting is a two step action:
-#	Unset hep variables if no reference is printed
-#	$1:  setProperties <filename>
-#	$2: fixPropsVars'
+#	Unset help variables if no reference is printed
+#	make vars STEPS PREPS FINS read-only
+#	returns:
+#		success (0)
+#		error	in exceptional cases'
 function fixPropsVars {
 	local var=""
 	if [[ -z $TTRO_reference ]]; then
@@ -448,7 +353,13 @@ TTRO_help_setVar='
 #	Set framework variable or property at runtime
 #	The name of the variable must startg with TT_, TTRO_, TTP_ or TTPN_
 #	$1 - the name of the variable to set
-#	$2 - the value'
+#	$2 - the value
+#	function fails:
+#		if variable is not of type TT_, TTRO_, TTP_ or TTPN_
+#		or if the variable could not be set (e.g a readonly variable was already set
+#		ignored property values do not generate an error
+#	function succeeds:
+#		if the variable could be set or if an property value is ignored'
 function setVar {
 	if [[ $# -ne 2 ]]; then printErrorAndExit "$FUNCNAME missing params. Number of Params is $#" $errRt; fi
 	isDebug && printDebug "$FUNCNAME $1 $2"
@@ -507,7 +418,10 @@ function setVar {
 TTRO_help_isExisting='
 # Function isExisting
 #	check if variable exists
-#	$1 var name to be checked'
+#	$1 var name to be checked
+#	returns
+#		success(0)    if the variable exists
+#		error(1)      otherwise'
 function isExisting {
 	if declare -p "${1}" &> /dev/null; then
 		isDebug && printDebug "$FUNCNAME $1 return 0"
@@ -521,7 +435,10 @@ function isExisting {
 TTRO_help_isNotExisting='
 # Function isNotExisting
 #	check if variable not exists
-#	$1 var name to be checked'
+#	$1 var name to be checked
+#	returns
+#		success(0)    if the variable not exists
+#		error(1)      otherwise'
 function isNotExisting {
 	if declare -p "${1}" &> /dev/null; then
 		isDebug && printDebug "$FUNCNAME $1 return 1"
@@ -535,7 +452,10 @@ function isNotExisting {
 TTRO_help_isExistingAndTrue='
 # Function isExistingAndTrue
 #	check if variable exists and has a non empty value
-#	$1 var name to be checked'
+#	$1 var name to be checked
+#	returns
+#		success(0)    exists and has a non empty value
+#		error(1)      otherwise'
 function isExistingAndTrue {
 	if declare -p "${1}" &> /dev/null; then
 		if [[ -n ${!1} ]]; then
@@ -551,10 +471,36 @@ function isExistingAndTrue {
 	fi
 }
 
+TTRO_help_isExistingAndFalse='
+# Function isExistingAndFalse
+#	check if variable exists and has an empty value
+#	$1 var name to be checked
+#	returns
+#		success(0)    exists and has an empty value
+#		error(1)      otherwise'
+function isExistingAndFalse {
+	if declare -p "${1}" &> /dev/null; then
+		if [[ -z ${!1} ]]; then
+			isDebug && printDebug "$FUNCNAME $1 return 0"
+			return 0
+		else
+			isDebug && printDebug "$FUNCNAME $1 return 1"
+			return 1
+		fi
+	else
+		isDebug && printDebug "$FUNCNAME $1 return 1"
+		return 1
+	fi
+}
+
 TTRO_help_isTrue='
 # Function isTrue
 #	check if a variable has a non empty value
-#	$1 var name to be checked'
+#	$1 var name to be checked
+#	returns
+#		success(0)    variable exists and has a non empty value
+#		error(1)      variable exists and has a empty value
+#	exits if variable not exists'
 function isTrue {
 	if [[ -n ${!1} ]]; then
 		isDebug && printDebug "$FUNCNAME $1 return 0"
@@ -568,8 +514,12 @@ function isTrue {
 TTRO_help_isFalse='
 # Function isFalse
 #	check if a variable has an empty value
-#	$1 var name to be checked'
-function isTrue {
+#	$1 var name to be checked
+#	returns
+#		success(0)    if the variable exists and has a empty value
+#		error(1)      if the variable exists and has an non empty value
+#	exits if variable not exists'
+function isFalse {
 	if [[ -z ${!1} ]]; then
 		isDebug && printDebug "$FUNCNAME $1 return 0"
 		return 0
@@ -867,6 +817,60 @@ function echoAndExecute {
 	printInfo "${FUNCNAME[1]}: $*"
 	eval printInfo "${FUNCNAME[1]}: $*"
 	eval "$*"
+}
+
+TTRO_help_echoExecuteAndIntercept='
+# Function echoExecuteAndIntercept
+#	echothe command line and echo the expanded command line
+#	and execute the command line
+#	additionally the returncode is checked
+#	if the expected result is not received the failure condition is set 
+#	the function returns success(0)
+#	the function exits if an input parameter is wrong
+#	$1 success - returncode 0 expected
+#	   error   - returncode ne 0 expected
+#	   number  - the numeric return code is expected
+#	$2 the command string
+#	$3 the parameters as one string - during execution expansion and word splitting is applied'
+function echoExecuteAndIntercept {
+	printInfo "${FUNCNAME[1]}: $*"
+	local myresult=''
+	local code="$1"
+	shift
+	eval printInfo "${FUNCNAME[1]}: $*"
+	if eval "$*"; then
+		myresult=0
+	else
+		myresult=$?
+	fi
+	case "$code" in
+		success)
+			if [[ $myresult -eq 0 ]]; then
+				isDebug && printDebug "${FUNCNAME} success"
+			else
+				setFailure
+				printInfo "${FUNCNAME} failure"
+			fi;;
+		error)
+			if [[ $myresult -ne 0 ]]; then
+				isDebug && printDebug "${FUNCNAME} success"
+			else
+				setFailure
+				printInfo "${FUNCNAME} failure"
+			fi;;
+		*)
+			if isNumber "$code"; then
+				if [[ $myresult -ne $code ]]; then
+					isDebug && printDebug "${FUNCNAME} success"
+				else
+					setFailure
+					printInfo "${FUNCNAME} failure"
+				fi
+			else
+				printErrorAndExit "Invalid input ${FUNCNAME[0]} \$1=$code" $errRt
+			fi;;
+	esac
+	return 0
 }
 
 TTRO_help_renameInSubdirs='

@@ -161,7 +161,7 @@ function errorExit {
 
 #####################################################################################################
 #Start of main testcase body
-isVerbose && printVerbose "**** START Case $TTRO_case variant $TTRO_variantCase in workdir $TTRO_workDirCase ********************"
+printInfo "**** START Case $TTRO_case variant $TTRO_variantCase in workdir $TTRO_workDirCase ********************"
 
 #----------------------------------
 # enter working dir
@@ -275,7 +275,8 @@ for name_xyza in 'TTRO_stepsCase' 'STEPS'; do
 	fi
 done
 if isFunction 'testStep'; then
-	printInfo "Execute Case Test Step function testStep"
+	printInfo "Execute Case Test Step function: testStep"
+	isDebug && declare -F 'testStep'
 	executedTestSteps=$((executedTestSteps+1))
 	testStep
 fi
