@@ -1,7 +1,6 @@
-#--variantList='varNotExists varFalse varTrue'
 
 function testPreparation {
-	case "$TYRO_variantCase" in
+	case "$TTRO_variantCase" in
 		varNotExists)
 			echo "Case variable not exists";;
 		varFalse)
@@ -14,7 +13,7 @@ function testPreparation {
 }
 
 function testStep {
-	case "$TYRO_variantCase" in
+	case "$TTRO_variantCase" in
 		varNotExists)
 			echoExecuteAndIntercept 'error' 'isFalse' 'varsasas';;
 		varFalse)

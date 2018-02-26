@@ -1,12 +1,22 @@
-#--variantCount=4
+#--variantList='varNotExists varFalse varTrue'
 
 PREPS='copyAndModifyTestCollection'
-STEPS="getOptions TT_expectResult=$errTestError runRunTTF TT_suitesExecuted=0 TT_casesExecuted=3 TT_casesError=1 checkResults"
+STEPS="setExpections runRunTTF checkResults"
 
-declare -a options=( '' '--verbose' '--debug' '--debug --verbose' )
-
-function getOptions {
-	TT_runOptions="$TT_runOptions --noprompt --no-browser"
-	TT_runOptions="$TT_runOptions ${options[$TTRO_variantCase]}"
+function setExpections {
+	TT_suitesExecuted=0
+	TT_casesExecuted=1
+	case "$TTRO_variantCase" in
+	varNotExists)
+		echo "Variant $TTRO_variantCase"
+		TT_expectResult=$errTestError;
+		TT_casesError=1;;
+	varFalse)
+		echo "Variant $TTRO_variantCase";;
+	varTrue)
+		echo "Variant $TTRO_variantCase";;
+	*)
+		printErrorAndExit "Wrong case variant $TTRO_variantCase" $errRt;;
+	esac
+	
 }
-
