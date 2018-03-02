@@ -380,8 +380,7 @@ else
 	setVar TTPN_noFins ''
 	setVar TTPN_noFinsSuite ''
 fi
-setVar TTPN_noPrepsCase ''
-setVar TTPN_noFinsCase ''
+setVar TTRO_noPrompt "$noprompt"
 fixPropsVars
 
 #--------------------------------
@@ -516,7 +515,7 @@ printInfo "******************* $noSuitesToExecute suites (incl dummy) and $noCas
 printSuitesCases 0 0 'true' ''
 
 echo "********************************************************"
-if [[ -z $noprompt && -z $TTRO_reference ]]; then
+if [[ -z $TTRO_noPrompt && -z $TTRO_reference ]]; then
 	while read -p "Continue or exit? y/e "; do
 		if [[ $REPLY == y* || $REPLY == Y* || $REPLY == c* || $REPLY == C* ]]; then
 			break
@@ -553,7 +552,7 @@ if [[ $flat != 'true' && -e $TTRO_workDir ]]; then
 	printErrorAndExit "Output directory already exists $TTRO_workDir" $errRt
 fi
 if [[ -e $TTRO_workDir ]]; then
-	if [[ $noprompt == "true" ]]; then
+	if [[ -n $TTRO_noPrompt ]]; then
 		rm -rf "$TTRO_workDir"
 	else
 		while read -p "WARNING: Output directory already exists $TTRO_workDir: Remove it or not or exit? y/n/e "; do

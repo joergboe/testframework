@@ -109,9 +109,9 @@ function caseFinalization {
 		done
 		if isFunction 'testFinalization'; then
 			if isExistingAndTrue 'TTPN_noFinsCase'; then
-				printInfo "Suppress Case Finalization function testFinalization"
+				printInfo "Suppress Case Finalization: testFinalization"
 			else
-				printInfo "Execute Case Finalization function testFinalization"
+				printInfo "Execute Case Finalization: testFinalization"
 				executedTestFinSteps=$((executedTestFinSteps+1))
 				testFinalization
 			fi
@@ -161,7 +161,7 @@ function errorExit {
 
 #####################################################################################################
 #Start of main testcase body
-printInfo "**** START Case $TTRO_case variant $TTRO_variantCase in workdir $TTRO_workDirCase ********************"
+printInfo "**** START Case $TTRO_case variant '$TTRO_variantCase' in workdir $TTRO_workDirCase ********************"
 
 #----------------------------------
 # enter working dir
@@ -240,9 +240,9 @@ for name_xyza in 'TTRO_prepsCase' 'PREPS'; do
 done
 if isFunction 'testPreparation'; then
 	if isExistingAndTrue 'TTPN_noPrepsCase'; then
-		printInfo "Suppress Case Preparation function testPreparation"
+		printInfo "Suppress Case Preparation: testPreparation"
 	else
-		printInfo "Execute Case Preparation function testPreparation"
+		printInfo "Execute Case Preparation: testPreparation"
 		executedTestPrepSteps=$((executedTestPrepSteps+1))
 		testPreparation
 	fi
@@ -275,7 +275,7 @@ for name_xyza in 'TTRO_stepsCase' 'STEPS'; do
 	fi
 done
 if isFunction 'testStep'; then
-	printInfo "Execute Case Test Step function: testStep"
+	printInfo "Execute Case Test Step: testStep"
 	isDebug && declare -F 'testStep'
 	executedTestSteps=$((executedTestSteps+1))
 	testStep

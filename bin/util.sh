@@ -354,12 +354,12 @@ TTRO_help_setVar='
 #	The name of the variable must startg with TT_, TTRO_, TTP_ or TTPN_
 #	$1 - the name of the variable to set
 #	$2 - the value
-#	function fails:
+#	returns success (0):
+#		if the variable could be set or if an property value is ignored
+#	exits:
 #		if variable is not of type TT_, TTRO_, TTP_ or TTPN_
 #		or if the variable could not be set (e.g a readonly variable was already set
-#		ignored property values do not generate an error
-#	function succeeds:
-#		if the variable could be set or if an property value is ignored'
+#		ignored property values do not generate an error'
 function setVar {
 	if [[ $# -ne 2 ]]; then printErrorAndExit "$FUNCNAME missing params. Number of Params is $#" $errRt; fi
 	isDebug && printDebug "$FUNCNAME $1 $2"
@@ -531,8 +531,11 @@ function isFalse {
 
 TTRO_help_isArray='
 # Function isArray
-#	checks whether an variable exists and is a indexed array
-#	$1 var name to be checked'
+#	checks whether an variable exists and is an indexed array
+#	$1 var name to be checked
+#	returns
+#		success(0)   if the variable exists and is an indexed array
+#		error(1)     otherwise'
 function isArray {
 	local v
 	if v=$(declare -p "${1}" 2> /dev/null); then
@@ -552,7 +555,9 @@ function isArray {
 TTRO_help_isFunction='
 # Function isFunction
 #	checks whether an given name is defined as function
-#	$1 name to be checked'
+#	$1 name to be checked
+#		success(0)   if the function exists
+#		error(1)     otherwise'
 function isFunction {
 	if declare -F "$1" &> /dev/null; then
 		isDebug && printDebug "$FUNCNAME $1 return 0"
@@ -568,7 +573,10 @@ TTRO_help_arrayHasKey='
 #	check is an associative array has key
 #	$1 the array name
 #	$2 the key value to search
-#	returns true if key exists in array'
+#	returns
+#		success(0)    if key exists in array
+#		error(1)      otherwise
+#	exits if called with wrong arguments'
 function arrayHasKey {
 	if [[ $# -ne 2 ]]; then printErrorAndExit "$FUNCNAME must have 2 aruments" $errRt; fi
 	isDebug && printDebug "$FUNCNAME $1 $2"
@@ -596,7 +604,10 @@ TTRO_help_copyAndTransform='
 #	$1 - input dir
 #	$2 - output dir
 #	$3 - the variant identifier
-#	$4 ... pattern for file names to be transformed'
+#	$4 ... pattern for file names to be transformed
+#	returns
+#		success(0)
+#	exits  if called with wrong arguments'
 function copyAndTransform {	
 	if [[ $# -lt 3 ]]; then printErrorAndExit "$FUNCNAME missing params. Number of Params is $#" $errRt; fi
 	isDebug && printDebug "$FUNCNAME $*"
@@ -711,8 +722,10 @@ TTRO_help_linewisePatternMatch='
 #	Line pattern validator
 #	$1 - the input file
 #	$2 - if set to "true" all pattern must generate a match
-#	$3 .. - the pattern to match all pattern are or
-#	return true if file exist and one or all patten matches
+#	$3 .. - the pattern to match
+#	returns
+#		success(0)   if file exist and one patten matches ($2 -eq true)
+#	                 if file exist and one patten matches ($2 -eq true)
 #	return false if no complete pattern match was found or the file not exists'
 declare -a patternList=()
 function linewisePatternMatch {
@@ -735,10 +748,12 @@ function linewisePatternMatch {
 TTRO_help_linewisePatternMatchArray='
 # Function linewisePatternMatchArray
 #	Line pattern validator with array input variable
+#	the pattern to match as array 0..n are expected to be in patternList array variable
 #	$1 - the input file
 #	$2 - if set to "true" all pattern must generate a match
-#	the pattern to match as array 0..n are expected to be in patternList array variable
-#	return true if file exist and one or all patten matches
+#	$patternList the indexed array with the pattern to search
+#		success(0)   if file exist and one patten matches ($2 -eq true)
+#	                 if file exist and one patten matches ($2 -eq true)
 #	return false if no complete pattern match was found or the file not exists'
 function linewisePatternMatchArray {
 	if [[ $# -ne 2 ]]; then printErrorAndExit "$FUNCNAME invalid no of params. Number of Params is $#" $errRt; fi
@@ -809,20 +824,25 @@ function linewisePatternMatchArray {
 
 TTRO_help_echoAndExecute='
 # Function echoAndExecute
-#	echo and execute a command
-#	varargs
+#	echo and execute a command with variable arguments
 #	$1 the command string
-#	$2 the parameters as one string - during execution expansion and word splitting is applied'
+#	$2 .. the parameters of the command
+#	returns the result code of the executed command
+#	exits if no command string is given or command is empty'
 function echoAndExecute {
-	printInfo "${FUNCNAME[1]}: $*"
-	eval printInfo "${FUNCNAME[1]}: $*"
-	eval "$*"
+	if [[ $# -lt 1 || -z $1 ]]; then
+		printErrorAndExit "${FUNCNAME[0]} called with no or empty command" $errRt
+	fi
+	local cmd="$1"
+	shift
+	local disp0="${FUNCNAME[0]} called from ${FUNCNAME[1]}: "
+	printInfo "$disp0 $cmd $*"
+	"$cmd" "$@"
 }
 
 TTRO_help_echoExecuteAndIntercept='
 # Function echoExecuteAndIntercept
-#	echothe command line and echo the expanded command line
-#	and execute the command line
+#	echo and execute the command line
 #	additionally the returncode is checked
 #	if the expected result is not received the failure condition is set 
 #	the function returns success(0)
@@ -833,12 +853,22 @@ TTRO_help_echoExecuteAndIntercept='
 #	$2 the command string
 #	$3 the parameters as one string - during execution expansion and word splitting is applied'
 function echoExecuteAndIntercept {
-	printInfo "${FUNCNAME[1]}: $*"
-	local myresult=''
+	if [[ $# -lt 2 || -z $2 ]]; then
+		printErrorAndExit "${FUNCNAME[0]} called with no or empty command" $errRt
+	fi
+	if [[ $1 != success && $1 != error && $1 != X ]]; then
+		if ! isNumber "$1" ]]; then
+			printErrorAndExit "${FUNCNAME[0]} called with wrong parameters: $*" $errRt
+		fi
+	fi
 	local code="$1"
 	shift
-	eval printInfo "${FUNCNAME[1]}: $*"
-	if eval "$*"; then
+	local cmd="$1"
+	shift
+	local myresult=''
+	local disp0="${FUNCNAME[0]} called from ${FUNCNAME[1]}: "
+	printInfo "$disp0 $cmd $*"
+	if "$cmd" "$@"; then
 		myresult=0
 	else
 		myresult=$?
@@ -848,26 +878,21 @@ function echoExecuteAndIntercept {
 			if [[ $myresult -eq 0 ]]; then
 				isDebug && printDebug "${FUNCNAME} success"
 			else
-				setFailure
-				printInfo "${FUNCNAME} failure"
+				setFailure "${FUNCNAME[0]} Unexpected failure $myresult in cmd $*"
 			fi;;
 		error)
-			if [[ $myresult -ne 0 ]]; then
+			if [[ $myresult -eq 0 ]]; then
+				setFailure "${FUNCNAME[0]} Unexpected success in cmd $*"
+			else
+				isDebug && printDebug "${FUNCNAME} success"
+			fi;;
+		X)
+			isDebug && printDebug "${FUNCNAME} success";;
+		*)
+			if [[ $myresult -eq $code ]]; then
 				isDebug && printDebug "${FUNCNAME} success"
 			else
-				setFailure
-				printInfo "${FUNCNAME} failure"
-			fi;;
-		*)
-			if isNumber "$code"; then
-				if [[ $myresult -ne $code ]]; then
-					isDebug && printDebug "${FUNCNAME} success"
-				else
-					setFailure
-					printInfo "${FUNCNAME} failure"
-				fi
-			else
-				printErrorAndExit "Invalid input ${FUNCNAME[0]} \$1=$code" $errRt
+				setFailure "${FUNCNAME[0]} wrong failure code $myresult in cmd $*"
 			fi;;
 	esac
 	return 0
@@ -895,7 +920,8 @@ TTRO_help_isInList='
 # check whether a token is in a space separated list of tokens
 #	$1 the token to search. It must not contain whitespaces
 #	$2 the space separated list
-#	returns true if the token was in the list; false otherwise'
+#	returns true if the token was in the list; false otherwise
+#	exits if called with wrong parameters'
 function isInList {
 	if [[ $# -ne 2 ]]; then printErrorAndExit "$FUNCNAME invalid no of params. Number of Params is $#" $errRt; fi
 	isDebug && printDebug "$FUNCNAME $*"
@@ -935,6 +961,38 @@ function import {
 		TTXX_tools="$TTXX_tools $tmp"
 		export TTXX_tools
 		source "$tmp"
+	fi
+}
+
+TTRO_help_promptYesNo='
+# Function promptYesNo
+#	Write prompt and wait for user input y/n
+#	optional $1 the text for the prompt
+#	honors TTRO_noPrompt
+#	returns
+#		success(0) if y/Y was enterd
+#		error(1) if n/N was entered
+#	exits id ^C was pressed'
+function promptYesNo {
+	if [[ -n $TTRO_noPrompt ]]; then return 0; fi
+	local pr="Continue or not? y/n "
+	if [[ $# -gt 0 ]]; then
+		pr="$1"
+	fi
+	local inputWasY=''
+	while read -p "$pr"; do
+		if [[ $REPLY == y* || $REPLY == Y* || $REPLY == c* || $REPLY == C* ]]; then
+			inputWasY='true'
+			break
+		elif [[ $REPLY == e* || $REPLY == E* || $REPLY == n* || $REPLY == N* ]]; then
+			inputWasY=''
+			break
+		fi
+	done
+	if [[ -n $inputWasY ]]; then
+		return 0
+	else
+		return 1
 	fi
 }
 

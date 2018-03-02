@@ -270,9 +270,9 @@ for name_xyza in 'TTRO_prepsSuite' 'PREPS'; do
 done
 if isFunction 'testPreparation'; then
 	if isExistingAndTrue 'TTPN_noPrepsSuite'; then
-		printInfo "Suppress Suite Preparation function testPreparation"
+		printInfo "Suppress Suite Preparation: testPreparation"
 	else
-		printInfo "Execute Suite Preparation function testPreparation"
+		printInfo "Execute Suite Preparation: testPreparation"
 		executedTestPrepSteps=$((executedTestPrepSteps+1))
 		testPreparation
 	fi
@@ -575,7 +575,7 @@ for sindex_xyza in ${childSuites[$TTRO_suiteIndex]}; do
 		printInfo "SIGINT: end Suites loop"
 		break
 	fi
-	isVerbose && printVerbose "**** START Suite: $suite ************************************"
+	isVerbose && printVerbose "**** START Nested Suite: $suite ************************************"
 	variantCount=""; variantList=""; splitter=""
 	readVariantFile "${suitePath}/${TEST_SUITE_FILE}" "suite"
 	if [[ -z $variantCount ]]; then
@@ -606,7 +606,7 @@ for sindex_xyza in ${childSuites[$TTRO_suiteIndex]}; do
 			printError "In suite $suite we have both variant variables variantCount=$variantCount and variantList=$variantList ! Suite is skipped"
 		fi
 	fi
-	isVerbose && printVerbose "**** END Suite: $suite **************************************"
+	isVerbose && printVerbose "**** END Nested Suite: $suite **************************************"
 	if [[ $interruptReceived -gt 0 ]]; then
 		printInfo "SIGINT: end Suites loop"
 		break
@@ -655,9 +655,9 @@ for name_xyza in 'TTRO_finSuite' 'FINS'; do
 done
 if isFunction 'testFinalization'; then
 	if isExistingAndTrue 'TTPN_noFinsSuite'; then
-		printInfo "Suppress Suite Finalization function testFinalization"
+		printInfo "Suppress Suite Finalization: testFinalization"
 	else
-		printInfo "Execute Suite Finalization function testFinalization"
+		printInfo "Execute Suite Finalization: testFinalization"
 		executedTestFinSteps=$((executedTestFinSteps+1))
 		testFinalization
 	fi
