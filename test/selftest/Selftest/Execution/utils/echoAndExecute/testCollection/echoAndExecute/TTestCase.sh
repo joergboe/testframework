@@ -1,4 +1,3 @@
-#--variantList='noParm emptyCommand true false simpleCommands1 simpleCommands2 noParmCheck emptyCommandCheck trueCheck falseCheck simpleCommands1Check simpleCommands2Check'
 
 checkedCase=''
 if [[ $TTRO_variantCase == *Check ]]; then
