@@ -26,7 +26,7 @@ TTRO_help_skip='
 #	set the skip condition'
 function skip {
 	printInfo "Set SKIP"
-	setVar 'TTPN_skip' 'true'
+	setVar 'TTPRN_skip' 'true'
 }
 
 TTRO_help_printErrorAndExit="
@@ -158,7 +158,7 @@ TTRO_help_isDebug="
 #		success(0) if debug is enabled
 #		error(1)   otherwise "
 function isDebug {
-	if [[ -n $TTPN_debug && -z $TTPN_debugDisable ]]; then
+	if [[ -n $TTPRN_debug && -z $TTPRN_debugDisable ]]; then
 		return 0	# 0 is true in bash
 	else
 		return 1
@@ -171,7 +171,7 @@ TTRO_help_isVerbose="
 #		success(0) if debug is enabled
 #		error(1)   otherwise "
 function isVerbose {
-	if [[ ( -n $TTPN_verbose && -z $TTPN_verboseDisable ) || (-n $TTPN_debug && -z $TTPN_debugDisable) ]]; then
+	if [[ ( -n $TTPRN_verbose && -z $TTPRN_verboseDisable ) || (-n $TTPRN_debug && -z $TTPRN_debugDisable) ]]; then
 		return 0
 	else
 		return 1
@@ -201,10 +201,10 @@ function printTestframeEnvironment {
 			echo "${x}='${!x}'"
 		fi
 	done
-	for x in "${!TTP_@}"; do
+	for x in "${!TTPR_@}"; do
 		echo "${x}='${!x}'"
 	done
-	for x in "${!TTPN_@}"; do
+	for x in "${!TTPRN_@}"; do
 		echo "${x}='${!x}'"
 	done
 	for x in "${!TTXX_@}"; do
@@ -346,13 +346,13 @@ function fixPropsVars {
 		readonly "${var}"
 		export "${var}"
 	done
-	for var in "${!TTP_@}"; do
-		isDebug && printDebug "${FUNCNAME} : TTP_  $var=${!var}"
+	for var in "${!TTPR_@}"; do
+		isDebug && printDebug "${FUNCNAME} : TTPR_  $var=${!var}"
 		readonly "${var}"
 		export "${var}"
 	done
-	for var in "${!TTPN_@}"; do
-		isDebug && printDebug "${FUNCNAME} : TTPN_ $var=${!var}"
+	for var in "${!TTPRN_@}"; do
+		isDebug && printDebug "${FUNCNAME} : TTPRN_ $var=${!var}"
 		if [[ -n "${!var}" ]]; then
 			readonly "${var}"
 		fi
@@ -369,20 +369,20 @@ function fixPropsVars {
 TTRO_help_setVar='
 # Function setVar
 #	Set framework variable or property at runtime
-#	The name of the variable must startg with TT_, TTRO_, TTP_ or TTPN_
+#	The name of the variable must startg with TT_, TTRO_, TTPR_ or TTPRN_
 #	$1 - the name of the variable to set
 #	$2 - the value
 #	returns success (0):
 #		if the variable could be set or if an property value is ignored
 #	exits:
-#		if variable is not of type TT_, TTRO_, TTP_ or TTPN_
+#		if variable is not of type TT_, TTRO_, TTPR_ or TTPRN_
 #		or if the variable could not be set (e.g a readonly variable was already set
 #		ignored property values do not generate an error'
 function setVar {
 	if [[ $# -ne 2 ]]; then printErrorAndExit "$FUNCNAME missing params. Number of Params is $#" $errRt; fi
 	isDebug && printDebug "$FUNCNAME $1 $2"
 	case $1 in
-		TTPN_* )
+		TTPRN_* )
 			#set property only if it is unset or null an make it readonly
 			if ! declare -p ${1} &> /dev/null || [[ -z ${!1} ]]; then
 				if ! eval export \'${1}\'='"${2}"'; then
@@ -395,7 +395,7 @@ function setVar {
 				isVerbose && printVerbose "$FUNCNAME ignore value for ${1}"
 			fi
 		;;
-		TTP_* )
+		TTPR_* )
 			#set property only if it is unset an make it readonly
 			if ! declare -p "${1}" &> /dev/null; then
 				if ! eval export \'${1}\'='"${2}"'; then

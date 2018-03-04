@@ -246,7 +246,7 @@ for name_xyza in 'TTRO_prepsSuite' 'PREPS'; do
 			eval "l_xyza=\${#$name_xyza[@]}"
 			for (( i_xyza=0; i_xyza<l_xyza; i_xyza++)); do
 				eval "step_xyza=\${$name_xyza[$i_xyza]}"
-				if isExistingAndTrue 'TTPN_noPrepsSuite'; then
+				if isExistingAndTrue 'TTPRN_noPrepsSuite'; then
 					printInfo "Suppress Suite Preparation: $step_xyza"
 				else
 					printInfo "Execute Suite Preparation: $step_xyza"
@@ -257,7 +257,7 @@ for name_xyza in 'TTRO_prepsSuite' 'PREPS'; do
 		else
 			isDebug && printDebug "$name_xyza=${!name_xyza}"
 			for x_xyza in ${!name_xyza}; do
-				if isExistingAndTrue 'TTPN_noPrepsSuite'; then
+				if isExistingAndTrue 'TTPRN_noPrepsSuite'; then
 					printInfo "Suppress Suite Preparation: $x_xyza"
 				else
 					printInfo "Execute Suite Preparation: $x_xyza"
@@ -269,7 +269,7 @@ for name_xyza in 'TTRO_prepsSuite' 'PREPS'; do
 	fi
 done
 if isFunction 'testPreparation'; then
-	if isExistingAndTrue 'TTPN_noPrepsSuite'; then
+	if isExistingAndTrue 'TTPRN_noPrepsSuite'; then
 		printInfo "Suppress Suite Preparation: testPreparation"
 	else
 		printInfo "Execute Suite Preparation: testPreparation"
@@ -290,12 +290,12 @@ fi
 declare -i currentParralelJobs=TTRO_noParallelCases
 
 declare thisTimeout="$defaultTimeout"
-if isExisting 'TTP_timeout'; then
-	thisTimeout="$TTP_timeout"
+if isExisting 'TTPR_timeout'; then
+	thisTimeout="$TTPR_timeout"
 fi
 declare thisAdditionalTime="$defaultAdditionalTime"
-if isExisting 'TTP_additionalTime'; then
-	thisAdditionalTime="$TTP_additionalTime"
+if isExisting 'TTPR_additionalTime'; then
+	thisAdditionalTime="$TTPR_additionalTime"
 fi
 declare -a tjobid=()	#the job id of process group
 declare -a tpid=()		#pid of the case job this is the crucical value of the structure
@@ -631,7 +631,7 @@ for name_xyza in 'TTRO_finSuite' 'FINS'; do
 			eval "l_xyza=\${#$name_xyza[@]}"
 			for (( i_xyza=0; i_xyza<l_xyza; i_xyza++)); do
 				eval "step=\${$name_xyza[$i_xyza]}"
-				if isExistingAndTrue 'TTPN_noFinsSuite'; then
+				if isExistingAndTrue 'TTPRN_noFinsSuite'; then
 					printInfo "Suppress Suite Finalization: $step"
 				else
 					printInfo "Execute Suite Finalization: $step"
@@ -642,7 +642,7 @@ for name_xyza in 'TTRO_finSuite' 'FINS'; do
 		else
 			isDebug && printDebug "$name_xyza=${!name_xyza}"
 			for x_xyza in ${!name_xyza}; do
-				if isExistingAndTrue 'TTPN_noFinsSuite'; then
+				if isExistingAndTrue 'TTPRN_noFinsSuite'; then
 					printInfo "Suppress Suite Finalization: $x_xyza"
 				else
 					printInfo "Execute Suite Finalization: $x_xyza"
@@ -654,7 +654,7 @@ for name_xyza in 'TTRO_finSuite' 'FINS'; do
 	fi
 done
 if isFunction 'testFinalization'; then
-	if isExistingAndTrue 'TTPN_noFinsSuite'; then
+	if isExistingAndTrue 'TTPRN_noFinsSuite'; then
 		printInfo "Suppress Suite Finalization: testFinalization"
 	else
 		printInfo "Execute Suite Finalization: testFinalization"

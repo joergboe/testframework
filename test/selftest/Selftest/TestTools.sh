@@ -41,7 +41,7 @@ TTRO_help_runRunTTF='
 function runRunTTF {
 	isDebug && printDebug "$FUNCNAME $*"
 	local result
-	if echoAndExecute $TTPN_binDir/runTTF --directory "$TTRO_workDirCase/testCollection" $TT_runOptions $TT_caseList 2>&1 | tee STDERROUT1.log; then
+	if echoAndExecute $TTPRN_binDir/runTTF --directory "$TTRO_workDirCase/testCollection" $TT_runOptions $TT_caseList 2>&1 | tee STDERROUT1.log; then
 		result=0
 	else
 		result=$?

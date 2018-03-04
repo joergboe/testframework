@@ -33,10 +33,10 @@ fi
 #---------------------------------------------------
 #include the utils define the preliminary trace vars
 source "${TTRO_scriptDir}/version.sh"
-#declare -x TTPN_debug=""
-#declare -x TTPN_debugDisable=""
-#declare -x TTPN_verbose=""
-#declare -x TTPN_verboseDisable=""
+#declare -x TTPRN_debug=""
+#declare -x TTPRN_debugDisable=""
+#declare -x TTPRN_verbose=""
+#declare -x TTPRN_verboseDisable=""
 
 #-----------------------------------------------------
 # Shutdown and interrupt vars and functions
@@ -86,11 +86,11 @@ for x in "${!TTRO_@}"; do
 		printWarning "In environment there are TT scoped identifier: ${x}"
 	fi
 done
-for x in "${!TTPN_@}"; do
+for x in "${!TTPRN_@}"; do
 	exportCheckFailed="true"
 	printWarning "In environment there are TT scoped identifier: ${x}"
 done
-for x in "${!TTP_@}"; do
+for x in "${!TTPR_@}"; do
 	exportCheckFailed="true"
 	printWarning "In environment there are TT scoped identifier: ${x}"
 done
@@ -136,10 +136,10 @@ declare -r noCpus=$(cat /proc/cpuinfo | grep processor | wc -l)
 #getconf _NPROCESSORS_ONLN
 
 #---------------------------------------------------------
-if ! declare -p TTPN_debug &> /dev/null; then TTPN_debug=''; fi
-if ! declare -p TTPN_debugDisable &> /dev/null; then TTPN_debugDisable=''; fi
-if ! declare -p TTPN_verbose &> /dev/null; then TTPN_verbose=''; fi
-if ! declare -p TTPN_verboseDisable &> /dev/null; then TTPN_verboseDisable=''; fi
+if ! declare -p TTPRN_debug &> /dev/null; then TTPRN_debug=''; fi
+if ! declare -p TTPRN_debugDisable &> /dev/null; then TTPRN_debugDisable=''; fi
+if ! declare -p TTPRN_verbose &> /dev/null; then TTPRN_verbose=''; fi
+if ! declare -p TTPRN_verboseDisable &> /dev/null; then TTPRN_verboseDisable=''; fi
 
 #------------------------------------------------------
 # get parametes and set option variables and cases map
@@ -286,10 +286,10 @@ if [[ -z $threads ]]; then
 fi
 
 #---------------------------------------------------------
-setVar 'TTPN_debug' "$debug"
-setVar 'TTPN_debugDisable' ''
-setVar 'TTPN_verbose' "$verbose"
-setVar 'TTPN_verboseDisable' ''
+setVar 'TTPRN_debug' "$debug"
+setVar 'TTPRN_debugDisable' ''
+setVar 'TTPRN_verbose' "$verbose"
+setVar 'TTPRN_verboseDisable' ''
 
 #---------------------------------------------------------
 # create workdir if necessary and make it absolute
@@ -363,22 +363,22 @@ for ((i=0; i<${#varNamesToSet[@]}; i++)); do
 	declare "${varNamesToSet[$i]}"="${varValuesToSet[$i]}"
 done
 if [[ $noStart == "true" ]]; then
-	setVar TTPN_noStart "true"
-	setVar TTPN_noPreps "true"
-	setVar TTPN_noPrepsSuite "true"
+	setVar TTPRN_noStart "true"
+	setVar TTPRN_noPreps "true"
+	setVar TTPRN_noPrepsSuite "true"
 else
-	setVar TTPN_noStart ''
-	setVar TTPN_noPreps ''
-	setVar TTPN_noPrepsSuite ''
+	setVar TTPRN_noStart ''
+	setVar TTPRN_noPreps ''
+	setVar TTPRN_noPrepsSuite ''
 fi
 if [[ $noStop == "true" ]]; then
-	setVar TTPN_noStop "true"
-	setVar TTPN_noFins "true"
-	setVar TTPN_noFinsSuite "true"
+	setVar TTPRN_noStop "true"
+	setVar TTPRN_noFins "true"
+	setVar TTPRN_noFinsSuite "true"
 else
-	setVar TTPN_noStop ''
-	setVar TTPN_noFins ''
-	setVar TTPN_noFinsSuite ''
+	setVar TTPRN_noStop ''
+	setVar TTPRN_noFins ''
+	setVar TTPRN_noFinsSuite ''
 fi
 setVar TTRO_noPrompt "$noprompt"
 fixPropsVars

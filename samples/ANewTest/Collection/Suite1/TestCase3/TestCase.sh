@@ -5,8 +5,8 @@
 #demonstrate the usage of test definitions with functions in case body
 
 # Put here more fixed variables and properties for test suite
-setVar 'TTPN_myProperty' "This is a sample property set in case"
-setVar 'TTPN_myCaseProperty' "This is a sample case property"
+setVar 'TTPRN_myProperty' "This is a sample property set in case"
+setVar 'TTPRN_myCaseProperty' "This is a sample case property"
 
 # Put here the global initialization steps
 echo "********************************"
@@ -19,18 +19,18 @@ fi
 #Function definitions for test collections
 function testPreparation {
 	echo "**** $FUNCNAME ****"
-	echo "TTPN_myProperty =$TTPN_myProperty"
-	echo "TTPN_myProperty2=$TTPN_myProperty2"
-	echo "TTPN_mySuiteProperty=$TTPN_mySuiteProperty"
-	echo "TTPN_myCaseProperty=$TTPN_myCaseProperty"
+	echo "TTPRN_myProperty =$TTPRN_myProperty"
+	echo "TTPRN_myProperty2=$TTPRN_myProperty2"
+	echo "TTPRN_mySuiteProperty=$TTPRN_mySuiteProperty"
+	echo "TTPRN_myCaseProperty=$TTPRN_myCaseProperty"
 }
 
 function testFinalization {
 	echo " **** $FUNCNAME ****"
-	echo "TTPN_myProperty=$TTPN_myProperty"
-	echo "TTPN_myProperty2=$TTPN_myProperty2"
-	echo "TTPN_mySuiteProperty=$TTPN_mySuiteProperty"
-	echo "TTPN_myCaseProperty=$TTPN_myCaseProperty"
+	echo "TTPRN_myProperty=$TTPRN_myProperty"
+	echo "TTPRN_myProperty2=$TTPRN_myProperty2"
+	echo "TTPRN_mySuiteProperty=$TTPRN_mySuiteProperty"
+	echo "TTPRN_myCaseProperty=$TTPRN_myCaseProperty"
 }
 
 function testStep {

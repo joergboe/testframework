@@ -16,7 +16,7 @@ function modifyPrefix {
 	if [[ $1 == $2 ]]; then
 		printErrorAndExit "$FUNCNAME: Origin and destination must be different file" $errRt
 	fi
-	sed -e "s/TT_/TY_/g;s/TTRO_/TYRO_/g;s/TTP_/TYP_/g;s/TTPN_/TYPN_/g;s/TTXX_/TYXX_/g" "$1" > "$2"
+	sed -e "s/TT_/TY_/g;s/TTRO_/TYRO_/g;s/TTPR_/TYPR_/g;s/TTPRN_/TYPRN_/g;s/TTXX_/TYXX_/g" "$1" > "$2"
 }
 export -f modifyPrefix
 
@@ -24,12 +24,12 @@ TTRO_help_modifyAll='
 # This function copies the bin dir into workdir/bin
 # and morphes the code'
 function modifyAll {
-	setVar 'TTPN_binDir' "$TTRO_workDir/bin"
-	mkdir "$TTPN_binDir"
+	setVar 'TTPRN_binDir' "$TTRO_workDir/bin"
+	mkdir "$TTPRN_binDir"
 	local x filename destf
-	for x in $TTPN_sourceDir/*; do
+	for x in $TTPRN_sourceDir/*; do
 		filename="${x##*/}"
-		destf="$TTPN_binDir/$filename"
+		destf="$TTPRN_binDir/$filename"
 		modifyPrefix "$x" "$destf"
 		if [[ -x $x ]]; then
 			chmod +x "$destf"

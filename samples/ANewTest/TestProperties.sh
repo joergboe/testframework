@@ -7,4 +7,4 @@
 # Properties and variables are defined
 # with function setVar
 
-setVar 'TTPN_myProperty' "This is a sample property"
+setVar 'TTPRN_myProperty' "This is a sample property"

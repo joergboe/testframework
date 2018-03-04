@@ -107,7 +107,7 @@ function manpage () {
 	during the the execution of the appropriate artifact. The variable FINS and the function testFinalization have local meaning and are
 	defined in the appropriate script file.
 	
-	If the variables TTPN_noPrepsSuite TTPN_noPrepsCase TTPN_noFinsSuite TTPN_noFinsCase are set to a 
+	If the variables TTPRN_noPrepsSuite TTPRN_noPrepsCase TTPRN_noFinsSuite TTPRN_noFinsCase are set to a 
 	non empty value the preparation and the finalization of the appropriate artifact is supressed.
 
 
@@ -157,21 +157,21 @@ function manpage () {
 	#--variantCount=number
 	
 	The variantList must be a space separated list of identifiers or numbers or a mixture of identifiers and numbers:
-	#--variantList=list
+	#--variantList='space separated list of variant identifiers'
 	
 	## Test Case timeouts
 	=====================
 	Each test case can define an individual timeout variable. When the timeout is reached for an test case, 
-	the job is killed with SIGTERM (15). If the job still runs after additional time (TTP_additionalTime), 
+	the job is killed with SIGTERM (15). If the job still runs after additional time (TTPR_additionalTime), 
 	the job is killed with SIGKILL (9).
-	If there is no individual timeout defined, the default values TTP_timeout is used.
-	If there is no individual timeout and no property TTP_timeout, the test case times out after $defaultTimeout seconds.
-	If there is no property TTP_additionalTime, the vaue $defaultAdditionalTime is used.
+	If there is no individual timeout defined, the default values TTPR_timeout is used.
+	If there is no individual timeout and no property TTPR_timeout, the test case times out after $defaultTimeout seconds.
+	If there is no property TTPR_additionalTime, the vaue $defaultAdditionalTime is used.
 
 
 	## Test Framework Variables and Properties
 	==========================================
-	Variables with the prefix TT_, TTRO_, TTP_ or TTPN_ are treated as global definitions and they are exported from 
+	Variables with the prefix TT_, TTRO_, TTPR_ or TTPRN_ are treated as global definitions and they are exported from 
 	Test Collection to Test Suite and from Test Suite to Test Case.
 	
 	In the script code section, variables and properties can be assigned with function setVar 'name' "value".
@@ -180,12 +180,12 @@ function manpage () {
 	=====================
 	Property variables are not changed once they have been defined. Re-definition of property variables will be ignored. 
 	An pure assignment to a property in a test suite/case script may cause a script failure. Use function setVar instead.
-	The name of a property must be prefixed with TTP_ or TTPN_
+	The name of a property must be prefixed with TTPR_ or TTPRN_
 	
-	Empty values are considered a defined value for properties with prefix TTP_ and can not be overwritten.
-	Empty values are considered a undefined value for properties with prefix TTPN_ and can be overwritten.
+	Empty values are considered a defined value for properties with prefix TTPR_ and can not be overwritten.
+	Empty values are considered a undefined value for properties with prefix TTPRN_ and can be overwritten.
 	
-	NOTE: Prefer the TTP_ version.
+	NOTE: Prefer the TTPR_ version.
 
 
 	## Simple Global Variables and Global Read-only Variables
@@ -215,10 +215,10 @@ function manpage () {
 	====================
 	The testframe may print verbose information and debug information or both. The verbosity may be enabled with command line options.
 	Additionally the verbosity can be controlled with existence of the properties:
-	- TTPN_debug            - enables debug
-	- TTPN_debugDisable     - disables debug (overrides TTPN_debug)
-	- TTPN_verbose          - enables verbosity
-	- TTPN_verboseDisable   - disables verbosity (overrides TTPN_verbose)
+	- TTPRN_debug            - enables debug
+	- TTPRN_debugDisable     - disables debug (overrides TTPRN_debug)
+	- TTPRN_verbose          - enables verbosity
+	- TTPRN_verboseDisable   - disables verbosity (overrides TTPRN_verbose)
 	
 	NOTE: The check if an existing variable is empty or not is much faster then the check against existance of an variable. Therefore 
 	we use here the empty value an consider it as unset property.
@@ -226,8 +226,8 @@ function manpage () {
 
 	## Variables Used
 	=================
-	- TTPN_skip              - Skips the execution of test case preparation, test case execution and test case finalization steps
-	- TTPN_skipIgnore        - If set to true, the skip variable is ignored.
+	- TTPRN_skip             - Skips the execution of test case preparation, test case execution and test case finalization steps
+	- TTPRN_skipIgnore       - If set to true, the skip variable is ignored.
 	
 	- STEPS                 - The space separated list or an array of test step commands with local meaning. If one command returns an failure (return code != 0), 
 	                          the test execution is stopped
@@ -247,10 +247,10 @@ function manpage () {
 	                          the error is logged and the execution is stopped. The result of the case is not affected.
 	- FINS                  - The space separated list or an array of test finalization commands.
 	                         
-	- TTP_timeout           - The default test case timeout in seconds. default is 120 sec. This variable must be defined in the 
+	- TTPR_timeout          - The default test case timeout in seconds. default is 120 sec. This variable must be defined in the 
 	                          description section of test case file or in the Test Suite or Test Collection. A definition 
 	                          in the script section of a Test Case has no effect.
-	- TTP_additionalTime    - The extra wait time after the test case time out. If the test case does not end after this 
+	- TTPR_additionalTime    - The extra wait time after the test case time out. If the test case does not end after this 
 	                          time a SIGKILL is issued and the test case is stopped. The default is 45 sec. This variable 
 	                          must be defined in the description section of test case file or in the Test Suite or Test Collection. 
 	                          A definition in the script section of a Test Case has no effect.
@@ -277,16 +277,16 @@ function manpage () {
 	- TTRO_treads          - The number of threads to be used during test case execution. Is set to 1 if parallel test case
 	                         execution is enabled. Is set to \$TTRO_noCpus if back-to-back test case execution is enabled.
 	- TTRO_reference       - The reference will be printed
-	- TTPN_noStart         - This property is provided with value "true" if the --no-start command line option is used. It is empty otherwise
-	- TTPN_noStop          - This  property is provided with value "true" if the --no-stop command line option is used. It is empty otherwise
-	- TTPN_link            - This  property is provided with value "true" if the --link command line option is used. It is empty otherwise
-	- TTPN_noPrepsSuite    - This property is provided with value "true" if the --no-start command line option is used. It is empty otherwise
+	- TTPRN_noStart        - This property is provided with value "true" if the --no-start command line option is used. It is empty otherwise
+	- TTPRN_noStop         - This  property is provided with value "true" if the --no-stop command line option is used. It is empty otherwise
+	- TTPRN_link           - This  property is provided with value "true" if the --link command line option is used. It is empty otherwise
+	- TTPRN_noPrepsSuite   - This property is provided with value "true" if the --no-start command line option is used. It is empty otherwise
 	                         If the property is true no Test Suite preparation is called
-	- TTPN_noPrepsCase     - This property is not provided.
+	- TTPRN_noPrepsCase    - This property is not provided.
 	                         If the property is true no Test Case preparation is called
-	- TTPN_noFinsSuite     - This property is provided with value "true" if the --no-stop command line option is used. It is empty otherwise
+	- TTPRN_noFinsSuite    - This property is provided with value "true" if the --no-stop command line option is used. It is empty otherwise
 	                         If the property is true no Test Suite finalization is called
-	- TTPN_noFinsCase      - This property is not provided.
+	- TTPRN_noFinsCase     - This property is not provided.
 	                         If the property is true no Test Case finalization is called
 
 
@@ -317,27 +317,27 @@ function manpage () {
 	sub-directories. If the pattern is followed by a /, only directories and sub-directories match
 
 
-	## Test Case Result
-	===================
-	To signal an error or an failure of a test case the user defined test function may either set the variables:
-	- errorOccurred
-	- failureOccurred
-	to a non empty value and leave the function with return 0.
-	Or the function may call one of the functions:
-	- errorExit
-	- failureExit
+	## Test Case Result Failures and Errors
+	=======================================
+	To signal an failure in a test case set the failure condition with function setFailure. This prevents further
+	test step functions from execution.
 	
-	To signal the success of a test case just leave the function with return 0.
+	If a test case function is returns a non zero return code the case is couted as error.
+	
+	To signal the success of a test case just leave the function with success 'return 0'.
+	
+	The test frame environment atempts to execute the test finalization functions in case of error and in case of failure.
 	
 	## Skip Test Cases
 	==================
-	A test case is skipped if the property TTPN_skip is defined. This property may be set :
+	A test case os a test suite is skipped if the function skip is called during initialization phase of the artifact.
+	
+	Alternatively the existence of an file SKIP in the Test Case/Suite directory inhibits this Case/Suite (all variants).
+
+	A test case is skipped if the property TTPRN_skip is defined. This property may be set :
 	- In the initialization or preparation phase of an test collection variant - this disables all cases of this collection variant
 	- In the initialization or preparation phase of an test suite variant - this disables all cases of this suite variant
 	- In the initialization phase of an test case (variant) - this disables only one case variant
-	
-	Alternatively the existence of an file SKIP in the Test Case directory inhibits this case (all variants).
-	The existence of a file SKIP in a Test Suite directory skips all variants of the suite.
 
 
 	## Sequence Control

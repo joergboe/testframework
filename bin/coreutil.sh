@@ -203,7 +203,7 @@ function setProperties {
 					if [[ -n $varname ]] ; then
 						isDebug && printDebug "$FUNCNAME prepare for export varname=$varname value=$value splitter=$splitter"
 						case $varname in
-							TTPN_* )
+							TTPRN_* )
 								#set property only if it is unset or null
 								if ! declare -p ${varname} &> /dev/null || [[ -z ${!varname} ]]; then
 									if [[ $splitter == ":=" ]]; then
@@ -220,7 +220,7 @@ function setProperties {
 									isVerbose && printVerbose "$FUNCNAME ignore value for ${varname} in file=$1 line=$lineno"
 								fi
 							;;
-							TTP_* )
+							TTPR_* )
 								#set property only if it is unset
 								if ! declare -p "${varname}" &> /dev/null; then
 									if [[ $splitter == ":=" ]]; then

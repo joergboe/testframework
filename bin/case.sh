@@ -83,7 +83,7 @@ function caseFinalization {
 					for (( i_xyza=0; i_xyza<l_xyza; i_xyza++)); do
 						local step_xyza
 						eval "step_xyza=\${$name_xyza[$i_xyza]}"
-						if isExistingAndTrue 'TTPN_noFinsCase'; then
+						if isExistingAndTrue 'TTPRN_noFinsCase'; then
 							printInfo "Suppress Case Finalization: $step_xyza"
 						else
 							printInfo "Execute Case Finalization: $step_xyza"
@@ -95,7 +95,7 @@ function caseFinalization {
 					isDebug && printDebug "$name_xyza=${!name_xyza}"
 					local x_xyza
 					for x_xyza in ${!name_xyza}; do
-						if isExistingAndTrue 'TTPN_noFinsCase'; then
+						if isExistingAndTrue 'TTPRN_noFinsCase'; then
 							printInfo "Suppress Case Finalization: $x_xyza"
 						else
 							printInfo "Execute Case Finalization: $x_xyza"
@@ -107,7 +107,7 @@ function caseFinalization {
 			fi
 		done
 		if isFunction 'testFinalization'; then
-			if isExistingAndTrue 'TTPN_noFinsCase'; then
+			if isExistingAndTrue 'TTPRN_noFinsCase'; then
 				printInfo "Suppress Case Finalization: testFinalization"
 			else
 				printInfo "Execute Case Finalization: testFinalization"
@@ -190,13 +190,13 @@ export >> "$tmp"
 if [[ -e "${TTRO_inputDirCase}/SKIP" ]]; then
 	skipcase="true"
 fi
-if declare -p TTPN_skip &> /dev/null; then
-	if [[ -n $TTPN_skip ]]; then
+if declare -p TTPRN_skip &> /dev/null; then
+	if [[ -n $TTPRN_skip ]]; then
 		skipcase="true"
 	fi
 fi
-if declare -p TTPN_skipIgnore &> /dev/null; then
-	if [[ -n $TTPN_skipIgnore ]]; then
+if declare -p TTPRN_skipIgnore &> /dev/null; then
+	if [[ -n $TTPRN_skipIgnore ]]; then
 		skipcase=""
 	fi
 fi
@@ -216,7 +216,7 @@ for name_xyza in 'TTRO_prepsCase' 'PREPS'; do
 			eval "l_xyza=\${#$name_xyza[@]}"
 			for (( i_xyza=0; i_xyza<l_xyza; i_xyza++)); do
 				eval "step_xyza=\${$name_xyza[$i_xyza]}"
-				if isExistingAndTrue 'TTPN_noPrepsCase'; then
+				if isExistingAndTrue 'TTPRN_noPrepsCase'; then
 					printInfo "Suppress Case Preparation: $step_xyza"
 				else
 					printInfo "Execute Case Preparation: $step_xyza"
@@ -227,7 +227,7 @@ for name_xyza in 'TTRO_prepsCase' 'PREPS'; do
 		else
 			isDebug && printDebug "$name_xyza=${!name_xyza}"
 			for x_xyza in ${!name_xyza}; do
-				if isExistingAndTrue 'TTPN_noPrepsCase'; then
+				if isExistingAndTrue 'TTPRN_noPrepsCase'; then
 					printInfo "Suppress Case Preparation: $x_xyza"
 				else
 					printInfo "Execute Case Preparation: $x_xyza"
@@ -239,7 +239,7 @@ for name_xyza in 'TTRO_prepsCase' 'PREPS'; do
 	fi
 done
 if isFunction 'testPreparation'; then
-	if isExistingAndTrue 'TTPN_noPrepsCase'; then
+	if isExistingAndTrue 'TTPRN_noPrepsCase'; then
 		printInfo "Suppress Case Preparation: testPreparation"
 	else
 		printInfo "Execute Case Preparation: testPreparation"

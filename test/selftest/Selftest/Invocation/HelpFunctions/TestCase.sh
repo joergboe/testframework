@@ -22,10 +22,10 @@ case $TTRO_variantCase in
 					'-s|--skip-ignore         : If this option is given the ignore attribute of the cases are ignored'
 					'-j|--threads VALUE       : The number of parallel test executions. \(you have * \(virtual\) cores this is default\)'
 					'*If the value is set to 1 no parallel execution is performed'
-					'-l|--link                : Content found in data directoy are linked to workspace not copied \(Set TYPN_link=true\)'
-					'--no-start               : Supress the execution of the start sequence \(Set TYPN_noStart\)'
-					'--no-stop                : Supress the execution of tear stop sequencd \(Set TYPN_noStop\)'
-					'-D value                 : Set the specified TY_-, TYRO_-, TYP_- or TYPN_- variable value \(Use one of varname=value\)'
+					'-l|--link                : Content found in data directoy are linked to workspace not copied \(Set TYPRN_link=true\)'
+					'--no-start               : Supress the execution of the start sequence \(Set TYPRN_noStart\)'
+					'--no-stop                : Supress the execution of tear stop sequencd \(Set TYPRN_noStop\)'
+					'-D value                 : Set the specified TY_-, TYRO_-, TYPR_- or TYPRN_- variable value \(Use one of varname=value\)'
 					'-v|--verbose             : Be verbose to stdout'
 					'-V|--version             : Print the version string'
 					'-d|--debug               : Print debug information. Debug implies verbose.'
@@ -54,14 +54,14 @@ esac
 function executeCase {
 	local tmp="--$TTRO_variantCase"
 	if [[ $TTRO_variantCase == "ref" ]]; then
-		if $TTPN_binDir/runTTF '--ref' '' '--directory' "$TTRO_inputDirCase/test" '--noprompt' '-d' 2>&1 | tee STDERROUT1.log; then
+		if $TTPRN_binDir/runTTF '--ref' '' '--directory' "$TTRO_inputDirCase/test" '--noprompt' '-d' 2>&1 | tee STDERROUT1.log; then
 			return 0
 		else
 			return $errTestFail
 		fi
 	else
 		echo "$tmp"
-		if $TTPN_binDir/runTTF $tmp 2>&1 | tee STDERROUT1.log; then
+		if $TTPRN_binDir/runTTF $tmp 2>&1 | tee STDERROUT1.log; then
 			return 0
 		else
 			return $errTestFail

@@ -14,7 +14,7 @@ function testPreparation {
 }
 
 function testStep {
-	setVar 'TTPN_debug' 'true'
+	setVar 'TTPRN_debug' 'true'
 	case "$TTRO_variantCase" in
 		varNotExists)
 			echoExecuteAndIntercept 'success' 'isFalse' 'var';;

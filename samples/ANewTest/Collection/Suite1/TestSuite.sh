@@ -1,6 +1,6 @@
 # Put here more fixed variables and properties for test suite
-setVar 'TTPN_myProperty' "This is a sample property set in suite"
-setVar 'TTPN_mySuiteProperty' "This is a sample suite property"
+setVar 'TTPRN_myProperty' "This is a sample property set in suite"
+setVar 'TTPRN_mySuiteProperty' "This is a sample suite property"
 
 # Put here the suite initialization steps
 echo "*********************************"
@@ -17,14 +17,14 @@ FINS=mySpecialSuiteFinalization
 #Function definitions for test collections
 function mySpecialSuitePreparation {
 	echo "**** $FUNCNAME preparing variant '$1' ****"
-	echo "TTPN_myProperty =$TTPN_myProperty"
-	echo "TTPN_myProperty2=$TTPN_myProperty2"
-	echo "TTPN_mySuiteProperty=$TTPN_mySuiteProperty"
+	echo "TTPRN_myProperty =$TTPRN_myProperty"
+	echo "TTPRN_myProperty2=$TTPRN_myProperty2"
+	echo "TTPRN_mySuiteProperty=$TTPRN_mySuiteProperty"
 }
 
 function mySpecialSuiteFinalization {
 	echo "**** $FUNCNAME ****"
-	echo "TTPN_myProperty=$TTPN_myProperty"
-	echo "TTPN_myProperty2=$TTPN_myProperty2"
-	echo "TTPN_mySuiteProperty=$TTPN_mySuiteProperty"
+	echo "TTPRN_myProperty=$TTPRN_myProperty"
+	echo "TTPRN_myProperty2=$TTPRN_myProperty2"
+	echo "TTPRN_mySuiteProperty=$TTPRN_mySuiteProperty"
 }

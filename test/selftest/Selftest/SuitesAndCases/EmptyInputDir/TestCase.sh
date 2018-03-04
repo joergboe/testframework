@@ -7,7 +7,7 @@ declare -a options=( '--noprompt --no-browser' '--noprompt -j 1 --no-browser' '-
 
 function executeCase {
 	echo $TTRO_inputDirCase
-	if echoAndExecute $TTPN_binDir/runTTF --directory "$TTRO_inputDirCase/testCollection" ${options[$TTRO_variantCase]} 2>&1 | tee STDERROUT1.log; then
+	if echoAndExecute $TTPRN_binDir/runTTF --directory "$TTRO_inputDirCase/testCollection" ${options[$TTRO_variantCase]} 2>&1 | tee STDERROUT1.log; then
 		return 0
 	else
 		return $errTestFail
