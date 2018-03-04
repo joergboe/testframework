@@ -69,5 +69,8 @@ Version 2.1.0:
 Version 2.2.0:
 - Simple initialization of test tools. Test tools are now imported one at the beginning of tests. Test tools function must be exported.
 
-New Version:
+Version 2.3.0:
 - Changed reference display handling: The parameter --ref requires now the name of the module to display.
+- Changed prefixes TTP_ -> TTPR and TTPN_ -> TTPRN_
+- new function setFailure ti signal failure reason in test case
+- new function skip to skip case and suite
