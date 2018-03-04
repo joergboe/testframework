@@ -1,11 +1,11 @@
-#--variantList='success failure failureexit error scripterror skip'
+#--variantList='success failure error scripterror skip'
 
 #Declare test finalization array and call function with parameter
 FINS=( "myTestFin $TTRO_variantCase" )
 
 #Initialization handle the skip case
 if [[ "$TTRO_variantCase" == "skip" ]]; then
-	setVar 'TTPN_skip' 'true'
+	skip
 fi
 
 # Demonstrates an testcase which produces an
@@ -20,10 +20,7 @@ function testStep {
 		success)
 			return 0 ;;
 		failure)
-			failureOccurred='true'
-			return 0 ;;
-		failureexit)
-			failureExit ;;
+			setFailure;;
 		error)
 			return 1 ;;
 		scripterror)

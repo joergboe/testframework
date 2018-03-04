@@ -10,7 +10,7 @@ function expect3Params {
 	echo "expect3Params \$1='$1' \$2='$2' \$3='$3'"
 	if [[ $# -ne 3 ]]; then
 		printError "Unexpected number of params"
-		setFailure
+		setFailure "Unexpected number of params"
 	fi
 }
 

@@ -5,10 +5,28 @@
 
 TTRO_help_setFailure='
 # Function setFailure
-#	set the failure condition
-#	to be used in failed test cases'
+#	set a use defined failure condition
+#	to be used in failed test cases
+#	$1 the failure text'
 function setFailure {
-	failureOccurred='true'
+	if [[ $# -gt 0 ]]; then
+		if [[ -n $1 ]]; then
+			failureOccurred="$1"
+		else
+			failureOccurred='true'
+		fi
+	else
+		failureOccurred='true'
+	fi
+	return 0
+}
+
+TTRO_help_skip='
+# Function skip
+#	set the skip condition'
+function skip {
+	printInfo "Set SKIP"
+	setVar 'TTPN_skip' 'true'
 }
 
 TTRO_help_printErrorAndExit="

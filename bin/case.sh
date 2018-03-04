@@ -63,7 +63,6 @@ declare -rx TTRO_case="${TTRO_inputDirCase##*/}"
 declare -i executedTestSteps=0
 declare -i executedTestPrepSteps=0
 declare -i executedTestFinSteps=0
-declare errorOccurred=''
 declare failureOccurred=''
 declare skipcase=""
 
@@ -134,7 +133,7 @@ trap caseExitFunction EXIT
 
 #
 # success exit / failure exit and error exit
-#
+# do not use this functions directly
 function successExit {
 	echo "SUCCESS" > "${TTRO_workDirCase}/RESULT"
 	caseFinalization
@@ -149,6 +148,7 @@ function skipExit {
 function failureExit {
 	echo "FAILURE" > "${TTRO_workDirCase}/RESULT"
 	caseFinalization
+	printInfo "**** FAILURE : $failureOccurred ****"
 	printInfo "**** END Case case=${TTRO_case} variant='${TTRO_variantCase}' FAILURE ********" >&2
 	exit 0
 }
@@ -263,6 +263,9 @@ for name_xyza in 'TTRO_stepsCase' 'STEPS'; do
 				printInfo "Execute Case Test Step: $step_xyza"
 				executedTestSteps=$((executedTestSteps+1))
 				eval "$step_xyza"
+				if [[ -n $failureOccurred ]]; then
+					break 2
+				fi
 			done
 		else
 			isDebug && printDebug "$name_xyza=${!name_xyza}"
@@ -270,26 +273,29 @@ for name_xyza in 'TTRO_stepsCase' 'STEPS'; do
 				printInfo "Execute Case Test Step: $x_xyza"
 				executedTestSteps=$((executedTestSteps+1))
 				eval "${x_xyza}"
+				if [[ -n $failureOccurred ]]; then
+					break 2
+				fi
 			done
 		fi
 	fi
 done
-if isFunction 'testStep'; then
-	printInfo "Execute Case Test Step: testStep"
-	isDebug && declare -F 'testStep'
-	executedTestSteps=$((executedTestSteps+1))
-	testStep
+if [[ -z $failureOccurred ]]; then
+	if isFunction 'testStep'; then
+		printInfo "Execute Case Test Step: testStep"
+		isDebug && declare -F 'testStep'
+		executedTestSteps=$((executedTestSteps+1))
+		testStep
+	fi
 fi
 if [[ $executedTestSteps -eq 0 ]]; then
 	printError "No test Case step defined"
-	errorOccurred="true"
+	errorExit
 else
 	printInfo "$executedTestSteps Case test steps executed"
 fi
 
-if [[ -n $errorOccurred ]]; then
-	errorExit
-elif [[ -n $failureOccurred ]]; then
+if [[ -n $failureOccurred ]]; then
 	failureExit
 else
 	successExit

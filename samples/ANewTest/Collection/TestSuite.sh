@@ -1,3 +1,7 @@
+#the intro
+cat "$TTRO_inputDirSuite/../README.md"
+promptYesNo
+
 # Put here more fixed variables and properties
 setVar 'TTPN_myProperty2' "This is a sample property #2"
 

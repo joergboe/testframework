@@ -1,5 +1,5 @@
 if [[ "$TTRO_variantSuite" == "skip" ]]; then
-	TTPN_skip='true'
+	skip
 fi
 
 function testStep {
@@ -8,7 +8,7 @@ function testStep {
 		success)
 			return 0;;
 		failure)
-			failureExit;;
+			setFailure;;
 		error)
 			return 1;;
 	esac

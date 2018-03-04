@@ -13,7 +13,7 @@ echo "********************************"
 echo "global Case initialization steps"
 echo "********************************"
 if [[ $TTRO_variantCase -eq 4 ]]; then
-	setVar 'TTPN_skip' 'true'
+	skip
 fi
 
 #Function definitions for test collections
@@ -40,7 +40,7 @@ function testStep {
 		return 0
 	elif [[ $TTRO_variantCase -eq 1 ]]; then
 		echo "Variant 1 calls failure exit"
-		failureExit
+		setFailure "CUSTOM ERROR"
 	elif [[ $TTRO_variantCase -eq 2 ]]; then
 		echo "Variant 2 returns with another failure return code"
 		return 1
