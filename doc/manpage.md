@@ -4,6 +4,10 @@
 The runTTFLink script is a framework for the control of test case execution.
 The execution of test case/suite variants and the parallel execution is inherently supported.
 
+More docs can be found here:
+(Reference for utility scripts)[utils.md]
+(Reference for streams utility scripts)[streamsutils.md]
+
 
 ## Test Cases, Test Suites and Test Collections
 A test case is comprised of a directory with the main test case file with name: 'TestCase.sh' and other necessary artifacts
@@ -100,7 +104,7 @@ The variables TTRO_finsSuite and TTRO_finsCase have global meaning. They may be 
 during the the execution of the appropriate artifact. The variable FINS and the function testFinalization have local meaning and are
 defined in the appropriate script file.
 
-If the variables TTPN_noPrepsSuite TTPN_noPrepsCase TTPN_noFinsSuite TTPN_noFinsCase are set to a 
+If the variables TTPRN_noPrepsSuite TTPRN_noPrepsCase TTPRN_noFinsSuite TTPRN_noFinsCase are set to a 
 non empty value the preparation and the finalization of the appropriate artifact is supressed.
 
 
@@ -111,20 +115,22 @@ file is 'TestProperties.sh' and it is expected in the Test collection directory.
 command line parameter --properties or the environment TT_properties is evaluated. The properties file is a bash script.
 
 
-## Test Tools and Modules
-If your test collection requires special functions, you must source the appropriate modules from the test collection file. 
-Especially the streamsutils.sh must be sourced at the beginning of the main body of the test collection file:
+## Test Tools
+If your test collection requires special functions, you must import the appropriate script module in the initialization part of a 
+Test Suite or Test Case file. The test Tools Script may define user defined variables, properties and functions. The defined 
+functions in a Tools Script must be exported like:
 
-registerTool "$TTRO_scriptDir/streamsutils.sh"\n
-or\n
-setVar 'TT_tools' "$TT_tools $TTRO_scriptDir/streamsutils.sh"\n
+export -f fname
 
-The first form sources the script 'streamsutils.sh' and modifies the TT_tools variable.
-The second form modifies the TT_tools variable only. The utilities script is sourced during start up of the called artifact.
+The defined tool artifacs are available in nested Suites and nested cases.
+Once a function has been defined, it can not be re-defined in a nested element.
 
-If the initialization of a tool module  depends on other properties, the module must not use eager initialization. In such 
-a case the tool module must provide an separate initialization function. This initialization function must be called in the test 
-collection initialization. (The framework sources the tools modules before the propertie file is sourced)
+Especially the streamsutils.sh must be imported at the beginning of the main body of the outermost Test Suite file:
+
+import "$TTRO_scriptDir/streamsutils.sh"\n
+
+An alternative way to import a Test Tools module is the command line options --tools, which imports one Tools script.
+Or you may define a colon separated list of Test Tools files in variable TTRO_tools.
 
 
 ## Test File Preamble
@@ -144,19 +150,19 @@ The variantCount must be in the form:
 #--variantCount=number
 
 The variantList must be a space separated list of identifiers or numbers or a mixture of identifiers and numbers:
-#--variantList=list
+#--variantList='space separated list of variant identifiers'
 
 ## Test Case timeouts
 Each test case can define an individual timeout variable. When the timeout is reached for an test case, 
-the job is killed with SIGTERM (15). If the job still runs after additional time (TTP_additionalTime), 
+the job is killed with SIGTERM (15). If the job still runs after additional time (TTPR_additionalTime), 
 the job is killed with SIGKILL (9).
-If there is no individual timeout defined, the default values TTP_timeout is used.
-If there is no individual timeout and no property TTP_timeout, the test case times out after 120 seconds.
-If there is no property TTP_additionalTime, the vaue 45 is used.
+If there is no individual timeout defined, the default values TTPR_timeout is used.
+If there is no individual timeout and no property TTPR_timeout, the test case times out after 120 seconds.
+If there is no property TTPR_additionalTime, the vaue 45 is used.
 
 
 ## Test Framework Variables and Properties
-Variables with the prefix TT_, TTRO_, TTP_ or TTPN_ are treated as global definitions and they are exported from 
+Variables with the prefix TT_, TTRO_, TTPR_ or TTPRN_ are treated as global definitions and they are exported from 
 Test Collection to Test Suite and from Test Suite to Test Case.
 
 In the script code section, variables and properties can be assigned with function setVar 'name' "value".
@@ -164,12 +170,12 @@ In the script code section, variables and properties can be assigned with functi
 ## Property Variables
 Property variables are not changed once they have been defined. Re-definition of property variables will be ignored. 
 An pure assignment to a property in a test suite/case script may cause a script failure. Use function setVar instead.
-The name of a property must be prefixed with TTP_ or TTPN_
+The name of a property must be prefixed with TTPR_ or TTPRN_
 
-Empty values are considered a defined value for properties with prefix TTP_ and can not be overwritten.
-Empty values are considered a undefined value for properties with prefix TTPN_ and can be overwritten.
+Empty values are considered a defined value for properties with prefix TTPR_ and can not be overwritten.
+Empty values are considered a undefined value for properties with prefix TTPRN_ and can be overwritten.
 
-NOTE: Prefer the TTP_ version.
+NOTE: Prefer the TTPR_ version.
 
 
 ## Simple Global Variables and Global Read-only Variables
@@ -192,22 +198,21 @@ Some properties are designed that the existence of the property indicates the tr
 
 ## Accepted Environment
 
-
 ## Debug and Verbose
 The testframe may print verbose information and debug information or both. The verbosity may be enabled with command line options.
 Additionally the verbosity can be controlled with existence of the properties:
-- TTPN_debug            - enables debug
-- TTPN_debugDisable     - disables debug (overrides TTPN_debug)
-- TTPN_verbose          - enables verbosity
-- TTPN_verboseDisable   - disables verbosity (overrides TTPN_verbose)
+- TTPRN_debug            - enables debug
+- TTPRN_debugDisable     - disables debug (overrides TTPRN_debug)
+- TTPRN_verbose          - enables verbosity
+- TTPRN_verboseDisable   - disables verbosity (overrides TTPRN_verbose)
 
 NOTE: The check if an existing variable is empty or not is much faster then the check against existance of an variable. Therefore 
 we use here the empty value an consider it as unset property.
 
 
 ## Variables Used
-- TTPN_skip              - Skips the execution of test case preparation, test case execution and test case finalization steps
-- TTPN_skipIgnore        - If set to true, the skip variable is ignored.
+- TTPRN_skip             - Skips the execution of test case preparation, test case execution and test case finalization steps
+- TTPRN_skipIgnore       - If set to true, the skip variable is ignored.
 
 - STEPS                 - The space separated list or an array of test step commands with local meaning. If one command returns an failure (return code != 0), 
                           the test execution is stopped
@@ -227,10 +232,10 @@ we use here the empty value an consider it as unset property.
                           the error is logged and the execution is stopped. The result of the case is not affected.
 - FINS                  - The space separated list or an array of test finalization commands.
                          
-- TTP_timeout           - The default test case timeout in seconds. default is 120 sec. This variable must be defined in the 
+- TTPR_timeout          - The default test case timeout in seconds. default is 120 sec. This variable must be defined in the 
                           description section of test case file or in the Test Suite or Test Collection. A definition 
                           in the script section of a Test Case has no effect.
-- TTP_additionalTime    - The extra wait time after the test case time out. If the test case does not end after this 
+- TTPR_additionalTime    - The extra wait time after the test case time out. If the test case does not end after this 
                           time a SIGKILL is issued and the test case is stopped. The default is 45 sec. This variable 
                           must be defined in the description section of test case file or in the Test Suite or Test Collection. 
                           A definition in the script section of a Test Case has no effect.
@@ -256,16 +261,16 @@ we use here the empty value an consider it as unset property.
 - TTRO_treads          - The number of threads to be used during test case execution. Is set to 1 if parallel test case
                          execution is enabled. Is set to $TTRO_noCpus if back-to-back test case execution is enabled.
 - TTRO_reference       - The reference will be printed
-- TTPN_noStart         - This property is provided with value "true" if the --no-start command line option is used. It is empty otherwise
-- TTPN_noStop          - This  property is provided with value "true" if the --no-stop command line option is used. It is empty otherwise
-- TTPN_link            - This  property is provided with value "true" if the --link command line option is used. It is empty otherwise
-- TTPN_noPrepsSuite    - This property is provided with value "true" if the --no-start command line option is used. It is empty otherwise
+- TTPRN_noStart        - This property is provided with value "true" if the --no-start command line option is used. It is empty otherwise
+- TTPRN_noStop         - This  property is provided with value "true" if the --no-stop command line option is used. It is empty otherwise
+- TTPRN_link           - This  property is provided with value "true" if the --link command line option is used. It is empty otherwise
+- TTPRN_noPrepsSuite   - This property is provided with value "true" if the --no-start command line option is used. It is empty otherwise
                          If the property is true no Test Suite preparation is called
-- TTPN_noPrepsCase     - This property is not provided.
+- TTPRN_noPrepsCase    - This property is not provided.
                          If the property is true no Test Case preparation is called
-- TTPN_noFinsSuite     - This property is provided with value "true" if the --no-stop command line option is used. It is empty otherwise
+- TTPRN_noFinsSuite    - This property is provided with value "true" if the --no-stop command line option is used. It is empty otherwise
                          If the property is true no Test Suite finalization is called
-- TTPN_noFinsCase      - This property is not provided.
+- TTPRN_noFinsCase     - This property is not provided.
                          If the property is true no Test Case finalization is called
 
 
@@ -295,25 +300,25 @@ globstar: The pattern ** used in a path-name expansion context will match all fi
 sub-directories. If the pattern is followed by a /, only directories and sub-directories match
 
 
-## Test Case Result
-To signal an error or an failure of a test case the user defined test function may either set the variables:
-- errorOccurred
-- failureOccurred
-to a non empty value and leave the function with return 0.
-Or the function may call one of the functions:
-- errorExit
-- failureExit
+## Test Case Result Failures and Errors
+To signal an failure in a test case set the failure condition with function setFailure. This prevents further
+test step functions from execution.
 
-To signal the success of a test case just leave the function with return 0.
+If a test case function is returns a non zero return code the case is couted as error.
+
+To signal the success of a test case just leave the function with success 'return 0'.
+
+The test frame environment atempts to execute the test finalization functions in case of error and in case of failure.
 
 ## Skip Test Cases
-A test case is skipped if the property TTPN_skip is defined. This property may be set :
+A test case os a test suite is skipped if the function skip is called during initialization phase of the artifact.
+
+Alternatively the existence of an file SKIP in the Test Case/Suite directory inhibits this Case/Suite (all variants).
+
+A test case is skipped if the property TTPRN_skip is defined. This property may be set :
 - In the initialization or preparation phase of an test collection variant - this disables all cases of this collection variant
 - In the initialization or preparation phase of an test suite variant - this disables all cases of this suite variant
 - In the initialization phase of an test case (variant) - this disables only one case variant
-
-Alternatively the existence of an file SKIP in the Test Case directory inhibits this case (all variants).
-The existence of a file SKIP in a Test Suite directory skips all variants of the suite.
 
 
 ## Sequence Control
@@ -327,8 +332,8 @@ The Test Collection:
 - Scan input directory and collect all test suites and cases to execute
 - Set programm defined props/vars
 - Set properties and variables defined with command line parameter -D..
-- Source all defined tools scripts !!!??
-- Source properties file if required - set props and vars !!!?
+- Source properties file if required - set props and vars
+- Source all defined tools scripts
 - Execute root suite in inherited environment
 - print result
 
