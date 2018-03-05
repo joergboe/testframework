@@ -18,6 +18,3 @@ not source controlled
 - create a release tag vx.y.z
 - clean up your workspace and commit all changes
 - execute the script buildReleasePackage.sh in the workspace directory
-
-# Installation:
-- The release package is a self extracting script. Execute it and follow the instructions.

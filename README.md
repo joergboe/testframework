@@ -12,7 +12,12 @@ and
 
 In directory samples you can see the Test Collection ANewTest, which is a sample for a basic Test Collection
 
-It is recommended to enter the location of the test framework into your PATH like:
+# Installation
+
+The release package is a self extracting script. Execute it and follow the instructions. You can install the tool into 
+an arbitrary palace.
+If you want to install the tool into a system directory execute the installation script as root.
+It is recommended qto enter the location of the test framework into your PATH like:
 
 export PATH="<location of test framework>/bin:$PATH"
 
