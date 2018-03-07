@@ -10,7 +10,7 @@
 # $4 the chain of suite names delim / (parent)
 # $5 the chain of suite string including variants delim :: : (parent value)
 # $6 parent sworkdir
-# expect suiteVariants suiteErrors
+# expect suiteVariants suiteErrors suiteSkip
 function exeSuite {
 	isDebug && printDebug "******* $FUNCNAME $*"
 	local suite="${suitesName[$1]}"
@@ -71,6 +71,10 @@ function exeSuite {
 		if [[ $result -eq $errSigint ]]; then
 			printWarning "Set SIGINT Execution of suite ${suite} variant '$2' ended with result=$result"
 			interruptReceived=$((interruptReceived+1))
+		elif [[ $result -eq $errSkip ]]; then
+			printInfo "Suite skipped suite ${suite} variant '$2'"
+			suiteSkip=$(( suiteSkip+1 ))
+			builtin echo "$suiteNestingString" >> "${6}/SUITE_SKIP"
 		else
 			if [[ $nestingLevel -gt 0 ]]; then
 				printError "Execution of suite ${suite} variant '$2' ended with result=$result"
@@ -97,7 +101,9 @@ function exeSuite {
 					fi
 				done } < "${inputFileName}"
 			else
-				printError "No result list $inputFileName in suite $sworkdir"
+				if [[ $result -ne $errSkip ]]; then
+					printError "No result list $inputFileName in suite $sworkdir"
+				fi
 			fi
 		done
 	fi

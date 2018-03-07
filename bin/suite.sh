@@ -103,6 +103,7 @@ eval "$TTXX_childCases"
 #more common vars
 declare -rx TTRO_suite="${suitesName[$TTRO_suiteIndex]}"
 declare -rx TTRO_inputDirSuite="${suitesPath[$TTRO_suiteIndex]}"
+declare skipthis=''
 
 declare -a cases=() # case pathes
 declare -a casesNames=() # the short path
@@ -118,6 +119,12 @@ done
 
 readonly cases casesNames noCases
 isDebug && printDebug "noCases=$noCases"
+
+#check skipfile
+if [[ -e "${TTRO_inputDirSuite}/SKIP" ]]; then
+	printInfo "SKIP file found suite=$TTRO_suite variant=$TTRO_variantSuite"
+	exit $errSkip
+fi
 
 #--------------------------------------------------
 # enter working dir
@@ -141,6 +148,23 @@ isVerbose && printTestframeEnvironment
 tmp="${TTRO_workDirSuite}/${TEST_ENVIRONMET_LOG}"
 printTestframeEnvironment > "$tmp"
 export >> "$tmp"
+
+#check skip
+if declare -p TTPRN_skip &> /dev/null; then
+	if [[ -n $TTPRN_skip ]]; then
+		skipthis="true"
+	fi
+fi
+if declare -p TTPRN_skipIgnore &> /dev/null; then
+	if [[ -n $TTPRN_skipIgnore ]]; then
+		skipthis=""
+	fi
+fi
+#checkKategories
+if [[ -n $skipthis ]]; then
+	printInfo "SKIP variable set; Skip execution suite=$TTRO_suite variant=$TTRO_variantSuite"
+	exit $errSkip
+fi
 
 #--------------------------------------------------
 # prepare output lists
@@ -567,7 +591,7 @@ done
 startSuiteList "$indexfilename"
 
 ##execution loop over sub suites and variants
-declare -i suiteVariants=0 suiteErrors=0
+declare -i suiteVariants=0 suiteErrors=0 suiteSkip=0
 for sindex_xyza in ${childSuites[$TTRO_suiteIndex]}; do
 	suitePath="${suitesPath[$sindex_xyza]}"
 	suite="${suitesName[$sindex_xyza]}"
@@ -667,7 +691,7 @@ printInfo "$executedTestFinSteps Test Suite Finalisation steps executed"
 #-------------------------------------------------------
 #put results to results file for information purose only 
 echo -e "CASE_EXECUTE=$jobIndex\nCASE_SKIP=$variantSkiped\nCASE_FAILURE=$variantFailures\nCASE_ERROR=$variantErrors\nCASE_SUCCESS=$variantSuccess" > "${TTRO_workDirSuite}/RESULT"
-echo -e "SUITE_EXECUTE=$suiteVariants\nSUITE_SKIP=\nSUITE_ERROR=$suiteErrors" >> "${TTRO_workDirSuite}/RESULT"
+echo -e "SUITE_EXECUTE=$suiteVariants\nSUITE_SKIP=$suiteSkip\nSUITE_ERROR=$suiteErrors" >> "${TTRO_workDirSuite}/RESULT"
 
 #-------------------------------------------------------
 #Final verbose suite result printout

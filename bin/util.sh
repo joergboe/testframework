@@ -178,6 +178,16 @@ function isVerbose {
 	fi
 }
 
+TTRO_help_skip='
+# Function skip
+#	if this function is called during initialization
+#	the case or suite is skipped'
+function skip {
+	printInfo "Skip this Case/Suite"
+	skipthis='true'
+	return 0
+}
+
 TTRO_help_printTestframeEnvironment="
 # Function printTestframeEnvironment
 # 	print special testrame environment

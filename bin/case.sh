@@ -64,7 +64,7 @@ declare -i executedTestSteps=0
 declare -i executedTestPrepSteps=0
 declare -i executedTestFinSteps=0
 declare failureOccurred=''
-declare skipcase=""
+declare skipthis=""
 
 #test finalization function
 function caseFinalization {
@@ -125,7 +125,7 @@ declare caseFinalized=''
 
 function caseExitFunction {
 	isDebug && printDebug "$FUNCNAME"
-	if [[ -z "$skipcase" ]]; then
+	if [[ -z "$skipthis" ]]; then
 		caseFinalization
 	fi
 }
@@ -167,6 +167,12 @@ printInfo "**** START Case $TTRO_case variant '$TTRO_variantCase' in workdir $TT
 # enter working dir
 cd "$TTRO_workDirCase"
 
+#check skipfile
+if [[ -e "${TTRO_inputDirCase}/SKIP" ]]; then
+	printInfo "SKIP file found case=$TTRO_case variant=$TTRO_variantCase"
+	skipExit
+fi
+
 #-------------------------------------------------
 #include global, suite and case custom definitions
 tmp="${TTRO_inputDirCase}/${TEST_CASE_FILE}"
@@ -187,20 +193,18 @@ printTestframeEnvironment > "$tmp"
 export >> "$tmp"
 
 #check skip
-if [[ -e "${TTRO_inputDirCase}/SKIP" ]]; then
-	skipcase="true"
-fi
 if declare -p TTPRN_skip &> /dev/null; then
 	if [[ -n $TTPRN_skip ]]; then
-		skipcase="true"
+		skipthis="true"
 	fi
 fi
 if declare -p TTPRN_skipIgnore &> /dev/null; then
 	if [[ -n $TTPRN_skipIgnore ]]; then
-		skipcase=""
+		skipthis=""
 	fi
 fi
-if [[ -n $skipcase ]]; then
+#checkKategories
+if [[ -n $skipthis ]]; then
 	printInfo "SKIP variable set; Skip execution case=$TTRO_case variant=$TTRO_variantCase"
 	skipExit
 fi
