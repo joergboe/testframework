@@ -104,7 +104,7 @@ done
 declare -r -A singleOptions=(
 	['verbose']='-v --verbose'
 	['debug']='-d --debug'
-	['noChecks']='-n --no-checks'
+	#['noChecks']='-n --no-checks'
 	['noStart']='--no-start'
 	['noStop']='--no-stop'
 	['skipIgnore']='-s --skip-ignore'
@@ -129,6 +129,7 @@ declare -a propertyFiles=() # The property files
 declare -a varNamesToSet=() #The list with variable names to set
 declare -a varValuesToSet=() #The list with variables values to set
 declare -a cases=() # the list of cases from command line
+declare -a runCategoryPatternArray=() #the run time category pattern array
 
 #------------------------------------------------------
 #set number of cores
@@ -173,6 +174,10 @@ while [[ $# -ge 1 ]]; do
 		[[ $# -ge 2 && $2 != -* ]] || missOptionArg $1;
 		tmp="${#propertyFiles[@]}"
 		propertyFiles[$tmp]="$2"
+		shift;;
+	-c|--category)
+		tmp="${#runCategoryPatternArray[@]}"
+		runCategoryPatternArray[$tmp]="$2"
 		shift;;
 	-D)
 		[[ $# -ge 2 && $2 != -* ]] || missOptionArg $1;
@@ -286,6 +291,9 @@ if [[ -z $threads ]]; then
 fi
 
 #---------------------------------------------------------
+
+declare -rx TTXX_runCategoryPatternArray=$(declare -p runCategoryPatternArray)
+
 setVar 'TTPRN_debug' "$debug"
 setVar 'TTPRN_debugDisable' ''
 setVar 'TTPRN_verbose' "$verbose"

@@ -303,6 +303,48 @@ function writeProtectExportedFunctions {
 }
 
 #
+# Check if test run category matches any of the atrifact categories
+# categoryArray           - the array of artifact cats
+# runCategoryPatternArray - the array of category pattern of this test run
+# return true if one run category pattern matches any of the artifact cats
+#        or if catecory or eval runCategoryPatternArray is empty
+#        false otherwise
+function checkCats {
+	local lenCat=0
+	if isExisting 'categoryArray'; then
+		local dispstring=$(declare -p 'categoryArray')
+		local dispstring2=$(declare -p 'runCategoryPatternArray')
+		isDebug && printDebug "$dispstring $dispstring2"
+		if isArray 'categoryArray'; then
+			lenCat="${#categoryArray[*]}"
+		else
+			printErrorAndExit "variable categoryArray must be an indexed array" $errRt
+		fi
+	else
+		isDebug && printDebug "no categoryArray"
+	fi
+	local lenRunPat="${#runCategoryPatternArray[*]}"
+	if [[ ( $lenCat -eq 0 ) || ( $lenRunPat -eq 0 ) ]]; then
+		isVerbose && printVerbose "No artifact category set or nor run category pattern set: return true"
+		return 0
+	fi
+	local i=0
+	local j=0
+	while (( i < lenCat )); do
+		while (( j < lenRunPat )); do
+			if [[ ${categoryArray[$i]} == ${runCategoryPatternArray[$j]} ]]; then
+				isVerbose && printVerbose "Run category pattern set match found: return true"
+				return 0
+			fi
+			j=$((j+1))
+		done
+		i=$((i+1))
+	done
+	isVerbose && printVerbose "No run category pattern set match found: return false"
+	return 1
+}
+
+#
 # Create the global index.html
 # $1 the file to create
 function createGlobalIndex {

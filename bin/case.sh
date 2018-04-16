@@ -65,6 +65,7 @@ declare -i executedTestPrepSteps=0
 declare -i executedTestFinSteps=0
 declare failureOccurred=''
 declare skipthis=""
+eval "$TTXX_runCategoryPatternArray"
 
 #test finalization function
 function caseFinalization {
@@ -195,6 +196,10 @@ export >> "$tmp"
 #check skip variable
 if [[ -n $TTPRN_skip ]]; then
 	skipthis="true"
+fi
+#check category
+if ! checkCats; then
+	skipthis='true'
 fi
 if [[ -n $TTPRN_skipIgnore ]]; then
 	skipthis=""
