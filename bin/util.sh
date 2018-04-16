@@ -23,7 +23,7 @@ function setFailure {
 
 TTRO_help_skip='
 # Function skip
-#	set the skip condition'
+#	set the skip condition TTPRN_skip=true'
 function skip {
 	printInfo "Set SKIP"
 	setVar 'TTPRN_skip' 'true'

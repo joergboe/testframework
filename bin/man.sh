@@ -185,7 +185,8 @@ function manpage () {
 	Empty values are considered a defined value for properties with prefix TTPR_ and can not be overwritten.
 	Empty values are considered a undefined value for properties with prefix TTPRN_ and can be overwritten.
 	
-	NOTE: Prefer the TTPR_ version.
+	NOTE: Prefer the TTPR_ version for varables which can have different values.
+	NOTE: The TTPRN_ version is used as switch which can be used only once to become true.
 
 
 	## Simple Global Variables and Global Read-only Variables
@@ -226,8 +227,9 @@ function manpage () {
 
 	## Variables Used
 	=================
-	- TTPRN_skip             - Skips the execution of test case preparation, test case execution and test case finalization steps
-	- TTPRN_skipIgnore       - If set to true, the skip variable is ignored.
+	- TTPRN_skip            - Skip-Switch: if this varaible not empty, the execution of the actual Test Case variant or Test Suite variant is skipped.
+	                          This variable is set by function skip
+	- TTPRN_skipIgnore      - if this varaible not empty, the skip variable is ignored.
 	
 	- STEPS                 - The space separated list or an array of test step commands with local meaning. If one command returns an failure (return code != 0), 
 	                          the test execution is stopped
@@ -330,14 +332,14 @@ function manpage () {
 	
 	## Skip Test Cases
 	==================
-	A test case os a test suite is skipped if the function skip is called during initialization phase of the artifact.
+	A test case or a test suite is skipped if the function skip is called during initialization phase of the artifact. 
+	This function sets the skip-switch to true.
 	
-	Alternatively the existence of an file SKIP in the Test Case/Suite directory inhibits this Case/Suite (all variants).
-
 	A test case is skipped if the property TTPRN_skip is defined. This property may be set :
-	- In the initialization or preparation phase of an test collection variant - this disables all cases of this collection variant
 	- In the initialization or preparation phase of an test suite variant - this disables all cases of this suite variant
 	- In the initialization phase of an test case (variant) - this disables only one case variant
+
+	Alternatively the existence of an file SKIP in the Test Case/Suite directory inhibits the execution of all variants of the Case/Suite.
 
 
 	## Sequence Control

@@ -381,6 +381,8 @@ else
 	setVar TTPRN_noFinsSuite ''
 fi
 setVar TTRO_noPrompt "$noprompt"
+setVar TTPRN_skip ''
+setVar TTPRN_skipIgnore ''
 fixPropsVars
 
 #--------------------------------

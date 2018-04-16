@@ -174,7 +174,7 @@ if [[ -e "${TTRO_inputDirCase}/SKIP" ]]; then
 fi
 
 #-------------------------------------------------
-#include global, suite and case custom definitions
+#source case file
 tmp="${TTRO_inputDirCase}/${TEST_CASE_FILE}"
 if [[ -e $tmp ]]; then
 	isVerbose && printVerbose  "Source Test Case file $tmp"
@@ -192,16 +192,12 @@ tmp="${TTRO_workDirCase}/${TEST_ENVIRONMET_LOG}"
 printTestframeEnvironment > "$tmp"
 export >> "$tmp"
 
-#check skip
-if declare -p TTPRN_skip &> /dev/null; then
-	if [[ -n $TTPRN_skip ]]; then
-		skipthis="true"
-	fi
+#check skip variable
+if [[ -n $TTPRN_skip ]]; then
+	skipthis="true"
 fi
-if declare -p TTPRN_skipIgnore &> /dev/null; then
-	if [[ -n $TTPRN_skipIgnore ]]; then
-		skipthis=""
-	fi
+if [[ -n $TTPRN_skipIgnore ]]; then
+	skipthis=""
 fi
 #checkKategories
 if [[ -n $skipthis ]]; then

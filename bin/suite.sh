@@ -120,16 +120,22 @@ done
 readonly cases casesNames noCases
 isDebug && printDebug "noCases=$noCases"
 
-#check skipfile
-if [[ -e "${TTRO_inputDirSuite}/SKIP" ]]; then
-	printInfo "SKIP file found suite=$TTRO_suite variant=$TTRO_variantSuite"
-	exit $errSkip
-fi
-
-#--------------------------------------------------
 # enter working dir
 cd "$TTRO_workDirSuite"
 
+#prepare index.html name
+indexfilename="${TTRO_workDirSuite}/suite.html"
+
+#check skipfile
+if [[ -e "${TTRO_inputDirSuite}/SKIP" ]]; then
+	printInfo "SKIP file found suite=$TTRO_suite variant=$TTRO_variantSuite"
+	createSuiteIndex "$indexfilename"
+	echo "SKIPPED" >> "$indexfilename"
+	endSuiteIndex "$indexfilename"
+	exit $errSkip
+fi
+
+#source suite file
 if [[ $TTRO_suiteIndex -ne 0 ]]; then
 	tmp="${TTRO_inputDirSuite}/${TEST_SUITE_FILE}"
 	if [[ -e "$tmp" ]]; then
@@ -150,19 +156,18 @@ printTestframeEnvironment > "$tmp"
 export >> "$tmp"
 
 #check skip
-if declare -p TTPRN_skip &> /dev/null; then
-	if [[ -n $TTPRN_skip ]]; then
-		skipthis="true"
-	fi
+if [[ -n $TTPRN_skip ]]; then
+	skipthis="true"
 fi
-if declare -p TTPRN_skipIgnore &> /dev/null; then
-	if [[ -n $TTPRN_skipIgnore ]]; then
-		skipthis=""
-	fi
+if [[ -n $TTPRN_skipIgnore ]]; then
+	skipthis=""
 fi
 #checkKategories
 if [[ -n $skipthis ]]; then
 	printInfo "SKIP variable set; Skip execution suite=$TTRO_suite variant=$TTRO_variantSuite"
+	createSuiteIndex "$indexfilename"
+	echo "SKIPPED" >> "$indexfilename"
+	endSuiteIndex "$indexfilename"
 	exit $errSkip
 fi
 
@@ -186,7 +191,8 @@ if [[ -e $tmp ]]; then
 	rm -rf "$tmp"
 fi
 touch "$tmp"
-indexfilename="${TTRO_workDirSuite}/suite.html"
+
+#create index.html
 createSuiteIndex "$indexfilename"
 
 #----------------------------------------------------------------------------------
