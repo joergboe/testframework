@@ -204,7 +204,7 @@ function manpage () {
 	Logical variables with the semantics of an boolean are considered 'true' if these variables are set to something different than 
 	the empty value (null). An empty (null) variable or an unset variable is considered 'false'. Care must be taken if a 
 	variable is unset. In general the usage of an unset variable will cause a script failure.
-	Use function 'isExisting' or 'isNotExisting' to avoid script abort.
+	Use function 'isExisting' or 'isNotExisting' to avoid script aborts.
 	
 	Some properties are designed that the existence of the property indicates the trueness.
 
@@ -225,6 +225,10 @@ function manpage () {
 	we use here the empty value an consider it as unset property.
 
 
+	## Reserved Ranges
+	==================
+	Varaible names starting with TTTT_ are reserved. Do not use those names in test case/suite scripts.
+	
 	## Variables Used
 	=================
 	- TTPRN_skip            - Skip-Switch: if this varaible not empty, the execution of the actual Test Case variant or Test Suite variant is skipped.
@@ -290,6 +294,9 @@ function manpage () {
 	                         If the property is true no Test Suite finalization is called
 	- TTPRN_noFinsCase     - This property is not provided.
 	                         If the property is true no Test Case finalization is called
+	                         
+	- TTTT_categoryArray   - The indexed array with the categories of the current Case/Suite
+	- TTTT_runCategoryPatternArray - The indexed array with the run-category patterns of the current test run
 
 
 	## Special Script Execution options
@@ -330,8 +337,8 @@ function manpage () {
 	
 	The test frame environment atempts to execute the test finalization functions in case of error and in case of failure.
 	
-	## Skip Test Cases
-	==================
+	## Skip Test Cases - Category Control
+	=====================================
 	A test case or a test suite is skipped if the function skip is called during initialization phase of the artifact. 
 	This function sets the skip-switch to true.
 	
@@ -340,6 +347,13 @@ function manpage () {
 	- In the initialization phase of an test case (variant) - this disables only one case variant
 
 	Alternatively the existence of an file SKIP in the Test Case/Suite directory inhibits the execution of all variants of the Case/Suite.
+	
+	The function setCategory defines the category of a Test Case or Test Suite. The those categories are checked before the Case/Suite
+	is executed. The run-categories of the a test run can be defined with command line parameter -c|--category VALUE. The run-categories 
+	are considered patterns. 
+	If one of the run-category pattern matches any ot the categories of the artifact, the Case/Suite is executed. Otherwise it is skipped.
+	If no run-category patter is entered or the Case/Suite has not defined any category, the Case/Suite is executed anyway.
+	
 
 
 	## Sequence Control

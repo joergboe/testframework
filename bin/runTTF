@@ -129,7 +129,7 @@ declare -a propertyFiles=() # The property files
 declare -a varNamesToSet=() #The list with variable names to set
 declare -a varValuesToSet=() #The list with variables values to set
 declare -a cases=() # the list of cases from command line
-declare -a runCategoryPatternArray=() #the run time category pattern array
+declare -a TTTT_runCategoryPatternArray=() #the run time category pattern array
 
 #------------------------------------------------------
 #set number of cores
@@ -176,8 +176,8 @@ while [[ $# -ge 1 ]]; do
 		propertyFiles[$tmp]="$2"
 		shift;;
 	-c|--category)
-		tmp="${#runCategoryPatternArray[@]}"
-		runCategoryPatternArray[$tmp]="$2"
+		tmp="${#TTTT_runCategoryPatternArray[@]}"
+		TTTT_runCategoryPatternArray[$tmp]="$2"
 		shift;;
 	-D)
 		[[ $# -ge 2 && $2 != -* ]] || missOptionArg $1;
@@ -292,7 +292,7 @@ fi
 
 #---------------------------------------------------------
 
-declare -rx TTXX_runCategoryPatternArray=$(declare -p runCategoryPatternArray)
+declare -rx TTXX_runCategoryPatternArray=$(declare -p TTTT_runCategoryPatternArray)
 
 setVar 'TTPRN_debug' "$debug"
 setVar 'TTPRN_debugDisable' ''

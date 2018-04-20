@@ -21,6 +21,20 @@ function setFailure {
 	return 0
 }
 
+TTRO_help_setCategory='
+# Function setCategory
+#	set the use defined categories of a test case or suite
+#	$1 ... the category identifieres of this atrifact'
+function setCategory {
+	TTTT_categoryArray=()
+	local i=0
+	while [[ $# -ge 1 ]]; do
+		TTTT_categoryArray[$i]="$1"
+		i=$((i+1))
+		shift
+	done
+}
+
 TTRO_help_skip='
 # Function skip
 #	set the skip condition TTPRN_skip=true'

@@ -23,7 +23,8 @@ function usage {
 	-p|--properties VALUE    : This specifies the file with the global property values. Default is file $TEST_PROPERTIES in input directory.
 	                           This option can be given more than one time. 
 	-t|--tools VALUE         : Includes (source) files with test tool scripts. This option can be given more than one time.
-	-c|--category VALUE      : Enter the category pattern for this test run. The pattern must contain white spaces. This option can be given more than one time.
+	-c|--category VALUE      : Enter the category pattern for this test run. The pattern must not contain white spaces. 
+	                           Quote the value or escape special characters. This option can be given more than one time.
 	-s|--skip-ignore         : If this option is given the skip and category attributes of the cases and suite are ignored
 	-j|--threads VALUE       : The number of parallel test executions. (you have ${noCpus} (virtual) cores this is default)
 	                           If the value is set to 1 no parallel execution is performed

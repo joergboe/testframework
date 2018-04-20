@@ -304,26 +304,24 @@ function writeProtectExportedFunctions {
 
 #
 # Check if test run category matches any of the atrifact categories
-# categoryArray           - the array of artifact cats
-# runCategoryPatternArray - the array of category pattern of this test run
+# TTTT_categoryArray           - the array of artifact cats
+# TTTT_runCategoryPatternArray - the array of category pattern of this test run
 # return true if one run category pattern matches any of the artifact cats
-#        or if catecory or eval runCategoryPatternArray is empty
+#        or if catecory or eval TTTT_runCategoryPatternArray is empty
 #        false otherwise
 function checkCats {
 	local lenCat=0
-	if isExisting 'categoryArray'; then
-		local dispstring=$(declare -p 'categoryArray')
-		local dispstring2=$(declare -p 'runCategoryPatternArray')
-		isDebug && printDebug "$dispstring $dispstring2"
-		if isArray 'categoryArray'; then
-			lenCat="${#categoryArray[*]}"
-		else
-			printErrorAndExit "variable categoryArray must be an indexed array" $errRt
-		fi
-	else
-		isDebug && printDebug "no categoryArray"
+	if isNotExisting 'TTTT_categoryArray'; then
+		printErrorAndExit "variable TTTT_categoryArray must exist" $errRt
 	fi
-	local lenRunPat="${#runCategoryPatternArray[*]}"
+	if ! isArray 'TTTT_categoryArray'; then
+		printErrorAndExit "variable TTTT_categoryArray must be an indexed array" $errRt
+	fi
+	lenCat="${#TTTT_categoryArray[*]}"
+	local dispstring=$(declare -p 'TTTT_categoryArray')
+	local dispstring2=$(declare -p 'TTTT_runCategoryPatternArray')
+	isDebug && printDebug "$dispstring $dispstring2"
+	local lenRunPat="${#TTTT_runCategoryPatternArray[*]}"
 	if [[ ( $lenCat -eq 0 ) || ( $lenRunPat -eq 0 ) ]]; then
 		isVerbose && printVerbose "No artifact category set or nor run category pattern set: return true"
 		return 0
@@ -331,16 +329,18 @@ function checkCats {
 	local i=0
 	local j=0
 	while (( i < lenCat )); do
+		j=0
 		while (( j < lenRunPat )); do
-			if [[ ${categoryArray[$i]} == ${runCategoryPatternArray[$j]} ]]; then
-				isVerbose && printVerbose "Run category pattern set match found: return true"
+			isDebug && printDebug "i=$i j=$j cats: ${TTTT_categoryArray[$i]} == ${TTTT_runCategoryPatternArray[$j]}"
+			if [[ ${TTTT_categoryArray[$i]} == ${TTTT_runCategoryPatternArray[$j]} ]]; then
+				printInfo "Run category pattern set match found: ${TTTT_categoryArray[$i]} == ${TTTT_runCategoryPatternArray[$j]}"
 				return 0
 			fi
 			j=$((j+1))
 		done
 		i=$((i+1))
 	done
-	isVerbose && printVerbose "No run category pattern set match found: return false"
+	printInfo "No run category pattern match found: $FUNCNAME returns false"
 	return 1
 }
 

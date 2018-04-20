@@ -106,6 +106,7 @@ eval "$TTXX_runCategoryPatternArray"
 declare -rx TTRO_suite="${suitesName[$TTRO_suiteIndex]}"
 declare -rx TTRO_inputDirSuite="${suitesPath[$TTRO_suiteIndex]}"
 declare skipthis=''
+declare -a TTTT_categoryArray=()
 
 declare -a cases=() # case pathes
 declare -a casesNames=() # the short path

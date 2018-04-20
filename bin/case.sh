@@ -66,6 +66,7 @@ declare -i executedTestFinSteps=0
 declare failureOccurred=''
 declare skipthis=""
 eval "$TTXX_runCategoryPatternArray"
+declare -a TTTT_categoryArray=()
 
 #test finalization function
 function caseFinalization {
