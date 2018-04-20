@@ -79,3 +79,7 @@ Version 2.3.0:
 - Changed prefixes TTP_ -> TTPR and TTPN_ -> TTPRN_
 - new function setFailure ti signal failure reason in test case
 - new function skip to skip case and suite
+
+Version 2.4.0
+- New Feature: Category Control
+
