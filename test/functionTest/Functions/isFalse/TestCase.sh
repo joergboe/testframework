@@ -17,10 +17,10 @@ function testStep {
 	setVar 'TTPRN_debug' 'true'
 	case "$TTRO_variantCase" in
 		varNotExists)
-			echoExecuteAndIntercept 'success' 'isFalse' 'var';;
+			echoExecuteAndIntercept2 'success' 'isFalse' 'var';;
 		varFalse)
-			echoExecuteAndIntercept 'success' 'isFalse' 'var';;
+			echoExecuteAndIntercept2 'success' 'isFalse' 'var';;
 		varTrue)
-			echoExecuteAndIntercept 'error' 'isFalse' 'var';;
+			echoExecuteAndIntercept2 'error' 'isFalse' 'var';;
 	esac
 }

@@ -11,19 +11,18 @@ setVar 'TTRO_stepsCase' 'myCompile myEvaluate'
 # and fails in the second run
 function myCompile {
 	TT_mainComposite='com.ibm.streamsx.inet.sample::GetWeather'
-	local result
 	local rr
 	compileAndIntercept
-	echo "######### myCompile result $result"
+	echo "######### myCompile result $TTTT_result"
 	if [[ $TTRO_variantCase -eq 0 ]]; then
-		if [[ $result -eq 0 ]]; then
+		if [[ $TTTT_result -eq 0 ]]; then
 			return 0
 		else
-			return $errTestFail
+			setFailure "wrong result $TTTT_result"
 		fi
 	else
-		if [[ $result -eq 0 ]]; then
-			return $errTestFail
+		if [[ $TTTT_result -eq 0 ]]; then
+			setFailure "wrong result $TTTT_result"
 		else
 			return 0
 		fi

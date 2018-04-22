@@ -1,4 +1,4 @@
-#--variantList='noParm wrongCode emptyCommand expectSucc expectSuccFails expectError expectErrorFails simpleCommands1Succ simpleCommands2Succ simpleCommands27 simpleCommands27Fails'
+#--variantList='noParm emptyCommand expectSucc expectError simpleCommands1Succ simpleCommands2Succ simpleCommands27'
 
 checkedCase=''
 if [[ $TTRO_variantCase == *Check ]]; then
@@ -33,30 +33,39 @@ function testStep {
 	case "$TTRO_variantCase" in
 		noParm)
 			echoExecuteAndIntercept;;
-		wrongCode)
-			echoExecuteAndIntercept 'thisIsWrong' 'returnSucc';;
 		emptyCommand)
-			echoExecuteAndIntercept 'success' '';;
+			echoExecuteAndIntercept ''
+			if [[ $TTTT_result -ne 127 ]]; then
+				setFailure "returncode is $TTTT_result and not 127"
+			fi;;
 		expectSucc)
-			echoExecuteAndIntercept 'success' 'returnSucc';;
-		expectSuccFails)
-			echoExecuteAndIntercept 'success' 'returnFail';;
+			echoExecuteAndIntercept 'returnSucc'
+			if [[ $TTTT_result -ne 0 ]]; then
+				setFailure "returncode is $TTTT_result and not 0"
+			fi;;
 		expectError)
-			echoExecuteAndIntercept 'error' 'returnFail';;
-		expectErrorFails)
-			echoExecuteAndIntercept 'error' 'returnSucc';;
+			echoExecuteAndIntercept 'returnFail'
+			if [[ $TTTT_result -ne 1 ]]; then
+				setFailure "returncode is $TTTT_result and not 1"
+			fi;;
 		simpleCommands1Succ)
 			var="Command2"
-			echoExecuteAndIntercept 'success' 'expect3Params' 'Command1' "$var" '$var';;
+			echoExecuteAndIntercept 'expect3Params' 'Command1' "$var" '$var'
+			if [[ $TTTT_result -ne 0 ]]; then
+				setFailure "returncode is $TTTT_result and not 0"
+			fi;;
 		simpleCommands2Succ)
 			var=''
-			echoExecuteAndIntercept 'success' 'expect3Params' 'Command1' "$var" '';;
+			echoExecuteAndIntercept 'expect3Params' 'Command1' "$var" ''
+			if [[ $TTTT_result -ne 0 ]]; then
+				setFailure "returncode is $TTTT_result and not 0"
+			fi;;
 		simpleCommands27)
 			var=''
-			echoExecuteAndIntercept '27' 'expect3Params' 'special' "$var" '';;
-		simpleCommands27Fails)
-			var=''
-			echoExecuteAndIntercept '28' 'expect3Params' 'special' "$var" '';;
+			echoExecuteAndIntercept 'expect3Params' 'special' "$var" ''
+			if [[ $TTTT_result -ne 27 ]]; then
+				setFailure "returncode is $TTTT_result and not 27"
+			fi;;
 		*)
 			printErrorAndExit "Wrong variant '$TTRO_variantCase'" $errRt
 	esac
