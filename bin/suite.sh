@@ -105,7 +105,7 @@ eval "$TTXX_runCategoryPatternArray"
 #more common vars
 declare -rx TTRO_suite="${suitesName[$TTRO_suiteIndex]}"
 declare -rx TTRO_inputDirSuite="${suitesPath[$TTRO_suiteIndex]}"
-declare skipthis=''
+declare TTTT_skipthis=''
 declare -a TTTT_categoryArray=()
 
 declare -a cases=() # case pathes
@@ -160,16 +160,16 @@ export >> "$tmp"
 
 #check skip
 if [[ -n $TTPRN_skip ]]; then
-	skipthis="true"
+	TTTT_skipthis="true"
 fi
 #check category
 if ! checkCats; then
-	skipthis='true'
+	TTTT_skipthis='true'
 fi
 if [[ -n $TTPRN_skipIgnore ]]; then
-	skipthis=""
+	TTTT_skipthis=""
 fi
-if [[ -n $skipthis ]]; then
+if [[ -n $TTTT_skipthis ]]; then
 	printInfo "SKIP variable set; Skip execution suite=$TTRO_suite variant=$TTRO_variantSuite"
 	createSuiteIndex "$indexfilename"
 	echo "SKIPPED" >> "$indexfilename"

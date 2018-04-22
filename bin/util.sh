@@ -11,12 +11,12 @@ TTRO_help_setFailure='
 function setFailure {
 	if [[ $# -gt 0 ]]; then
 		if [[ -n $1 ]]; then
-			failureOccurred="$1"
+			TTTT_failureOccurred="$1"
 		else
-			failureOccurred='true'
+			TTTT_failureOccurred='true'
 		fi
 	else
-		failureOccurred='true'
+		TTTT_failureOccurred='true'
 	fi
 	return 0
 }
@@ -198,7 +198,7 @@ TTRO_help_skip='
 #	the case or suite is skipped'
 function skip {
 	printInfo "Skip this Case/Suite"
-	skipthis='true'
+	TTTT_skipthis='true'
 	return 0
 }
 
@@ -637,10 +637,10 @@ function arrayHasKey {
 
 TTRO_help_copyAndTransform='
 # Function copyAndTransform
-#	Copy and change all files from input dirextory into workdir
+#	Copy and change all files from input directory into workdir
 #	Filenames that match one of the transformation pattern are transformed. All other files are copied.
-#	In case of transformation the pattern //_<varid> is removed if varid equals $3
-#	In case of transformation the pattern //!<varid> is removed if varid is different than $3
+#	In case of transformation the pattern //_<varid>_ is removed if varid equals $3
+#	In case of transformation the pattern //!<varid>_ is removed if varid is different than $3
 #	If the variant identifier is empty, the pattern list sould be also empty and the function is a pure copy function
 #	If $3 is empty and $4 .. do not exist, this function is a pure copy
 #	$1 - input dir
@@ -685,8 +685,8 @@ function copyAndTransform {
 	local match=0
 	local x
 	for x in $1/**; do
-		isDebug && printDebug "$FUNCNAME item to process step2: $x"
 		if [[ ! -d $x ]]; then
+			isDebug && printDebug "$FUNCNAME item to process step2: $x"
 			for ((i=0; i<${#transformPattern[@]}; i++)); do
 				isDebug && printDebug "$FUNCNAME: check transformPattern[$i]=${transformPattern[$i]}"
 				match=0
@@ -867,6 +867,7 @@ function linewisePatternMatchArray {
 TTRO_help_echoAndExecute='
 # Function echoAndExecute
 #	echo and execute a command with variable arguments
+#	success is expected and no further evaluation of the output is required
 #	$1 the command string
 #	$2 .. the parameters of the command
 #	returns the result code of the executed command
@@ -885,16 +886,40 @@ function echoAndExecute {
 TTRO_help_echoExecuteAndIntercept='
 # Function echoExecuteAndIntercept
 #	echo and execute the command line
-#	additionally the returncode is checked
+#	return the result code of the executed comman in TTTT_result'
+function echoExecuteAndIntercept {
+	if [[ $# -lt 1 || -z $1 ]]; then
+		printErrorAndExit "${FUNCNAME[0]} called with no or empty command" $errRt
+	fi
+	local cmd="$1"
+	shift
+	local myresult=''
+	local disp0="${FUNCNAME[0]} called from ${FUNCNAME[1]}: "
+	printInfo "$disp0 $cmd $*"
+	if "$cmd" "$@"; then
+		myresult=0
+	else
+		myresult=$?
+	fi
+	printInfo "$cmd returns $myresult"
+	TTTT_result="$myresult"
+	return 0
+}
+
+TTRO_help_echoExecuteAndIntercept2='
+# Function echoExecuteAndIntercept2
+#	echo and execute the command line
+#	additionally the expected returncode is checked
 #	if the expected result is not received the failure condition is set 
 #	the function returns success(0)
 #	the function exits if an input parameter is wrong
 #	$1 success - returncode 0 expected
 #	   error   - returncode ne 0 expected
+#	   X       - any return value is accepted
 #	   number  - the numeric return code is expected
 #	$2 the command string
 #	$3 the parameters as one string - during execution expansion and word splitting is applied'
-function echoExecuteAndIntercept {
+function echoExecuteAndIntercept2 {
 	if [[ $# -lt 2 || -z $2 ]]; then
 		printErrorAndExit "${FUNCNAME[0]} called with no or empty command" $errRt
 	fi
@@ -989,7 +1014,7 @@ function isInList {
 }
 
 TTRO_help_import='
-# Function registerTool
+# Function import
 #	Treats the input as filename and adds it to TT_tools if not already there
 #	sources the file if it was not in TT_tools
 #	return the result code of the source command'

@@ -63,8 +63,8 @@ declare -rx TTRO_case="${TTRO_inputDirCase##*/}"
 declare -i executedTestSteps=0
 declare -i executedTestPrepSteps=0
 declare -i executedTestFinSteps=0
-declare failureOccurred=''
-declare skipthis=""
+declare TTTT_failureOccurred=''
+declare TTTT_skipthis=""
 eval "$TTXX_runCategoryPatternArray"
 declare -a TTTT_categoryArray=()
 
@@ -127,7 +127,7 @@ declare caseFinalized=''
 
 function caseExitFunction {
 	isDebug && printDebug "$FUNCNAME"
-	if [[ -z "$skipthis" ]]; then
+	if [[ -z "$TTTT_skipthis" ]]; then
 		caseFinalization
 	fi
 }
@@ -150,7 +150,7 @@ function skipExit {
 function failureExit {
 	echo "FAILURE" > "${TTRO_workDirCase}/RESULT"
 	caseFinalization
-	printInfo "**** FAILURE : $failureOccurred ****"
+	printInfo "**** FAILURE : $TTTT_failureOccurred ****"
 	printInfo "**** END Case case=${TTRO_case} variant='${TTRO_variantCase}' FAILURE ********" >&2
 	exit 0
 }
@@ -196,17 +196,17 @@ export >> "$tmp"
 
 #check skip variable
 if [[ -n $TTPRN_skip ]]; then
-	skipthis="true"
+	TTTT_skipthis="true"
 fi
 #check category
 if ! checkCats; then
-	skipthis='true'
+	TTTT_skipthis='true'
 fi
 if [[ -n $TTPRN_skipIgnore ]]; then
-	skipthis=""
+	TTTT_skipthis=""
 fi
 #checkKategories
-if [[ -n $skipthis ]]; then
+if [[ -n $TTTT_skipthis ]]; then
 	printInfo "SKIP variable set; Skip execution case=$TTRO_case variant=$TTRO_variantCase"
 	skipExit
 fi
@@ -229,6 +229,10 @@ for name_xyza in 'TTRO_prepsCase' 'PREPS'; do
 					executedTestPrepSteps=$((executedTestPrepSteps+1))
 					eval "$step_xyza"
 				fi
+				if [[ -n $TTTT_failureOccurred ]]; then
+					printError "Failure condition during case preparation: $TTTT_failureOccurred"
+					errexit
+				fi
 			done
 		else
 			isDebug && printDebug "$name_xyza=${!name_xyza}"
@@ -239,6 +243,10 @@ for name_xyza in 'TTRO_prepsCase' 'PREPS'; do
 					printInfo "Execute Case Preparation: $x_xyza"
 					executedTestPrepSteps=$((executedTestPrepSteps+1))
 					eval "${x_xyza}"
+				fi
+				if [[ -n $TTTT_failureOccurred ]]; then
+					printError "Failure condition during case preparation: $TTTT_failureOccurred"
+					errexit
 				fi
 			done
 		fi
@@ -269,7 +277,7 @@ for name_xyza in 'TTRO_stepsCase' 'STEPS'; do
 				printInfo "Execute Case Test Step: $step_xyza"
 				executedTestSteps=$((executedTestSteps+1))
 				eval "$step_xyza"
-				if [[ -n $failureOccurred ]]; then
+				if [[ -n $TTTT_failureOccurred ]]; then
 					break 2
 				fi
 			done
@@ -279,14 +287,14 @@ for name_xyza in 'TTRO_stepsCase' 'STEPS'; do
 				printInfo "Execute Case Test Step: $x_xyza"
 				executedTestSteps=$((executedTestSteps+1))
 				eval "${x_xyza}"
-				if [[ -n $failureOccurred ]]; then
+				if [[ -n $TTTT_failureOccurred ]]; then
 					break 2
 				fi
 			done
 		fi
 	fi
 done
-if [[ -z $failureOccurred ]]; then
+if [[ -z $TTTT_failureOccurred ]]; then
 	if isFunction 'testStep'; then
 		printInfo "Execute Case Test Step: testStep"
 		isDebug && declare -F 'testStep'
@@ -301,7 +309,7 @@ else
 	printInfo "$executedTestSteps Case test steps executed"
 fi
 
-if [[ -n $failureOccurred ]]; then
+if [[ -n $TTTT_failureOccurred ]]; then
 	failureExit
 else
 	successExit

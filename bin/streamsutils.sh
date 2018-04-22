@@ -4,9 +4,6 @@
 ####################################################
 # Initialization section
 
-#required global varaible for result propagation
-declare result=''
-
 # Module initialization
 #	check streams environment exits if no streams environment found
 #	set required properties and variables
@@ -84,12 +81,12 @@ TTRO_help_compileAndIntercept='
 # Function compileAndIntercept
 #	Compile spl application and intercept compile errors
 #	compiler colsole & error output is stored into file
-#	compiler result code is sored in result'
+#	compiler result code is sored in TTTT_result'
 function compileAndIntercept {
 	if echoAndExecute ${TTPRN_splc} "$TTPR_splcFlags" -M $TT_mainComposite -t "$TT_toolkitPath" -j $TTRO_treads 2>&1 | tee "$TT_evaluationFile"; then
-		result=0
+		TTTT_result=0
 	else
-		result=$?
+		TTTT_result=$?
 	fi
 	return 0
 }
@@ -378,12 +375,12 @@ TTRO_help_submitJobAndIntercept='
 # Function submitJobAndIntercept
 #	submits a job and provides the joboutput file
 #	provide stdout and stderror in file for evaluation
-#	provides return code of in variable result'
+#	provides return code of in variable TTTT_result'
 function submitJobAndIntercept {
 	if submitJobVariable "$TTPRN_streamsZkConnect" "$TTPRN_streamsDomainId" "$TTPRN_streamsInstanceId" "$TT_sabFile" "$TT_jobFile" 2>&1 | tee "$TT_evaluationFile"; then
-		result=0
+		TTTT_result=0
 	else
-		result=$?
+		TTTT_result=$?
 	fi
 	return 0
 }

@@ -227,7 +227,7 @@ function manpage () {
 
 	## Reserved Ranges
 	==================
-	Varaible names starting with TTTT_ are reserved. Do not use those names in test case/suite scripts.
+	Varaible names starting with TTTT_ are reserved for testframework usage. These variables are not exported. Do not use those names in test case/suite scripts.
 	
 	## Variables Used
 	=================
@@ -297,6 +297,9 @@ function manpage () {
 	                         
 	- TTTT_categoryArray   - The indexed array with the categories of the current Case/Suite
 	- TTTT_runCategoryPatternArray - The indexed array with the run-category patterns of the current test run
+	- TTTT_skipthis        - Signal to skip this artifact
+	- TTTT_failureOccurred - The failure condition in test case execution
+	- TTTT_result          - Used in some functions to return a result code
 
 
 	## Special Script Execution options
@@ -325,13 +328,16 @@ function manpage () {
 	globstar: The pattern ** used in a path-name expansion context will match all files and zero or more directories and 
 	sub-directories. If the pattern is followed by a /, only directories and sub-directories match
 
-
+	If a test case requires the execution of a command that fails intentionally, you should use one of the functions:
+	echoExecuteAndIntercept, echoExecuteAndIntercept2, compileAndIntercept or submitJobAndIntercept.
+	
+	
 	## Test Case Result Failures and Errors
 	=======================================
 	To signal an failure in a test case set the failure condition with function setFailure. This prevents further
 	test step functions from execution.
 	
-	If a test case function is returns a non zero return code the case is couted as error.
+	If a test case function is returns a non zero return code the case is conuted as error.
 	
 	To signal the success of a test case just leave the function with success 'return 0'.
 	
