@@ -544,12 +544,16 @@ TTRO_help_isTrue='
 #		error(1)      variable exists and has a empty value
 #	exits if variable not exists'
 function isTrue {
-	if [[ -n ${!1} ]]; then
-		isDebug && printDebug "$FUNCNAME $1 return 0"
-		return 0
+	if declare -p "${1}" &> /dev/null; then
+		if [[ -n ${!1} ]]; then
+			isDebug && printDebug "$FUNCNAME $1 return 0"
+			return 0
+		else
+			isDebug && printDebug "$FUNCNAME $1 return 1"
+			return 1
+		fi
 	else
-		isDebug && printDebug "$FUNCNAME $1 return 1"
-		return 1
+		printErrorAndExit "Variable $1 not exists" $errRt
 	fi
 }
 
@@ -562,12 +566,16 @@ TTRO_help_isFalse='
 #		error(1)      if the variable exists and has an non empty value
 #	exits if variable not exists'
 function isFalse {
-	if [[ -z ${!1} ]]; then
-		isDebug && printDebug "$FUNCNAME $1 return 0"
-		return 0
+	if declare -p "${1}" &> /dev/null; then
+		if [[ -z ${!1} ]]; then
+			isDebug && printDebug "$FUNCNAME $1 return 0"
+			return 0
+		else
+			isDebug && printDebug "$FUNCNAME $1 return 1"
+			return 1
+		fi
 	else
-		isDebug && printDebug "$FUNCNAME $1 return 1"
-		return 1
+		printErrorAndExit "Variable $1 not exists" $errRt
 	fi
 }
 
