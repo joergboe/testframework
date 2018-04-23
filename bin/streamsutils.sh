@@ -41,9 +41,9 @@ fi
 #setVar 'TTRO_ttt' '55'
 # variables required for functions
 TT_mainComposite='Main'
-TT_evaluationFile='./EVALUATION.log'
 TT_sabFile='./output/Main.sab' 
 TT_jobFile='./jobno.log'
+TT_evaluationFile='./EVALUATION.log'
 TT_traceLevel='trace'
 
 

@@ -18,6 +18,7 @@ function setFailure {
 	else
 		TTTT_failureOccurred='true'
 	fi
+	printError "$FUNCNAME : $TTTT_failureOccurred"
 	return 0
 }
 
@@ -602,6 +603,29 @@ function isArray {
 	fi
 }
 
+TTRO_help_isAssociativeArray='
+# Function isAssociativeArray
+#	checks whether an variable exists and is an associative array
+#	$1 var name to be checked
+#	returns
+#		success(0)   if the variable exists and is an indexed array
+#		error(1)     otherwise'
+function isAssociativeArray {
+	local v
+	if v=$(declare -p "${1}" 2> /dev/null); then
+		if [[ $v == declare\ -A* ]]; then
+			isDebug && printDebug "$FUNCNAME $1 return 0"
+			return 0
+		else
+			isDebug && printDebug "$FUNCNAME $1 return 1"
+			return 1
+		fi
+	else
+		isDebug && printDebug "$FUNCNAME $1 return 1"
+		return 1
+	fi
+}
+
 TTRO_help_isFunction='
 # Function isFunction
 #	checks whether an given name is defined as function
@@ -620,9 +644,9 @@ function isFunction {
 
 TTRO_help_arrayHasKey='
 # Function arrayHasKey
-#	check is an associative array has key
+#	check is an array has key
 #	$1 the array name
-#	$2 the key value to search
+#	$2 the key value to search must not contain spaces
 #	returns
 #		success(0)    if key exists in array
 #		error(1)      otherwise
@@ -630,6 +654,9 @@ TTRO_help_arrayHasKey='
 function arrayHasKey {
 	if [[ $# -ne 2 ]]; then printErrorAndExit "$FUNCNAME must have 2 aruments" $errRt; fi
 	isDebug && printDebug "$FUNCNAME $1 $2"
+	if ! isArray "$1" && ! isAssociativeArray "$1"; then
+		printErrorAndExit "variable $1 is not an array"
+	fi
 	eval "keys=\"\${!$1[@]}\"" #indirect array access with eval
 	local in=1
 	local key
@@ -894,6 +921,7 @@ function echoAndExecute {
 TTRO_help_echoExecuteAndIntercept='
 # Function echoExecuteAndIntercept
 #	echo and execute the command line
+#	the command execution is guarded ant the result code is stored
 #	return the result code of the executed comman in TTTT_result'
 function echoExecuteAndIntercept {
 	if [[ $# -lt 1 || -z $1 ]]; then
@@ -901,16 +929,62 @@ function echoExecuteAndIntercept {
 	fi
 	local cmd="$1"
 	shift
-	local myresult=''
 	local disp0="${FUNCNAME[0]} called from ${FUNCNAME[1]}: "
 	printInfo "$disp0 $cmd $*"
 	if "$cmd" "$@"; then
-		myresult=0
+		TTTT_result=0
 	else
-		myresult=$?
+		TTTT_result=$?
 	fi
-	printInfo "$cmd returns $myresult"
-	TTTT_result="$myresult"
+	printInfo "$cmd returns $TTTT_result"
+	return 0
+}
+
+TTRO_help_echoExecuteInterceptAndSuccess='
+# Function echoExecuteInterceptAndSuccess
+#	echo and execute the command line
+#	a successfull command execution is expected
+#	the failure condition is set in case of failure
+#	command result code is sored in TTTT_result'
+function echoExecuteInterceptAndSuccess {
+	if [[ $# -lt 1 || -z $1 ]]; then
+		printErrorAndExit "${FUNCNAME[0]} called with no or empty command" $errRt
+	fi
+	local cmd="$1"
+	shift
+	local disp0="${FUNCNAME[0]} called from ${FUNCNAME[1]}: "
+	printInfo "$disp0 $cmd $*"
+	if "$cmd" "$@"; then
+		TTTT_result=0
+	else
+		TTTT_result=$?
+		setFailure "$TTTT_result : returned from $cmd"
+	fi
+	printInfo "$TTTT_result : returned from $cmd"
+	return 0
+}
+
+TTRO_help_echoExecuteInterceptAndError='
+# Function echoExecuteInterceptAndError
+#	echo and execute the command line
+#	a error code is expected
+#	the failure condition is set in case of cmd success
+#	command result code is sored in TTTT_result'
+function echoExecuteInterceptAndError {
+	if [[ $# -lt 1 || -z $1 ]]; then
+		printErrorAndExit "${FUNCNAME[0]} called with no or empty command" $errRt
+	fi
+	local cmd="$1"
+	shift
+	local disp0="${FUNCNAME[0]} called from ${FUNCNAME[1]}: "
+	printInfo "$disp0 $cmd $*"
+	if "$cmd" "$@"; then
+		TTTT_result=0
+		setFailure "$TTTT_result : returned from $cmd"
+	else
+		TTTT_result=$?
+	fi
+	printInfo "$TTTT_result : returned from $cmd"
 	return 0
 }
 

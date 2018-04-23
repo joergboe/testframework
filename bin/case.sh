@@ -150,7 +150,7 @@ function skipExit {
 function failureExit {
 	echo "FAILURE" > "${TTRO_workDirCase}/RESULT"
 	caseFinalization
-	printInfo "**** FAILURE : $TTTT_failureOccurred ****"
+	printError "**** FAILURE : $TTTT_failureOccurred ****"
 	printInfo "**** END Case case=${TTRO_case} variant='${TTRO_variantCase}' FAILURE ********" >&2
 	exit 0
 }
@@ -259,6 +259,10 @@ if isFunction 'testPreparation'; then
 		printInfo "Execute Case Preparation: testPreparation"
 		executedTestPrepSteps=$((executedTestPrepSteps+1))
 		testPreparation
+		if [[ -n $TTTT_failureOccurred ]]; then
+			printError "Failure condition during case preparation: testPreparation"
+			errexit
+		fi
 	fi
 fi
 printInfo "$executedTestPrepSteps Case Test Preparation steps executed"
