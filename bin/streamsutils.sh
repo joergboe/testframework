@@ -40,10 +40,11 @@ fi
 # test var to check duplicate init
 #setVar 'TTRO_ttt' '55'
 # variables required for functions
-setVar 'TT_mainComposite' 'Main'
-setVar 'TT_evaluationFile' './EVALUATION.log'
-setVar 'TT_sabFile' './output/Main.sab' 
-setVar 'TT_jobFile' './jobno.log'
+TT_mainComposite='Main'
+TT_evaluationFile='./EVALUATION.log'
+TT_sabFile='./output/Main.sab' 
+TT_jobFile='./jobno.log'
+TT_traceLevel='trace'
 
 
 #########################################################
@@ -80,7 +81,7 @@ export -f compileAndFile
 TTRO_help_compileAndIntercept='
 # Function compileAndIntercept
 #	Compile spl application and intercept compile errors
-#	compiler colsole & error output is stored into file
+#	compiler console & error output is stored into file TT_evaluationFile
 #	compiler result code is sored in TTTT_result'
 function compileAndIntercept {
 	if echoAndExecute ${TTPRN_splc} "$TTPR_splcFlags" -M $TT_mainComposite -t "$TT_toolkitPath" -j $TTRO_treads 2>&1 | tee "$TT_evaluationFile"; then
@@ -91,6 +92,44 @@ function compileAndIntercept {
 	return 0
 }
 export -f compileAndIntercept
+
+TTRO_help_compileInterceptAndSuccess='
+# Function compileInterceptAndSuccess
+#	Compile spl application and intercept compile errors
+#	Expect success. Otherwise failure condition is set
+#	compiler console & error output is stored into file TT_evaluationFile
+#	compiler result code is sored in TTTT_result'
+function compileInterceptAndSuccess {
+	if echoAndExecute ${TTPRN_splc} "$TTPR_splcFlags" -M $TT_mainComposite -t "$TT_toolkitPath" -j $TTRO_treads 2>&1 | tee "$TT_evaluationFile"; then
+		TTTT_result=0
+	else
+		TTTT_result=$?
+	fi
+	if [[ $TTTT_result -ne 0 ]]; then
+		setFailure "$TTTT_result : is not expected"
+	fi
+	return 0
+}
+export -f compileInterceptAndSuccess
+
+TTRO_help_compileInterceptAndError='
+# Function compileInterceptAndError
+#	Compile spl application and intercept compile errors
+#	Expect error. Otherwise failure condition is set
+#	compiler console & error output is stored into file TT_evaluationFile
+#	compiler result code is sored in TTTT_result'
+function compileInterceptAndError {
+	if echoAndExecute ${TTPRN_splc} "$TTPR_splcFlags" -M $TT_mainComposite -t "$TT_toolkitPath" -j $TTRO_treads 2>&1 | tee "$TT_evaluationFile"; then
+		TTTT_result=0
+	else
+		TTTT_result=$?
+	fi
+	if [[ $TTTT_result -eq 0 ]]; then
+		setFailure "$TTTT_result : is not expected"
+	fi
+	return 0
+}
+export -f compileInterceptAndError
 
 TTRO_help_makeZkParameter='
 # Function makeZkParameter
@@ -358,7 +397,7 @@ TTRO_help_submitJob='
 # Function submitJob
 #	submits a job and provides the joboutput file'
 function submitJob {
-	submitJobVariable "$TTPRN_streamsZkConnect" "$TTPRN_streamsDomainId" "$TTPRN_streamsInstanceId" "$TT_sabFile" "$TT_jobFile"
+	submitJobVariable "$TTPRN_streamsZkConnect" "$TTPRN_streamsDomainId" "$TTPRN_streamsInstanceId" "$TT_sabFile" "$TT_jobFile" "$TT_traceLevel"
 }
 export -f submitJob
 
@@ -367,7 +406,7 @@ TTRO_help_submitJobAndFile='
 #	submits a job and provides the joboutput file
 #	provide stdout and stderror in file for evaluation'
 function submitJobAndFile {
-	submitJobVariable "$TTPRN_streamsZkConnect" "$TTPRN_streamsDomainId" "$TTPRN_streamsInstanceId" "$TT_sabFile" "$TT_jobFile" 2>&1 | tee "$TT_evaluationFile"
+	submitJobVariable "$TTPRN_streamsZkConnect" "$TTPRN_streamsDomainId" "$TTPRN_streamsInstanceId" "$TT_sabFile" "$TT_jobFile" "$TT_traceLevel" 2>&1 | tee "$TT_evaluationFile"
 }
 export -f submitJobAndFile
 
@@ -377,7 +416,7 @@ TTRO_help_submitJobAndIntercept='
 #	provide stdout and stderror in file for evaluation
 #	provides return code of in variable TTTT_result'
 function submitJobAndIntercept {
-	if submitJobVariable "$TTPRN_streamsZkConnect" "$TTPRN_streamsDomainId" "$TTPRN_streamsInstanceId" "$TT_sabFile" "$TT_jobFile" 2>&1 | tee "$TT_evaluationFile"; then
+	if submitJobVariable "$TTPRN_streamsZkConnect" "$TTPRN_streamsDomainId" "$TTPRN_streamsInstanceId" "$TT_sabFile" "$TT_jobFile" "$TT_traceLevel" 2>&1 | tee "$TT_evaluationFile"; then
 		TTTT_result=0
 	else
 		TTTT_result=$?
@@ -393,12 +432,13 @@ TTRO_help_submitJobVariable='
 #	$3 instance id
 #	$4 sab files
 #	$5 output file name
+#	$6 trace level
 #	use global variable jobno for jobnumber'
 function submitJobVariable {
 	isDebug && printDebug "$FUNCNAME $*"
 	local zkParam
 	makeZkParameter "$1"
-	if echoAndExecute $TTPRN_st submitjob "$zkParam" --domain-id "$2" --instance-id "$3" --outfile "$5" "$4"; then
+	if echoAndExecute $TTPRN_st submitjob "$zkParam" --domain-id "$2" --instance-id "$3" --outfile "$5" -C tracing="$6" "$4"; then
 		if [[ -e $5 ]]; then
 			jobno=$(<"$5")
 			return 0
