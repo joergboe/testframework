@@ -95,8 +95,10 @@ for x in "${!TTPR_@}"; do
 	printWarning "In environment there are TT scoped identifier: ${x}"
 done
 for x in "${!TT_@}"; do
-	exportCheckFailed="true"
-	printWarning "In environment there are TT scoped identifier: ${x}"
+	if [[ $x != TT_evaluationFile ]]; then
+		exportCheckFailed="true"
+		printWarning "In environment there are TT scoped identifier: ${x}"
+ 	fi
 done
 
 #------------------------------------------------------

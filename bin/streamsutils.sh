@@ -43,7 +43,6 @@ fi
 TT_mainComposite='Main'
 TT_sabFile='./output/Main.sab' 
 TT_jobFile='./jobno.log'
-TT_evaluationFile='./EVALUATION.log'
 TT_traceLevel='trace'
 
 

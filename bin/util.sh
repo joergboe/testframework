@@ -3,6 +3,9 @@
 # (public utilities)
 ######################################################
 
+TT_evaluationFile='./EVALUATION.log' # the standard log file for evaluation
+TTTT_result=-1 # the global result var
+
 TTRO_help_setFailure='
 # Function setFailure
 #	set a use defined failure condition
@@ -71,13 +74,6 @@ TTRO_help_printError="
 function printError {
 	local dd=$(date "+%T %N")
 	echo -e "\033[31m$dd ERROR: $1\033[0m" >&2
-	#local -i depth=${#FUNCNAME[@]}
-	#local -i i
-	#echo $depth
-	#for ((i=depth-2; i>=0; i--)); do
-#		echo xcxcxcxcxcx
-	#	caller $i
-	#done
 }
 
 TTRO_help_printWarning="
@@ -753,7 +749,6 @@ function copyAndTransform {
 						if [[ $part1 != $REPLY ]]; then
 							#isDebug && printDebug "$FUNCNAME: match line='$REPLY'"
 							part2="${REPLY#*//_$3_}"
-							#isDebug && printDebug "$FUNCNAME: part1='$part1'"
 							#isDebug && printDebug "$FUNCNAME: part2='$part2'"
 							outline="${part1}${part2}"
 						else
@@ -766,7 +761,6 @@ function copyAndTransform {
 									outline="$REPLY"
 								else
 									part2="${REPLY#*//\!*_}"
-									#isDebug && printDebug "$FUNCNAME: part1='$part1'"
 									#isDebug && printDebug "$FUNCNAME: part2='$part2'"
 									outline="${part1}${part2}"
 								fi
@@ -928,7 +922,9 @@ function echoAndExecute {
 TTRO_help_echoExecuteAndIntercept='
 # Function echoExecuteAndIntercept
 #	echo and execute the command line
-#	the command execution is guarded ant the result code is stored
+#	the command execution is guarded and the result code is stored
+#	$1 the command string
+#	$2 .. the parameters of the command
 #	return the result code of the executed comman in TTTT_result'
 function echoExecuteAndIntercept {
 	if [[ $# -lt 1 || -z $1 ]]; then
@@ -952,6 +948,8 @@ TTRO_help_echoExecuteInterceptAndSuccess='
 #	echo and execute the command line
 #	a successfull command execution is expected
 #	the failure condition is set in case of failure
+#	$1 the command string
+#	$2 .. the parameters of the command
 #	command result code is sored in TTTT_result'
 function echoExecuteInterceptAndSuccess {
 	if [[ $# -lt 1 || -z $1 ]]; then
@@ -976,6 +974,8 @@ TTRO_help_echoExecuteInterceptAndError='
 #	echo and execute the command line
 #	a error code is expected
 #	the failure condition is set in case of cmd success
+#	$1 the command string
+#	$2 .. the parameters of the command
 #	command result code is sored in TTTT_result'
 function echoExecuteInterceptAndError {
 	if [[ $# -lt 1 || -z $1 ]]; then
@@ -1051,6 +1051,88 @@ function echoExecuteAndIntercept2 {
 				setFailure "${FUNCNAME[0]} wrong failure code $myresult in cmd $*"
 			fi;;
 	esac
+	return 0
+}
+
+TTRO_help_executeAndLog='
+# Function executeAndLog
+#	echo and execute a command
+#	the command execution is guarded and the result code is stored
+#	the std- and error-out is logged into a file for further evaluation
+#	$1 the command string
+#	$2 .. the parameters of the command
+#	$TT_evaluationFile the file name of the log file default is ./EVALUATION.log
+#	return the result code of the executed comman in TTTT_result'
+function executeAndLog {
+	if [[ $# -lt 1 || -z $1 ]]; then
+		printErrorAndExit "${FUNCNAME[0]} called with no or empty command" $errRt
+	fi
+	local cmd="$1"
+	shift
+	local disp0="${FUNCNAME[0]} called from ${FUNCNAME[1]}: "
+	printInfo "$disp0 $cmd $*"
+	if "$cmd" "$@" 2>&1 | tee "$TT_evaluationFile"; then
+		TTTT_result=0
+	else
+		TTTT_result=$?
+	fi
+	printInfo "$TTTT_result : returned from $cmd"
+	return 0
+}
+
+TTRO_help_executeLogAndSuccess='
+# Function executeLogAndSuccess
+#	echo and execute a command
+#	the command execution is guarded and the result code is stored
+#	the std- and error-out is logged into a file for further evaluation
+#	a successfull command execution is expected, otherwise the failure condition is set
+#	$1 the command string
+#	$2 .. the parameters of the command
+#	$TT_evaluationFile the file name of the log file default is ./EVALUATION.log
+#	return the result code of the executed comman in TTTT_result'
+function executeLogAndSuccess {
+	if [[ $# -lt 1 || -z $1 ]]; then
+		printErrorAndExit "${FUNCNAME[0]} called with no or empty command" $errRt
+	fi
+	local cmd="$1"
+	shift
+	local disp0="${FUNCNAME[0]} called from ${FUNCNAME[1]}: "
+	printInfo "$disp0 $cmd $*"
+	if "$cmd" "$@" 2>&1 | tee "$TT_evaluationFile"; then
+		TTTT_result=0
+	else
+		TTTT_result=$?
+		setFailure "$TTTT_result : returned from $cmd"
+	fi
+	printInfo "$TTTT_result : returned from $cmd"
+	return 0
+}
+
+TTRO_help_executeLogAndError='
+# Function executeLogAndError
+#	echo and execute a command
+#	the command execution is guarded and the result code is stored
+#	the std- and error-out is logged into a file for further evaluation
+#	an error command execution is expected, otherwise the failure condition is set
+#	$1 the command string
+#	$2 .. the parameters of the command
+#	$TT_evaluationFile the file name of the log file default is ./EVALUATION.log
+#	return the result code of the executed comman in TTTT_result'
+function executeLogAndError {
+	if [[ $# -lt 1 || -z $1 ]]; then
+		printErrorAndExit "${FUNCNAME[0]} called with no or empty command" $errRt
+	fi
+	local cmd="$1"
+	shift
+	local disp0="${FUNCNAME[0]} called from ${FUNCNAME[1]}: "
+	printInfo "$disp0 $cmd $*"
+	if "$cmd" "$@" 2>&1 | tee "$TT_evaluationFile"; then
+		TTTT_result=0
+		setFailure "$TTTT_result : returned from $cmd"
+	else
+		TTTT_result=$?
+	fi
+	printInfo "$TTTT_result : returned from $cmd"
 	return 0
 }
 

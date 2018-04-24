@@ -329,7 +329,22 @@ function manpage () {
 	sub-directories. If the pattern is followed by a /, only directories and sub-directories match
 
 	If a test case requires the execution of a command that fails intentionally, you should use one of the functions:
-	echoExecuteAndIntercept, echoExecuteAndIntercept2, compileAndIntercept or submitJobAndIntercept.
+	echoExecuteAndIntercept          - echo command and parameters; execute command guarded; return value in TTTT_result
+	echoExecuteAndIntercept2,      
+	echoExecuteInterceptAndSuccess,  - echo command and parameters; execute command guarded; return value in TTTT_result;
+	                                   expect cmd success set failure otherwise
+	echoExecuteInterceptAndError,    - echo command and parameters; execute command guarded; return value in TTTT_result;
+	                                   expect cmd error set failure otherwise
+	executeAndLog                    - echo command and parameters; execute command guarded; return value in TTTT_result;
+	                                 - save command output into file
+	executeLogAndSuccess             - echo command and parameters; execute command guarded; return value in TTTT_result;
+	                                   save command output into file; expect cmd success set failure otherwise
+	executeLogAndError               - echo command and parameters; execute command guarded; return value in TTTT_result;
+	                                   save command output into file; expect cmd error set failure otherwise
+	compileAndIntercept,
+	compileInterceptAndSuccess,
+	compileInterceptAndError,
+	submitJobAndIntercept.
 	
 	
 	## Test Case Result Failures and Errors
@@ -337,7 +352,7 @@ function manpage () {
 	To signal an failure in a test case set the failure condition with function setFailure. This prevents further
 	test step functions from execution.
 	
-	If a test case function is returns a non zero return code the case is conuted as error.
+	If a test case function is returns a non zero return code the case is counted as error.
 	
 	To signal the success of a test case just leave the function with success 'return 0'.
 	
