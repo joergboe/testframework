@@ -52,6 +52,12 @@ TTRO_help_printErrorAndExit="
 #	returns: never"
 function printErrorAndExit {
 	printError "$1"
+	echo -e "\033[31m EXIT: $2 ***************"
+	local -i i=0;
+	while caller $i; do
+		i=$((i+1))
+	done
+	echo -e "************************************************\033[0m"
 	exit $2
 }
 
@@ -63,7 +69,8 @@ TTRO_help_printError="
 #		success (0)
 #		error	in exceptional cases"
 function printError {
-	echo -e "\033[31mERROR: $1\033[0m" >&2
+	local dd=$(date "+%T %N")
+	echo -e "\033[31m$dd ERROR: $1\033[0m" >&2
 	#local -i depth=${#FUNCNAME[@]}
 	#local -i i
 	#echo $depth
