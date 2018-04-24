@@ -823,6 +823,64 @@ function linewisePatternMatch {
 	fi
 }
 
+TTRO_help_linewisePatternMatchAndIntercept='
+# Function linewisePatternMatchAndIntercept
+#	Execute the function linewisePatternMatch guarded and return the result code in TTTT_result
+#	Line pattern validator
+#	$1 - the input file
+#	$2 - if set to "true" all pattern must generate a match
+#	$3 .. - the pattern to match
+#	returns succes
+#	and the result code from linewisePatternMatch in TTTT_result'
+function linewisePatternMatchAndIntercept {
+	if linewisePatternMatch "$@"; then
+		TTTT_result=0
+	else
+		TTTT_result=$?
+	fi
+	return 0
+}
+
+TTRO_help_linewisePatternMatchInterceptAndSuccess='
+# Function linewisePatternMatchInterceptAndSuccess
+#	Execute the function linewisePatternMatch guarded and return the result code in TTTT_result
+#	Expect success (match found), set failure otherwise
+#	Line pattern validator
+#	$1 - the input file
+#	$2 - if set to "true" all pattern must generate a match
+#	$3 .. - the pattern to match
+#	returns 
+#	and the result code from linewisePatternMatch in TTTT_result'
+function linewisePatternMatchInterceptAndSuccess {
+	if linewisePatternMatch "$@"; then
+		TTTT_result=0
+	else
+		TTTT_result=$?
+		setFailure "Failed $FUNCNAME $*"
+	fi
+	return 0
+}
+
+TTRO_help_linewisePatternMatchInterceptAndError='
+# Function linewisePatternMatchInterceptAndError
+#	Execute the function linewisePatternMatch guarded and return the result code in TTTT_result
+#	Expect failure (no match found), set failure otherwise
+#	Line pattern validator
+#	$1 - the input file
+#	$2 - if set to "true" all pattern must generate a match
+#	$3 .. - the pattern to match
+#	returns 
+#	and the result code from linewisePatternMatch in TTTT_result'
+function linewisePatternMatchInterceptAndError {
+	if linewisePatternMatch "$@"; then
+		TTTT_result=0
+		setFailure "Failed: match found: $FUNCNAME $*"
+	else
+		TTTT_result=$?
+	fi
+	return 0
+}
+
 TTRO_help_linewisePatternMatchArray='
 # Function linewisePatternMatchArray
 #	Line pattern validator with array input variable

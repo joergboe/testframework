@@ -40,7 +40,7 @@ function testStep {
 			if [[ $TTTT_result -ne 127 ]]; then
 				setFailure "returncode is $TTTT_result and not 127"
 			fi
-			if ! linewisePatternMatch "$TT_evaluationFile" 'true' '*bxbxbx*' '*command not found*'; then setFailure; fi;;
+			linewisePatternMatchInterceptAndSuccess "$TT_evaluationFile" 'true' '*bxbxbx*' '*command not found*';;
 		succ)
 			executeLogAndError 'returnSucc'
 			if [[ $TTTT_result -ne 0 ]]; then
@@ -51,7 +51,7 @@ function testStep {
 			if [[ $TTTT_result -ne 1 ]]; then
 				setFailure "returncode is $TTTT_result and not 1"
 			fi
-			if ! linewisePatternMatch "$TT_evaluationFile" '' 'returnFail*'; then setFailure; fi;;
+			linewisePatternMatchInterceptAndSuccess "$TT_evaluationFile" '' 'returnFail*';;
 		simpleCommands1Succ)
 			var="Command2"
 			executeLogAndError 'expect3Params' 'Command1' "$var" '$var'
@@ -70,7 +70,7 @@ function testStep {
 			if [[ $TTTT_result -ne 27 ]]; then
 				setFailure "returncode is $TTTT_result and not 27"
 			fi
-			if ! linewisePatternMatch "$TT_evaluationFile" '' 'expect3Params*'; then setFailure; fi;;
+			linewisePatternMatchInterceptAndSuccess "$TT_evaluationFile" '' 'expect3Params*';;
 		*)
 			printErrorAndExit "Wrong variant '$TTRO_variantCase'" $errRt
 	esac

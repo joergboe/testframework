@@ -85,4 +85,5 @@ Version 2.4.0
 
 Version 2.5.0
 - New functions: executeAndLog, executeLogAndSuccess, executeLogAndError
+- New functions: linewisePatternMatchAndIntercept, linewisePatternMatchInterceptAndSuccess, linewisePatternMatchInterceptAndError
 
