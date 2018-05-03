@@ -105,8 +105,11 @@ if [[ $destination == .* ]]; then
 fi
 
 versiondir="v$major.$minor"
-bindir="${destination}/bin/${versiondir}"
-sampledir="${destination}/samples/${versiondir}"
+bindir="${destination}/${versiondir}/bin"
+sampledir="${destination}/${versiondir}/samples"
+toolkitrootdir="${destination}/${versiondir}"
+toolkitdir="$toolkitrootdir/streamsx.testframe"
+
 tempdir="${destination}/tmp/${versiondir}"
 
 if [[ -d ${bindir} ]]; then
@@ -144,6 +147,7 @@ mkdir -p ${tempdir}
 tail -n+${archiveline} "${0}" | tar xpJv -C ${tempdir}
 
 #create target folder
+mkdir -p $toolkitrootdir
 mkdir -p ${bindir}
 mkdir -p ${sampledir}
 #remove old links
@@ -151,13 +155,16 @@ rm -f "${destination}/bin/runTTF"
 rm -f "${destination}/bin/runTTF$major"
 rm -f "${destination}/bin/runTTF$major.$minor"
 #move to target
-mv "$tempdir/README.md" "${destination}"
-mv "$tempdir/RELEASE.INFO" "${destination}"
+mv "$tempdir/README.md" "${destination}/${versiondir}"
+mv "$tempdir/RELEASE.INFO" "${destination}/${versiondir}"
 mv $tempdir/samples/* $sampledir
 mv $tempdir/bin/* $bindir
-#remove temp folfer
+mv $tempdir/streamsx.testframe $toolkitrootdir
+
+#remove temp folder
 rm -rf "${destination}/tmp"
-#mak links
+#make links
+mkdir -p ${destination}/bin
 ln -s ${bindir}/runTTF ${destination}/bin/runTTF
 ln -s ${bindir}/runTTF ${destination}/bin/runTTF$major
 ln -s ${bindir}/runTTF ${destination}/bin/runTTF$major.$minor

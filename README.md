@@ -87,12 +87,13 @@ Version 2.5.0
 - New functions: executeAndLog, executeLogAndSuccess, executeLogAndError
 - New functions: linewisePatternMatchAndIntercept, linewisePatternMatchInterceptAndSuccess, linewisePatternMatchInterceptAndError
 
-New Version:
+Version 2.6.0:
 - New function names splCompile, splCompileAndLog, splCompileAndIntercept, splCompileInterceptAndSuccess and splCompileInterceptAndError
 - New variable TT_dataDir
 - New functions waitForFileToAppear, waitForFin
 - New functions checkJobNo
 - New variables TT_waitForFileName, TT_waitForFileInterval, TTTT-jobno
 - New spl utility toolkit streamsx.testframe with FileSink1
+- New directory structure for installation target now we have <version>/bin <version>/samples and <version>/streamsx.testframe
 
 
