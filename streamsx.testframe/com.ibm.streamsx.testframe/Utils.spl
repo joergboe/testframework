@@ -1,0 +1,35 @@
+namespace com.ibm.streamsx.testframe;
+
+public composite FileSink1 (input Inp) {
+	param
+		expression<rstring> $filenameTuples: "Tuples";
+		expression<rstring> $filenameWidowMarker: "WindowMarker";
+		expression<rstring> $filenameFinalMarker: "FinalMarker";
+	graph
+		stream<I, tuple<rstring fname>> FileContent as O = Custom(Inp as I) {
+			logic
+				onTuple I : {
+					mutable O ot = {};
+					assignFrom(ot, I);
+					ot.fname = "Tuples";
+					submit(ot, O);
+				}
+				onPunct I: {
+					mutable O ot = {};
+					if (currentPunct() == Sys.WindowMarker) {
+						ot.fname = "WindowMarker";
+					} else {
+						ot.fname = "FinalMarker";
+					}
+					submit(ot, O);
+				}
+		}
+		
+		() as Sink = FileSink(FileContent as I) {
+			param
+				closeMode: dynamic;
+				file: fname;
+				format: txt;
+				suppress: fname;
+		}
+}

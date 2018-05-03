@@ -40,12 +40,20 @@ fi
 # test var to check duplicate init
 #setVar 'TTRO_ttt' '55'
 # variables required for functions
+setVar 'TTRO_testframeToolkitDir' "$TTRO_scriptDir/../streamsx.testframe"
 TT_mainComposite='Main'
 TT_sabFile='./output/Main.sab' 
 TT_jobFile='./jobno.log'
 TT_traceLevel='trace'
 TT_dataDir='data'
+TT_waitForFileName="$TT_dataDir/FinalMarker"
+TT_waitForFileInterval=3
 
+TTTT_jobno=-1
+
+#make toolkit
+printInfo "Make toolkit in $TTRO_testframeToolkitDir"
+"$TTPRN_mt" '-i' "$TTRO_testframeToolkitDir"
 
 #########################################################
 # Functions section
@@ -65,9 +73,9 @@ TTRO_help_splCompile='
 #	No treatment in case of compiler error'
 function splCompile {
 	if [[ -z $TT_dataDir ]]; then
-		echoAndExecute ${TTPRN_splc} "$TTPR_splcFlags" -M $TT_mainComposite -t "$TT_toolkitPath" -j $TTRO_treads
+		echoAndExecute ${TTPRN_splc} "$TTPR_splcFlags" -M $TT_mainComposite -t "$TT_toolkitPath:$TTRO_testframeToolkitDir" -j $TTRO_treads
 	else
-		echoAndExecute ${TTPRN_splc} "$TTPR_splcFlags" -M $TT_mainComposite -t "$TT_toolkitPath" --data-directory "$TT_dataDir" -j $TTRO_treads
+		echoAndExecute ${TTPRN_splc} "$TTPR_splcFlags" -M $TT_mainComposite -t "$TT_toolkitPath:$TTRO_testframeToolkitDir" --data-directory "$TT_dataDir" -j $TTRO_treads
 	fi
 }
 export -f splCompile
@@ -405,20 +413,22 @@ function submitJob {
 }
 export -f submitJob
 
-TTRO_help_submitJobAndFile='
-# Function submitJobAndFile
+TTRO_help_submitJobAndLog='
+# Function submitJobAndLog
 #	submits a job and provides the joboutput file
-#	provide stdout and stderror in file for evaluation'
-function submitJobAndFile {
+#	provide stdout and stderror in file for evaluation
+#	returns jobnumber in global variable TTTT_jobno'
+function submitJobAndLog {
 	submitJobVariable "$TTPRN_streamsZkConnect" "$TTPRN_streamsDomainId" "$TTPRN_streamsInstanceId" "$TT_sabFile" "$TT_jobFile" "$TT_traceLevel" 2>&1 | tee "$TT_evaluationFile"
 }
-export -f submitJobAndFile
+export -f submitJobAndLog
 
 TTRO_help_submitJobAndIntercept='
 # Function submitJobAndIntercept
 #	submits a job and provides the joboutput file
 #	provide stdout and stderror in file for evaluation
-#	provides return code of in variable TTTT_result'
+#	provides return code of in variable TTTT_result
+#	returns jobnumber in global variable TTTT_jobno'
 function submitJobAndIntercept {
 	if submitJobVariable "$TTPRN_streamsZkConnect" "$TTPRN_streamsDomainId" "$TTPRN_streamsInstanceId" "$TT_sabFile" "$TT_jobFile" "$TT_traceLevel" 2>&1 | tee "$TT_evaluationFile"; then
 		TTTT_result=0
@@ -437,7 +447,7 @@ TTRO_help_submitJobVariable='
 #	$4 sab files
 #	$5 output file name
 #	$6 trace level
-#	use global variable jobno for jobnumber'
+#	returns jobnumber in global variable TTTT_jobno'
 function submitJobVariable {
 	isDebug && printDebug "$FUNCNAME $*"
 	local zkParam
@@ -447,7 +457,7 @@ function submitJobVariable {
 	fi
 	if echoAndExecute $TTPRN_st submitjob "$zkParam" --domain-id "$2" --instance-id "$3" --outfile "$5" -C tracing="$6" "$4"; then
 		if [[ -e $5 ]]; then
-			jobno=$(<"$5")
+			TTTT_jobno=$(<"$5")
 			return 0
 		else
 			return $errTestFail
@@ -457,13 +467,20 @@ function submitJobVariable {
 	fi
 }
 export -f submitJobVariable
-declare jobno=''
+
+TTRO_help_cancelJobOld='
+# Function cancelJobOld
+#	$1 jobno'
+function cancelJobOld {
+	cancelJobVariable "$TTPRN_streamsZkConnect" "$TTPRN_streamsDomainId" "$TTPRN_streamsInstanceId" "$1"
+}
+export -f cancelJobOld
 
 TTRO_help_cancelJob='
 # Function cancelJob
-#	$1 jobno'
+#	$TTTT_jobno the job number'
 function cancelJob {
-	cancelJobVariable "$TTPRN_streamsZkConnect" "$TTPRN_streamsDomainId" "$TTPRN_streamsInstanceId" "$1"
+	cancelJobVariable "$TTPRN_streamsZkConnect" "$TTPRN_streamsDomainId" "$TTPRN_streamsInstanceId" "$TTTT_jobno"
 }
 export -f cancelJob
 
@@ -484,5 +501,31 @@ function cancelJobVariable {
 	fi
 }
 export -f cancelJobVariable
+
+TTRO_help_checkJobNo='
+# Function checkJobNo
+#	Checks whether the variable TTTT_jobno has a valid job number (>-1)
+#	Set the error condition if the check fails
+#	retunrs success otherwise'
+function checkJobNo {
+	if [[ $TTTT_jobno -gt -1 ]]; then
+		printInfo "The job number is \$TTTT_jobno=$TTTT_jobno"
+		return 0
+	else
+		setFailure "Invalif job number \$TTTT_jobno=$TTTT_jobno"
+	fi
+}
+export -f checkJobNo
+
+TTRO_help_waitForFin='
+# Function waitForFin
+#	waits until the final file appears
+#	$TT_waitForFileName - the name of the file to wait for
+#	$TT_waitForFileInterval - the interval
+#	returns success if the file was found'
+function waitForFin {
+	waitForFileToAppear "$TT_waitForFileName" "$TT_waitForFileInterval"
+}
+export -f waitForFin
 
 :

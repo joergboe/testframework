@@ -37,6 +37,6 @@ function myEvaluate {
 		return 0
 	fi
 	if ! linewisePatternMatch "$TT_evaluationFile" '' 'CDISP9164E ERROR: CDIST0200E: InetSource operator cannot be used inside a consistent region*'; then
-		failureOccurred='true'
+		setFailure
 	fi
 }

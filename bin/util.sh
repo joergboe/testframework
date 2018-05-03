@@ -1260,6 +1260,25 @@ function import {
 	fi
 }
 
+TTRO_help_waitForFileToAppear='
+# Function waitForFileToAppear
+#	Wait for a file to appear
+#	$1	the file name to check
+#	$2	the interval optional default is 3 sec.'
+function waitForFileToAppear {
+	if [[ ( $# -lt 1 ) || ( $# -gt 2 ) ]]; then printErrorAndExit "$FUNCNAME invalid no of params. Number of Params is $#" $errRt; fi
+	local timeoutValue=3
+	if [[ $# -eq 2 ]]; then
+		timeoutValue="$2"
+	fi
+	while ! [[ -e $1 ]]; do
+		printInfo "Wait for file to appear $1"
+		sleep "$timeoutValue"
+	done
+	printInfo "File to appear $1 exists"
+	return 0
+}
+
 TTRO_help_promptYesNo='
 # Function promptYesNo
 #	Write prompt and wait for user input y/n

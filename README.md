@@ -90,5 +90,9 @@ Version 2.5.0
 New Version:
 - New function names splCompile, splCompileAndLog, splCompileAndIntercept, splCompileInterceptAndSuccess and splCompileInterceptAndError
 - New variable TT_dataDir
+- New functions waitForFileToAppear, waitForFin
+- New functions checkJobNo
+- New variables TT_waitForFileName, TT_waitForFileInterval, TTTT-jobno
+- New spl utility toolkit streamsx.testframe with FileSink1
 
 
