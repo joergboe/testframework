@@ -87,3 +87,8 @@ Version 2.5.0
 - New functions: executeAndLog, executeLogAndSuccess, executeLogAndError
 - New functions: linewisePatternMatchAndIntercept, linewisePatternMatchInterceptAndSuccess, linewisePatternMatchInterceptAndError
 
+New Version:
+- New function names splCompile, splCompileAndLog, splCompileAndIntercept, splCompileInterceptAndSuccess and splCompileInterceptAndError
+- New variable TT_dataDir
+
+

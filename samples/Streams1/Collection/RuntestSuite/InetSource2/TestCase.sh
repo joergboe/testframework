@@ -3,7 +3,7 @@
 PREPS='copyOnly'
 #testStep="TT_mainComposite='Main' compile submitJob myCheckJobFile"
 function testStep {
-	compile; submitJob; myCheckJobFile;
+	splCompile; submitJob; myCheckJobFile;
 }
 
 function myCheckJobFile {
@@ -12,6 +12,6 @@ function myCheckJobFile {
 		cat "$TT_jobFile"
 		return 0
 	else
-		failureExit
+		setFailure "No job file exists $TT_jobFile"
 	fi
 }

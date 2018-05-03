@@ -7,12 +7,12 @@ setVar 'TTRO_prepsCase' 'copyAndTransformSpl'
 setVar 'TTRO_stepsCase' 'myCompile myEvaluate'
 
 # A customized compiler step expects that the compilation
-# is successfully for the firs run
+# is successfully for the first run
 # and fails in the second run
 function myCompile {
 	TT_mainComposite='com.ibm.streamsx.inet.sample::GetWeather'
 	local rr
-	compileAndIntercept
+	splCompileAndIntercept
 	echo "######### myCompile result $TTTT_result"
 	if [[ $TTRO_variantCase -eq 0 ]]; then
 		if [[ $TTTT_result -eq 0 ]]; then

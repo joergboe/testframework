@@ -44,6 +44,7 @@ TT_mainComposite='Main'
 TT_sabFile='./output/Main.sab' 
 TT_jobFile='./jobno.log'
 TT_traceLevel='trace'
+TT_dataDir='data'
 
 
 #########################################################
@@ -58,48 +59,52 @@ function copyAndTransformSpl {
 }
 export -f copyAndTransformSpl
 
-TTRO_help_compile='
-# Function compile
+TTRO_help_splCompile='
+# Function splCompile
 #	Compile spl application expect successful result
 #	No treatment in case of compiler error'
-function compile {
-	echoAndExecute ${TTPRN_splc} "$TTPR_splcFlags" -M $TT_mainComposite -t "$TT_toolkitPath" -j $TTRO_treads
+function splCompile {
+	if [[ -z $TT_dataDir ]]; then
+		echoAndExecute ${TTPRN_splc} "$TTPR_splcFlags" -M $TT_mainComposite -t "$TT_toolkitPath" -j $TTRO_treads
+	else
+		echoAndExecute ${TTPRN_splc} "$TTPR_splcFlags" -M $TT_mainComposite -t "$TT_toolkitPath" --data-directory "$TT_dataDir" -j $TTRO_treads
+	fi
 }
-export -f compile
+export -f splCompile
 
-TTRO_help_compileAndFile='
-# Function compileAndFile
+TTRO_help_splCompileAndLog='
+# Function splCompileAndLog
 #	Compile spl application expect successful result
 #	compiler colsole & error output is stored into file
 #	No treatment in case of compiler error'
-function compileAndFile {
-	echoAndExecute ${TTPRN_splc} "$TTPR_splcFlags" -M $TT_mainComposite -t "$TT_toolkitPath" -j $TTRO_treads 2>&1 | tee "$TT_evaluationFile"
+function splCompileAndLog {
+	splCompile 2>&1 | tee "$TT_evaluationFile"
 }
-export -f compileAndFile 
+export -f splCompileAndLog
 
-TTRO_help_compileAndIntercept='
-# Function compileAndIntercept
+TTRO_help_splCompileAndIntercept='
+# Function splCompileAndIntercept
 #	Compile spl application and intercept compile errors
 #	compiler console & error output is stored into file TT_evaluationFile
 #	compiler result code is sored in TTTT_result'
-function compileAndIntercept {
-	if echoAndExecute ${TTPRN_splc} "$TTPR_splcFlags" -M $TT_mainComposite -t "$TT_toolkitPath" -j $TTRO_treads 2>&1 | tee "$TT_evaluationFile"; then
+function splCompileAndIntercept {
+	if splCompile 2>&1 | tee "$TT_evaluationFile"; then
 		TTTT_result=0
 	else
 		TTTT_result=$?
 	fi
 	return 0
 }
-export -f compileAndIntercept
+export -f splCompileAndIntercept
 
-TTRO_help_compileInterceptAndSuccess='
-# Function compileInterceptAndSuccess
+TTRO_help_splCompileInterceptAndSuccess='
+# Function splCompileInterceptAndSuccess
 #	Compile spl application and intercept compile errors
 #	Expect success. Otherwise failure condition is set
 #	compiler console & error output is stored into file TT_evaluationFile
 #	compiler result code is sored in TTTT_result'
-function compileInterceptAndSuccess {
-	if echoAndExecute ${TTPRN_splc} "$TTPR_splcFlags" -M $TT_mainComposite -t "$TT_toolkitPath" -j $TTRO_treads 2>&1 | tee "$TT_evaluationFile"; then
+function splCompileInterceptAndSuccess {
+	if splCompile 2>&1 | tee "$TT_evaluationFile"; then
 		TTTT_result=0
 	else
 		TTTT_result=$?
@@ -109,16 +114,16 @@ function compileInterceptAndSuccess {
 	fi
 	return 0
 }
-export -f compileInterceptAndSuccess
+export -f splCompileInterceptAndSuccess
 
-TTRO_help_compileInterceptAndError='
-# Function compileInterceptAndError
+TTRO_help_splCompileInterceptAndError='
+# Function splCompileInterceptAndError
 #	Compile spl application and intercept compile errors
 #	Expect error. Otherwise failure condition is set
 #	compiler console & error output is stored into file TT_evaluationFile
 #	compiler result code is sored in TTTT_result'
-function compileInterceptAndError {
-	if echoAndExecute ${TTPRN_splc} "$TTPR_splcFlags" -M $TT_mainComposite -t "$TT_toolkitPath" -j $TTRO_treads 2>&1 | tee "$TT_evaluationFile"; then
+function splCompileInterceptAndError {
+	if splCompile 2>&1 | tee "$TT_evaluationFile"; then
 		TTTT_result=0
 	else
 		TTTT_result=$?
@@ -128,7 +133,7 @@ function compileInterceptAndError {
 	fi
 	return 0
 }
-export -f compileInterceptAndError
+export -f splCompileInterceptAndError
 
 TTRO_help_makeZkParameter='
 # Function makeZkParameter
@@ -437,6 +442,9 @@ function submitJobVariable {
 	isDebug && printDebug "$FUNCNAME $*"
 	local zkParam
 	makeZkParameter "$1"
+	if [[ -n $TT_dataDir ]]; then
+		mkdir -p "$TT_dataDir"
+	fi
 	if echoAndExecute $TTPRN_st submitjob "$zkParam" --domain-id "$2" --instance-id "$3" --outfile "$5" -C tracing="$6" "$4"; then
 		if [[ -e $5 ]]; then
 			jobno=$(<"$5")
