@@ -5,21 +5,30 @@ public composite FileSink1 (input Inp) {
 		expression<rstring> $filenameTuples: "Tuples";
 		expression<rstring> $filenameWidowMarker: "WindowMarker";
 		expression<rstring> $filenameFinalMarker: "FinalMarker";
+		expression<boolean> $singleTupleFiles: true;
 	graph
 		stream<I, tuple<rstring fname>> FileContent as O = Custom(Inp as I) {
 			logic
+				state : {
+					mutable int32 tcount = 0;
+				}
 				onTuple I : {
 					mutable O ot = {};
 					assignFrom(ot, I);
-					ot.fname = "Tuples";
+					if ($singleTupleFiles) {
+						ot.fname = $filenameTuples;
+					} else {
+						ot.fname = $filenameTuples + (rstring)tcount;
+					}
 					submit(ot, O);
+					tcount = tcount + 1;
 				}
 				onPunct I: {
 					mutable O ot = {};
 					if (currentPunct() == Sys.WindowMarker) {
-						ot.fname = "WindowMarker";
+						ot.fname = $filenameWidowMarker;
 					} else {
-						ot.fname = "FinalMarker";
+						ot.fname = $filenameFinalMarker;
 					}
 					submit(ot, O);
 				}

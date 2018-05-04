@@ -61,11 +61,23 @@ printInfo "Make toolkit in $TTRO_testframeToolkitDir"
 TTRO_help_copyAndTransformSpl='
 # Function copyAndTransformSpl
 #	Copy all files from input directory to workdir and
-#	Transform spl files'
+#	Transform spl files
+#	the variant identifier is $TTRO_variantCase'
 function copyAndTransformSpl {
 	copyAndTransform "$TTRO_inputDirCase" "$TTRO_workDirCase" "$TTRO_variantCase" '*.spl'
 }
 export -f copyAndTransformSpl
+
+TTRO_help_copyAndTransformSpl2='
+# Function copyAndTransformSpl2
+#	Copy all files from input directory to workdir and
+#	Transform spl files
+#	the variant identifier is $1'
+function copyAndTransformSpl2 {
+	if [[ $# -ne 1 ]]; then printErrorAndExit "${FUNCNAME[0]} called with no or empty command" $errRt; fi
+	copyAndTransform "$TTRO_inputDirCase" "$TTRO_workDirCase" "$1" '*.spl'
+}
+export -f copyAndTransformSpl2
 
 TTRO_help_splCompile='
 # Function splCompile

@@ -96,4 +96,7 @@ Version 2.6.0:
 - New spl utility toolkit streamsx.testframe with FileSink1
 - New directory structure for installation target now we have <version>/bin <version>/samples and <version>/streamsx.testframe
 
+Version 2.6.1:
+- New function
+- com.ibm.streamsx.testframe::FileSinke 1 : has new parameter singleTupleFiles with default true
 
