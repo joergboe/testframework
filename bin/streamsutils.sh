@@ -492,7 +492,11 @@ TTRO_help_cancelJob='
 # Function cancelJob
 #	$TTTT_jobno the job number'
 function cancelJob {
-	cancelJobVariable "$TTPRN_streamsZkConnect" "$TTPRN_streamsDomainId" "$TTPRN_streamsInstanceId" "$TTTT_jobno"
+	if isExisting 'TTTT_jobno'; then
+		cancelJobVariable "$TTPRN_streamsZkConnect" "$TTPRN_streamsDomainId" "$TTPRN_streamsInstanceId" "$TTTT_jobno"
+	else
+		printWarning "Variable TTTT_jobno is not existing. No job to stop"
+	fi
 }
 export -f cancelJob
 

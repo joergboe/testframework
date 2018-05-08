@@ -812,6 +812,7 @@ function linewisePatternMatch {
 	local -i max=$#
 	local -i i
 	local -i noPattern=0
+	patternList=()
 	for ((i=3; i<=max; i++)); do
 		patternList[$noPattern]="${!i}"
 		noPattern=$((noPattern+1))
@@ -1278,6 +1279,17 @@ function waitForFileToAppear {
 	printInfo "File to appear $1 exists"
 	return 0
 }
+
+TTRO_help_getLineCount='
+# Function getLineCount
+#	Get the number of lines in a file
+#	$1 the file name
+#	output TTTT_lineCount'
+function getLineCount {
+	if [[ $# -ne 1 ]]; then printErrorAndExit "$FUNCNAME invalid no of params. Number of Params is $#" $errRt; fi
+	TTTT_lineCount=$(wc -l "$1" | cut -f 1 -d ' ')
+}
+
 
 TTRO_help_promptYesNo='
 # Function promptYesNo

@@ -100,3 +100,6 @@ Version 2.6.1:
 - New function
 - com.ibm.streamsx.testframe::FileSinke 1 : has new parameter singleTupleFiles with default true
 
+Version 2.6.2:
+- New function getLineCount
+- Error corrections
