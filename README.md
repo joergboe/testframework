@@ -103,3 +103,4 @@ Version 2.6.1:
 Version 2.6.2:
 - New function getLineCount
 - Error corrections
+- Improvementes in builReleasePackage.sh
