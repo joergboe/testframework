@@ -105,16 +105,16 @@ if [[ $destination == .* ]]; then
 fi
 
 versiondir="v$major.$minor"
-bindir="${destination}/${versiondir}/bin"
-sampledir="${destination}/${versiondir}/samples"
 toolkitrootdir="${destination}/${versiondir}"
+bindir="${toolkitrootdir}/bin"
+sampledir="${toolkitrootdir}/samples"
 toolkitdir="$toolkitrootdir/streamsx.testframe"
 
 tempdir="${destination}/tmp/${versiondir}"
 
-if [[ -d ${bindir} ]]; then
+if [[ -e ${toolkitrootdir} ]]; then
 	if [[ -n $interactive ]]; then
-		while read -p "The version already exists in $bindir overwite? (yes/exit) [y/e]"; do
+		while read -p "The version already exists in $toolkitrootdir overwite? (yes/exit) [y/e]"; do
 			if [[ $REPLY == "y" || $REPLY == "Y" || $REPLY == "yes" ]]; then
 				break
 			elif [[ $REPLY == "e" || $REPLY == "E" || $REPLY == "exit" ]]; then
@@ -122,8 +122,7 @@ if [[ -d ${bindir} ]]; then
 			fi
 		done
 	fi
-	rm -rf "${bindir}"
-	rm -rf "$sampledir"
+	rm -rf "${toolkitrootdir}"
 fi
 
 #Determine the line with the archive marker
