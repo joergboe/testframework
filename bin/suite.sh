@@ -347,6 +347,7 @@ declare allJobsGone=""
 declare -i jobIndex=0 #index of job next to start
 #result and summary variables
 declare -i variantSuccess=0 variantSkiped=0 variantFailures=0 variantErrors=0
+declare -i numberJobsRunning
 
 #init the work structure for maxParralelJobs
 for ((i=0; i<maxParralelJobs; i++)); do
@@ -403,8 +404,10 @@ while [[ -z $allJobsGone ]]; do
 		while ! now="$(date +'%-s')"; do #guard external command if sigint is received
 			:
 		done
+		numberJobsRunning=0
 		for ((i=0; i<maxParralelJobs; i++)); do
 			if [[ -n ${tpid[$i]} ]]; then
+				numberJobsRunning=$((numberJobsRunning+1))
 				if [[ -z ${killed[$i]} ]]; then
 					if [[ ( ${endTime[$i]} -lt $now ) || ( $interruptReceived -gt 1 ) ]]; then
 						if [[ -z ${tjobid[$i]} ]]; then
@@ -412,7 +415,7 @@ while [[ -z $allJobsGone ]]; do
 						else
 							tempjobspec="%${tjobid[$i]}"
 						fi
-						printInfo "INFO: Timeout Kill job i=${i} jobspec=${tempjobspec} with SIGTERM"
+						printInfo "Timeout Kill job i=${i} jobspec=${tempjobspec} with SIGTERM"
 						#SIGINT and SIGHUP seems not to work can not install handler for both signals in case.sh
 						if ! kill "${tempjobspec}"; then
 							printWarning "Can not kill job i=${i} jobspec=${tempjobspec} Gone?"
@@ -448,6 +451,7 @@ while [[ -z $allJobsGone ]]; do
 						isDebug && printDebug "Job is running"
 					else
 						psres=$?
+						numberJobsRunning=$((numberJobsRunning-1))
 						if [[ $psres -eq $errSigint ]]; then
 							isDebug && printDebug "SIGINT: during jobs"
 						else
@@ -461,7 +465,7 @@ while [[ -z $allJobsGone ]]; do
 							echo "$tmpCaseAndVariant" >> "${TTRO_workDirSuite}/CASE_EXECUTE"
 							
 							#executeList+=("$tmpCaseAndVariant")
-							printInfon "END: Job i=$i pid=$pid jobid=$jobid case=${tmpCase} variant='${tmpVariant}'"
+							printInfon "END: Job i=$i pid=$pid jobid=$jobid case=${tmpCase} variant='${tmpVariant}' running=$numberJobsRunning"
 							tpid[$i]=""
 							tjobid[$i]=""
 							#if there is a new job to start: take only the first free index and only if less than currentParralelJobs
@@ -562,8 +566,14 @@ while [[ -z $allJobsGone ]]; do
 		else
 			mkdir -p "$cworkdir"
 		fi
+		tmp=1 # count running jobs + 1
+		for ((i=0; i<maxParralelJobs; i++)); do
+			if [[ -n ${tpid[$i]} ]]; then
+				tmp=$((tmp+1))
+			fi
+		done
 		cmd="${TTRO_scriptDir}/case.sh"
-		printInfo "START: jobIndex=$jobIndex case=$caseName variant=$caseVariant index=$availableTpidIndex"
+		printInfo "START: jobIndex=$jobIndex case=$caseName variant=$caseVariant index=$availableTpidIndex running=$tmp"
 		#Start job connect output to stdout in single thread case
 		if [[ "$TTRO_noParallelCases" -eq 1 ]]; then
 			$cmd "$casePath" "$cworkdir" "$caseVariant" 2>&1 | tee -i "${cworkdir}/${TEST_LOG}" &
