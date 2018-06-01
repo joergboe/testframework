@@ -389,6 +389,7 @@ while [[ -z $allJobsGone ]]; do
 			isVerbose && printVerbose "Interrupt suite $TTRO_suite interruptReceived=$interruptReceived ****"
 		fi
 		#during normal run check for one available job space
+		getSystemLoad100
 		if [[ -n $caseName ]]; then
 			for ((i=0; i<currentParralelJobs; i++)); do
 				isDebug && printDebug "Check free index $i"
@@ -415,10 +416,12 @@ while [[ -z $allJobsGone ]]; do
 						else
 							tempjobspec="%${tjobid[$i]}"
 						fi
-						printInfo "Timeout Kill job i=${i} jobspec=${tempjobspec} with SIGTERM"
+						printInfo "Timeout Kill index=${i} jobspec=${tempjobspec} with SIGTERM case=${tcase[$i]} variant=${tvariant[$i]}"
 						#SIGINT and SIGHUP seems not to work can not install handler for both signals in case.sh
-						if ! kill "${tempjobspec}"; then
-							printWarning "Can not kill job i=${i} jobspec=${tempjobspec} Gone?"
+						if kill "${tempjobspec}"; then
+							echo "timeout" > "${tcaseWorkDir[$i]}/TIMEOUT"
+						else
+							printWarning "Can not kill index=${i} jobspec=${tempjobspec} Gone?"
 						fi
 						killed[$i]="$now"
 					fi
@@ -430,9 +433,9 @@ while [[ -z $allJobsGone ]]; do
 						else
 							tempjobspec="%${tjobid[$i]}"
 						fi
-						printError "Forced Kill job i=${i} jobspec=${tempjobspec}"
+						printError "Forced Kill index=${i} jobspec=${tempjobspec} case=${tcase[$i]} variant=${tvariant[$i]}"
 						if ! kill -9 "${tempjobspec}"; then
-							printWarning "Can not force kill job i=${i} jobspec=${tempjobspec} Gone?"
+							printWarning "Can not force kill index=${i} jobspec=${tempjobspec} Gone?"
 						fi
 					fi  
 				fi
@@ -465,7 +468,7 @@ while [[ -z $allJobsGone ]]; do
 							echo "$tmpCaseAndVariant" >> "${TTRO_workDirSuite}/CASE_EXECUTE"
 							
 							#executeList+=("$tmpCaseAndVariant")
-							printInfon "END: Job i=$i pid=$pid jobid=$jobid case=${tmpCase} variant='${tmpVariant}' running=$numberJobsRunning"
+							printInfon "END: index=$i pid=$pid jobid=$jobid case=${tmpCase} variant='${tmpVariant}' running=$numberJobsRunning systemLoad=$TTTT_systemLoad"
 							tpid[$i]=""
 							tjobid[$i]=""
 							#if there is a new job to start: take only the first free index and only if less than currentParralelJobs
@@ -573,7 +576,7 @@ while [[ -z $allJobsGone ]]; do
 			fi
 		done
 		cmd="${TTRO_scriptDir}/case.sh"
-		printInfo "START: jobIndex=$jobIndex case=$caseName variant=$caseVariant index=$availableTpidIndex running=$tmp"
+		printInfo "START: jobIndex=$jobIndex case=$caseName variant=$caseVariant index=$availableTpidIndex running=$tmp systemLoad=$TTTT_systemLoad"
 		#Start job connect output to stdout in single thread case
 		if [[ "$TTRO_noParallelCases" -eq 1 ]]; then
 			$cmd "$casePath" "$cworkdir" "$caseVariant" 2>&1 | tee -i "${cworkdir}/${TEST_LOG}" &

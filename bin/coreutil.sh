@@ -111,7 +111,7 @@ function exeSuite {
 	# html
 	if [[ $nestingLevel -gt 0 ]]; then
 		addSuiteEntry "$indexfilename" "$suiteNestingString" "$result" "$suitePath" "${sworkdir}"\
-		$CASE_EXECUTE_Count $CASE_SKIP_Count $CASE_FAILURE_Count $CASE_ERROR_Count $CASE_SUCCESS_Count $SUITE_EXECUTE_Count $SUITE_SKIP_Count $SUITE_ERROR_Count
+		$CASE_EXECUTE_Count $CASE_SKIP_Count $CASE_FAILURE_Count $CASE_ERROR_Count $SUITE_EXECUTE_Count $SUITE_SKIP_Count $SUITE_ERROR_Count
 	fi
 	
 	printInfo "**** END Suite: ${suite} variant='$2' in ${suitePath} *******************"
@@ -412,7 +412,7 @@ function addCaseEntry {
 		ERROR )
 			echo "<li style=\"color: red\">$2:$3 workdir <a href=\"$6\">$6</a> $4</li>" >> "$1";;
 		FAILURE )
-			echo "<li style=\"color: yellow\">$2:$3 workdir <a href=\"$6\">$6</a> $4</li>" >> "$1";;
+			echo "<li style=\"color: red\">$2:$3 workdir <a href=\"$6\">$6</a> $4</li>" >> "$1";;
 		SKIP )
 			echo "<li style=\"color: blue\">$2:$3 workdir <a href=\"$6\">$6</a> $4</li>" >> "$1";;
 		*) 
@@ -447,13 +447,14 @@ function startSuiteList {
 # $11 Suites skipped
 # S12 Suites error
 function addSuiteEntry {
+	if [[ $# -ne 12 ]]; then printErrorAndExit "wrong no of arguments $#" $errRt; fi
 	case $3 in
 		0 )
 			echo -n "<li><a href=\"$5/suite.html\">$2</a> result code: $3  work dir: <a href=\"$5\">$5</a>" >> "$1";;
 		$errSkip )
 			echo -n "<li style=\"color: blue\"><a href=\"$5/suite.html\">$2</a> result code: $3  work dir: <a href=\"$5\">$5</a>" >> "$1";;
 		$errSigint )
-			echo -n "<li style=\"color: yellow\"><a href=\"$5/suite.html\">$2</a> result code: $3  work dir: <a href=\"$5\">$5</a>" >> "$1";;
+			echo -n "<li style=\"color: red\"><a href=\"$5/suite.html\">$2</a> result code: $3  work dir: <a href=\"$5\">$5</a>" >> "$1";;
 		* )
 			echo -n "<li style=\"color: red\"><a href=\"$5/suite.html\">$2</a> result code: $3  work dir: <a href=\"$5\">$5</a>" >> "$1"
 	esac

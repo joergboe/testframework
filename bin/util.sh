@@ -1323,5 +1323,37 @@ function promptYesNo {
 	fi
 }
 
+TTRO_help_getSystemLoad='
+# Function get the current system load
+#	returns the load value in TTTT_systemLoad'
+function getSystemLoad {
+	local v1=$(</proc/loadavg)
+	TTTT_systemLoad="${v1%% *}"
+}
+
+TTRO_help_getSystemLoad100='
+# Function get the current system load as integer
+#	system load x 100
+#	returns the load value in TTTT_systemLoad100'
+function getSystemLoad100 {
+	getSystemLoad
+	local integer=${TTTT_systemLoad%%.*}
+	[[ -z $integer ]] && printErrorAndExit "No valid TTTT_systemLoad : $TTTT_systemLoad" $errRt
+	local fraction=0
+	if [[ $TTTT_systemLoad != $integer ]]; then
+		fraction=${TTTT_systemLoad#*.}
+		if [[ -z $fraction ]]; then
+			fraction=0
+		elif [[ ${#fraction} -eq 1 ]]; then
+			fraction="${fraction}0"
+		elif [[ ${#fraction} -gt 2 ]]; then
+			fraction="${fraction:0:2}"
+		fi
+		fraction=$((10#$fraction))
+	fi
+	integer=$((integer*100))
+	TTTT_systemLoad100=$((integer+fraction))
+}
+
 #Guard for the last statement - make returncode always 0
 :
