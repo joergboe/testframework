@@ -448,7 +448,7 @@ while [[ -z $allJobsGone ]]; do
 				pid="${tpid[$i]}"
 				jobid="${tjobid[$i]}"
 				if [[ -n $pid ]]; then
-					isDebug && printDebug "check wether job is still running i=$i pid=$pid jobid=$jobid"
+					isDebug && printDebug "check wether job is still running i=$i pid=$pid jobspec=%$jobid"
 					if jobs "%$jobid" &> /dev/null; then
 					#if ps --pid "$pid" &> /dev/null; then
 						isDebug && printDebug "Job is running"
@@ -468,7 +468,7 @@ while [[ -z $allJobsGone ]]; do
 							echo "$tmpCaseAndVariant" >> "${TTRO_workDirSuite}/CASE_EXECUTE"
 							
 							#executeList+=("$tmpCaseAndVariant")
-							printInfon "END: index=$i pid=$pid jobid=$jobid case=${tmpCase} variant='${tmpVariant}' running=$numberJobsRunning systemLoad=$TTTT_systemLoad"
+							printInfon "END: index=$i pid=$pid jobspec=%$jobid case=${tmpCase} variant='${tmpVariant}' running=$numberJobsRunning systemLoad=$TTTT_systemLoad"
 							tpid[$i]=""
 							tjobid[$i]=""
 							#if there is a new job to start: take only the first free index and only if less than currentParralelJobs
