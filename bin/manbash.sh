@@ -69,5 +69,7 @@ Variable Expansion
              Indirect addressing
               
 
+              
+Words  of  the  form $'string' are treated specially.  The word expands to string, with backslash-escaped characters replaced as specified by the ANSI C standard.
 EOF
 }

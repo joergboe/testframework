@@ -22,6 +22,7 @@ setVar 'TTPRN_mt' "${STREAMS_INSTALL}/bin/spl-make-toolkit"
 setVar 'TTPRN_swsPort' '8443'
 setVar 'TTPRN_jmxPort' '9443'
 setVar TTPRN_numresources 1
+setVar 'TTPR_waitForJobHealth' 60
 
 if declare -p STREAMS_ZKCONNECT &> /dev/null && [[ -n $STREAMS_ZKCONNECT ]]; then
 	setVar TTPRN_streamsZkConnect "$STREAMS_ZKCONNECT"
@@ -533,6 +534,114 @@ function checkJobNo {
 }
 export -f checkJobNo
 
+TTRO_help_jobHealthyVariable='
+# Function jobHealthyVariable
+#	checks whether a job is healthy
+#	parameters
+#		$1 zk string
+#		$2 domain id
+#		$3 instance id
+#		$4 jobno
+#	returns:
+#		TTTT_state  the state of the job
+#		TTTT_healthy the health information of the job
+#		success (0) if job is healthy
+#		error       if job is not healthy or is not running'
+function jobHealthyVariable {
+	isDebug && printDebug "$FUNCNAME $*"
+	if [[ $# -ne 4 ]]; then
+		printErrorAndExit "$FUNCNAME $* called with insufficient arguments" $errRt
+	fi
+	local zkParam
+	makeZkParameter "$1"
+	if [[ -n $TT_dataDir ]]; then
+		mkdir -p "$TT_dataDir"
+	fi
+	local rr
+	if ! rr=$(LC_ALL=en_US $TTPRN_st lsjob "$zkParam" --domain-id "$2" --instance-id "$3" --jobs "$4" --xheaders --fmt %Mf); then
+		printError "command failed LC_ALL=en_US $TTPRN_st lsjob $zkParam --domain-id $2 --instance-id $3 --jobs $4 --xheaders --fmt %Mf"
+		return $errTestFail
+	fi
+	local ifsSave="$IFS"
+	local IFS=$'\n'
+	local x
+	local id=''
+	local healthyLoc=''
+	local stateLoc=''
+	for x in $rr; do
+		if [[ $x =~ (.*):(.*) ]]; then
+			trim "${BASH_REMATCH[1]}"
+			if [[ $TTTT_trim == 'Id' ]]; then
+				if [[ -n $id ]]; then printErrorAndExit "Duplicate Id in lsjob response \n $rr" $errRt; fi
+				trim "${BASH_REMATCH[2]}"
+				id="$TTTT_trim"
+			elif [[ $TTTT_trim == 'State' ]]; then
+				if [[ -n $stateLoc ]]; then printErrorAndExit "Duplicate State in lsjob response \n $rr" $errRt; fi
+				trim "${BASH_REMATCH[2]}"
+				stateLoc="$TTTT_trim"
+			elif [[ $TTTT_trim == 'Healthy' ]]; then
+				if [[ -n $healthyLoc ]]; then printErrorAndExit "Duplicate Healthy in lsjob response \n $rr" $errRt; fi
+				trim "${BASH_REMATCH[2]}"
+				healthyLoc="$TTTT_trim"
+			fi
+		fi
+	done
+	IFS="$ifsSave"
+	TTTT_state="$stateLoc"
+	TTTT_healthy="$healthyLoc"
+	isDebug && printDebug "$FUNCNAME loop end result id=$id State=$stateLoc Healthy=$healthyLoc"
+	if [[ $id -ne $4 ]]; then
+		printErrorAndExit "Differet job returned $4 $id" $errRt
+	fi
+	if [[ ( $stateLoc == 'Running' ) && ( $healthyLoc == 'yes' ) ]]; then
+		return 0
+	else
+		return $errTestFail
+	fi
+}
+export -f jobHealthyVariable
+
+TTRO_help_jobHealthy='
+# Function jobHealthy
+#	checks whether a job is healthy
+#	TTPRN_streamsZkConnect  zk connect string
+#	TTPRN_streamsDomainId   domain id
+#	TTPRN_streamsInstanceId instance id
+#	TTTT_jobno              job number
+#	returns:
+#		TTTT_state  the state of the job
+#		TTTT_healthy the health information of the job
+#		success (0) if job is healthy
+#		error       if job is not healthy or is not running'
+function jobHealthy {
+	jobHealthyVariable "$TTPRN_streamsZkConnect" "$TTPRN_streamsDomainId" "$TTPRN_streamsInstanceId" "$TTTT_jobno"
+}
+export -f jobHealthy
+
+TTRO_help_jobHealthyAndIntercept='
+# Function jobHealthyAndIntercept
+#	checks whether a job is healthy and return code is always 0
+#	provides return code of in variable TTTT_result
+#	TTPRN_streamsZkConnect  zk connect string
+#	TTPRN_streamsDomainId   domain id
+#	TTPRN_streamsInstanceId instance id
+#	TTTT_jobno              job number
+#	returns:
+#		TTTT_result         0 if job is healthy
+#		TTTT_result         error  if job is not healthy
+#		TTTT_state  the state of the job
+#		TTTT_healthy the health information of the job
+#		success (0)'
+function jobHealthyAndIntercept {
+	if jobHealthyVariable "$TTPRN_streamsZkConnect" "$TTPRN_streamsDomainId" "$TTPRN_streamsInstanceId" "$TTTT_jobno"; then
+		TTTT_result=0
+	else
+		TTTT_result=$?
+	fi
+	return 0
+}
+export -f jobHealthyAndIntercept
+
 TTRO_help_waitForFin='
 # Function waitForFin
 #	waits until the final file appears
@@ -543,5 +652,40 @@ function waitForFin {
 	waitForFileToAppear "$TT_waitForFileName" "$TT_waitForFileInterval"
 }
 export -f waitForFin
+
+TTRO_help_waitForFinAndHealth='
+# Function waitForFinAndHealth
+#	waits until the final file appears and the job remains healthy
+#	set failure condition if job changes state from healthy to non healthy
+#	$TT_waitForFileName - the name of the file to wait for
+#	$TT_waitForFileInterval - the interval
+#	returns success if the file was found'
+function waitForFinAndHealth {
+	local start=$(date -u +%s)
+	local now
+	local difftime
+	while ! jobHealthy; do
+		printInfo "Wait for jobno=$TTTT_jobno to become healthy State=$TTTT_state Healthy=$TTTT_healthy"
+		sleep "$TT_waitForFileInterval"
+		now=$(date -u +%s)
+		difftime=$((now-start))
+		if [[ $difftime -gt $TTPR_waitForJobHealth ]]; then
+			setFailure "Takes to long ( $difftime ) for the job to become healty"
+			return 0
+		fi
+	done
+	printInfo "jobno=$TTTT_jobno becomes healthy State=$TTTT_state Healthy=$TTTT_healthy"
+	while ! [[ -e "$TT_waitForFileName" ]]; do
+		printInfo "Wait for file to appear $1"
+		sleep "$TT_waitForFileInterval"
+		if ! jobHealthy; then
+			setFailure "The jobno=$TTTT_jobno becomes unhealty State=$TTTT_state Healthy=$TTTT_healthy"
+			return 0
+		fi
+	done
+	printInfo "File to appear $TT_waitForFileName exists"
+	return 0
+}
+export -f waitForFinAndHealth
 
 :
