@@ -1367,6 +1367,42 @@ function trim {
 	return 0
 }
 
+TTRO_help_timeFromSeconds='
+# Function timeFromSeconds
+#	returns a formated string hh:mm:ss from seconds
+#	parameters
+#		$1   input in seconds
+#	return	
+#		TTTT_timeFromSeconds the formated string
+#		success'
+function timeFromSeconds {
+	if [[ $# -ne 1 ]]; then printErrorAndExit "$FUNCNAME invalid no of params. Number of Params is $#" $errRt; fi
+	local seconds="$1"
+	local sec=$((seconds%60))
+	if [[ ${#sec} -eq 1 ]]; then sec="0$sec"; fi
+	local hour=$((seconds/60))
+	local minutes=$((hour%60))
+	if [[ ${#minutes} -eq 1 ]]; then minutes="0$minutes"; fi
+	hour=$((hour/60))
+	if [[ ${#hour} -eq 1 ]]; then hour="0$hour"; fi
+	TTTT_timeFromSeconds="${hour}:${minutes}:${sec}"
+	return 0
+}
+
+TTRO_help_getElapsedTime='
+# Function get the elapsed time string in TTTT_elapsedTime
+#	parameters
+#		$1 the start time in seconds
+#	return
+#		TTTT_elapsedTime'
+function getElapsedTime {
+	if [[ $# -ne 1 ]]; then printErrorAndExit "$FUNCNAME wrong no of arguments $#" $errRt; fi
+	local now=$(date -u +%s)
+	local diff=$((now-$1))
+	timeFromSeconds "$diff"
+	TTTT_elapsedTime="$TTTT_timeFromSeconds"
+	return 0
+}
 
 #Guard for the last statement - make returncode always 0
 :

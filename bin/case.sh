@@ -52,7 +52,8 @@ if [[ $# -ne 3 ]]; then
 	usage
 	exit ${errInvocation}
 fi
-
+#start time
+declare -r caseStartTime=$(date -u +%s)
 #setup case values
 declare -rx TTRO_inputDirCase="$1"; shift
 declare -rx TTRO_workDirCase="$1"; shift
@@ -140,11 +141,15 @@ function successExit {
 	echo "SUCCESS" > "${TTRO_workDirCase}/RESULT"
 	caseFinalization
 	printInfo "**** END Case case=${TTRO_case} variant='${TTRO_variantCase}' SUCCESS *****"
+	getElapsedTime "$caseStartTime"
+	printInfo "**** Elapsed time $TTTT_elapsedTime *****"
 	exit 0
 }
 function skipExit {
 	echo "SKIP" > "${TTRO_workDirCase}/RESULT"
 	printInfo "**** END Case case=${TTRO_case} variant='${TTRO_variantCase}' SKIP **********"
+	getElapsedTime "$caseStartTime"
+	printInfo "**** Elapsed time $TTTT_elapsedTime *****"
 	exit 0
 }
 function failureExit {
@@ -152,12 +157,16 @@ function failureExit {
 	caseFinalization
 	printError "**** FAILURE : $TTTT_failureOccurred ****"
 	printInfo "**** END Case case=${TTRO_case} variant='${TTRO_variantCase}' FAILURE ********" >&2
+	getElapsedTime "$caseStartTime"
+	printInfo "**** Elapsed time $TTTT_elapsedTime *****"
 	exit 0
 }
 function errorExit {
 	echo "ERROR" > "${TTRO_workDirCase}/RESULT"
 	caseFinalization
 	printInfo "END Case case=${TTRO_case} variant='${TTRO_variantCase}' ERROR ***************" >&2
+	getElapsedTime "$caseStartTime"
+	printInfo "**** Elapsed time $TTTT_elapsedTime *****"
 	exit ${errTestError}
 }
 

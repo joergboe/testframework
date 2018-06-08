@@ -21,6 +21,8 @@ shopt -s globstar nullglob
 declare -i interruptReceived=0
 declare -r commandname="${0##*/}"
 declare caseExecutionLoopRunning=''
+#start time
+declare -r suiteStartTime=$(date -u +%s)
 
 # Function handle SIGINT
 function handleSigint {
@@ -742,7 +744,8 @@ for x in CASE_EXECUTE CASE_SKIP CASE_FAILURE CASE_ERROR CASE_SUCCESS SUITE_EXECU
 done
 
 # html 
-endSuiteIndex "$indexfilename"
+getElapsedTime "$suiteStartTime"
+endSuiteIndex "$indexfilename" "$TTTT_elapsedTime"
 
 declare suiteResult=0
 if [[ $interruptReceived -gt 0 ]]; then
@@ -750,6 +753,8 @@ if [[ $interruptReceived -gt 0 ]]; then
 fi
 
 printf "**** Suite: $TTRO_suite Variant: '$TTRO_variantSuite' cases=%i skipped=%i failures=%i errors=%i *****\n" $jobIndex $variantSkiped $variantFailures $variantErrors
+printInfo "**** Elapsed time $TTTT_elapsedTime *****"
+
 builtin echo -n "$suiteResult" > "${TTRO_workDirSuite}/DONE"
 
 isDebug && printDebug "END: Suite $TTRO_suite variant='$TTRO_variantSuite' suite exit code $suiteResult"

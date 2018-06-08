@@ -347,6 +347,7 @@ function checkCats {
 #
 # Create the global index.html
 # $1 the file to create
+# $2 elapsed time
 function createGlobalIndex {
 	cat <<-EOF > "$1"
 	<!DOCTYPE html>
@@ -371,6 +372,7 @@ function createGlobalIndex {
 		<ul>
 		  <li><a href="suite.html">Global Dummy Suite</a></li>
 		</ul>
+		Elapsed time : $2
 	</body>
 	</html>
 	EOF
@@ -465,9 +467,11 @@ function addSuiteEntry {
 #
 # end suite index html
 # $1 file name
+# $2 elapsed time string
 function endSuiteIndex {
 	cat <<-EOF >> "$1"
 		</ul>
+		Elapsed time : $2
 		</body>
 	</html>
 	EOF

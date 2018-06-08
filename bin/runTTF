@@ -539,6 +539,7 @@ fi
 
 #######################################################################################
 #echo "*******************************************************************************************************"
+declare -r collectionStartTime=$(date -u +%s)
 declare -xr TTRO_collection="${TTRO_inputDir##*/}"
 printInfo  "**** START: Test execution collection $TTRO_collection ******************************************************************"
 #-----------------------
@@ -679,12 +680,14 @@ printf "***** cases  executed=%i skipped=%i failures=%i errors=%i\n" $CASE_EXECU
 printf "***** categories of this run: %s\n" "$cats"
 printf "***** used workdir: %s\n" "$TTRO_workDir"
 printf "***** Index in %s\n" "$indexfilename"
+getElapsedTime "$collectionStartTime"
+printf "***** Elapsed time : %s\n" "$TTTT_elapsedTime"
 printf "*******************************************************************************************************\n"
 
 #--------------------------------------------
 # prepare html docs
 #createCSS "${TTRO_workDir}/testframe.css"
-createGlobalIndex "$indexfilename"
+createGlobalIndex "$indexfilename" "$TTTT_elapsedTime"
 
 declare mainResult=0
 if [[ $interruptReceived -ne 0 ]]; then
