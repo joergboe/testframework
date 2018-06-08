@@ -305,7 +305,7 @@ TTRO_help_splitVarValue='
 #	return variables:
 #		varname
 #		value
-#       splitter
+#		splitter
 #	returns
 #		success(0) if the function succeeds
 #		error(1)   otherwise'
@@ -1354,6 +1354,19 @@ function getSystemLoad100 {
 	integer=$((integer*100))
 	TTTT_systemLoad100=$((integer+fraction))
 }
+
+TTRO_help_trim='
+# Function trim removes leading trailing whitespace characters
+#	$1	the input string
+#	returns the result string in TTTT_trim'
+function trim {
+	if [[ $# -ne 1 ]]; then printErrorAndExit "$FUNCNAME invalid no of params. Number of Params is $#" $errRt; fi
+	local locvar="$1"
+	locvar="${locvar#${locvar%%[![:space:]]*}}"
+	TTTT_trim="${locvar%${locvar##*[![:space:]]}}"
+	return 0
+}
+
 
 #Guard for the last statement - make returncode always 0
 :
