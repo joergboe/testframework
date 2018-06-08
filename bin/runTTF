@@ -668,10 +668,15 @@ if [[ $SUITE_ERRORCount -gt 0 ]]; then
 fi
 
 indexfilename="${TTRO_workDir}/index.html"
+cats=''
+if [[ ${#TTTT_runCategoryPatternArray[*]} -gt 0 ]]; then
+	cats="${TTTT_runCategoryPatternArray[@]}"
+fi
 echo
 printf "*******************************************************************************************************\n"
 printf "***** suites executed=%i skipped=%i errors=%i\n" $SUITE_EXECUTECount $SUITE_SKIPCount $SUITE_ERRORCount
 printf "***** cases  executed=%i skipped=%i failures=%i errors=%i\n" $CASE_EXECUTECount $CASE_SKIPCount $CASE_FAILURECount $CASE_ERRORCount
+printf "***** categories of this run: %s\n" "$cats"
 printf "***** used workdir: %s\n" "$TTRO_workDir"
 printf "***** Index in %s\n" "$indexfilename"
 printf "*******************************************************************************************************\n"

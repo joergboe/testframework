@@ -362,6 +362,7 @@ function createGlobalIndex {
 		<hr>
 		***** suites executed=$SUITE_EXECUTECount skipped=$SUITE_SKIPCount errors=$SUITE_ERRORCount<br>
 		***** cases  executed=$CASE_EXECUTECount skipped=$CASE_SKIPCount failures=$CASE_FAILURECount errors=$CASE_ERRORCount<br>
+		***** categories of this run: ${cats}<br>
 		***** used workdir: <a href="$TTRO_workDir">$TTRO_workDir</a><br>
 		<hr>
 		</p>      
