@@ -105,7 +105,7 @@ Version 2.6.2:
 - Error corrections
 - Improvementes in builReleasePackage.sh
 
-Version 2.6.3:
+Version 2.7.0:
 - New functions to get streams job health: jobHealthyVariable, jobHealthy, jobHealthyAndIntercept,
 - New function to wait for final file and check health: waitForFinAndHealth
 - New utils function: trim, getSystemLoad, getSystemLoad100
