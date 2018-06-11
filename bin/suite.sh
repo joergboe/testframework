@@ -136,7 +136,8 @@ if [[ -e "${TTRO_inputDirSuite}/SKIP" ]]; then
 	printInfo "SKIP file found suite=$TTRO_suite variant=$TTRO_variantSuite"
 	createSuiteIndex "$indexfilename"
 	echo "SKIPPED" >> "$indexfilename"
-	endSuiteIndex "$indexfilename"
+	getElapsedTime "$suiteStartTime"
+	endSuiteIndex "$indexfilename" "$TTTT_elapsedTime"
 	exit $errSkip
 fi
 
@@ -175,7 +176,8 @@ if [[ -n $TTTT_skipthis ]]; then
 	printInfo "SKIP variable set; Skip execution suite=$TTRO_suite variant=$TTRO_variantSuite"
 	createSuiteIndex "$indexfilename"
 	echo "SKIPPED" >> "$indexfilename"
-	endSuiteIndex "$indexfilename"
+	getElapsedTime "$suiteStartTime"
+	endSuiteIndex "$indexfilename" "$TTTT_elapsedTime"
 	exit $errSkip
 fi
 
