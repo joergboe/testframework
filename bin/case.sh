@@ -67,7 +67,7 @@ declare -i executedTestFinSteps=0
 declare TTTT_failureOccurred=''
 declare TTTT_skipthis=""
 eval "$TTXX_runCategoryPatternArray"
-declare -a TTTT_categoryArray=()
+declare -a TTTT_categoryArray=( 'default' )
 
 #test finalization function
 function caseFinalization {

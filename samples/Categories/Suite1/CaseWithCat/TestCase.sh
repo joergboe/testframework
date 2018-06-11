@@ -1,4 +1,4 @@
-#--variantCount=5
+#--variantCount=6
 
 #prepare the case categories
 case "$TTRO_variantCase" in
