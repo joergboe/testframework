@@ -111,3 +111,6 @@ Version 2.7.0:
 - New utils function: trim, getSystemLoad, getSystemLoad100
 - Print the elapsed time
 
+Version 2.7.1:
+- Some fixes in category handling
+
