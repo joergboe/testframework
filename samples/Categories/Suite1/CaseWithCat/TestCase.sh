@@ -4,7 +4,7 @@
 case "$TTRO_variantCase" in
 	0) setCategory ;;
 	1) setCategory 'cat1' 'other' ;;
-	2) setCategory 'cat1' 'cat2' 'cat3''other' ;;
+	2) setCategory 'cat1' 'cat2' 'cat3' 'other' ;;
 	3) setCategory 'cat3' ;;
 	4) setCategory 'cat4' ;;
 esac

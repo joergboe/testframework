@@ -361,19 +361,21 @@ function manpage () {
 	## Skip Test Cases - Category Control
 	=====================================
 	A test case or a test suite is skipped if the function skip is called during initialization phase of the artifact. 
-	This function sets the skip-switch to true.
+	This function sets the property TTPRN_skip to true.
 	
-	A test case is skipped if the property TTPRN_skip is defined. This property may be set :
+	A test case is skipped if the property TTPRN_skip is defined ant true. This property may be set :
 	- In the initialization or preparation phase of an test suite variant - this disables all cases of this suite variant
 	- In the initialization phase of an test case (variant) - this disables only one case variant
 
 	Alternatively the existence of an file SKIP in the Test Case/Suite directory inhibits the execution of all variants of the Case/Suite.
 	
-	The function setCategory defines the category of a Test Case or Test Suite. The those categories are checked before the Case/Suite
-	is executed. The run-categories of the a test run can be defined with command line parameter -c|--category VALUE. The run-categories 
-	are considered patterns. 
-	If one of the run-category pattern matches any ot the categories of the artifact, the Case/Suite is executed. Otherwise it is skipped.
-	If no run-category patter is entered or the Case/Suite has not defined any category, the Case/Suite is executed anyway.
+	The function 'setCategory' defines the categories of a Test Case or Test Suite. The categories are checked before the Case- or Suite- preparation
+	is executed.
+	The run-categories of the a test run can be defined with command line parameter -c|--category VALUE. The run-categories 
+	are considered to be patterns.
+	If one of the run-category pattern matches any of the categories of the artifact, the Case/Suite is executed. Otherwise it is skipped.
+	A test Cases or Suites without a defined categorie are always executed independently from the run-categories.
+	If no run-category pattern is entered, all Cases and Suite are executed, regardless of the defined categories.
 	
 
 

@@ -310,17 +310,18 @@ function writeProtectExportedFunctions {
 #        or if catecory or eval TTTT_runCategoryPatternArray is empty
 #        false otherwise
 function checkCats {
-	local lenCat=0
 	if isNotExisting 'TTTT_categoryArray'; then
 		printErrorAndExit "variable TTTT_categoryArray must exist" $errRt
 	fi
 	if ! isArray 'TTTT_categoryArray'; then
 		printErrorAndExit "variable TTTT_categoryArray must be an indexed array" $errRt
 	fi
-	lenCat="${#TTTT_categoryArray[*]}"
-	local dispstring=$(declare -p 'TTTT_categoryArray')
-	local dispstring2=$(declare -p 'TTTT_runCategoryPatternArray')
-	isDebug && printDebug "$dispstring $dispstring2"
+	if isDebug; then
+		local dispstring=$(declare -p 'TTTT_categoryArray')
+		local dispstring2=$(declare -p 'TTTT_runCategoryPatternArray')
+		printDebug "$dispstring $dispstring2"
+	fi
+	local lenCat="${#TTTT_categoryArray[*]}"
 	local lenRunPat="${#TTTT_runCategoryPatternArray[*]}"
 	if [[ ( $lenCat -eq 0 ) || ( $lenRunPat -eq 0 ) ]]; then
 		isVerbose && printVerbose "No artifact category set or nor run category pattern set: return true"

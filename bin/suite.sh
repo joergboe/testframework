@@ -132,17 +132,17 @@ cd "$TTRO_workDirSuite"
 indexfilename="${TTRO_workDirSuite}/suite.html"
 
 #check skipfile
-if [[ -e "${TTRO_inputDirSuite}/SKIP" ]]; then
-	printInfo "SKIP file found suite=$TTRO_suite variant=$TTRO_variantSuite"
-	createSuiteIndex "$indexfilename"
-	echo "SKIPPED" >> "$indexfilename"
-	getElapsedTime "$suiteStartTime"
-	endSuiteIndex "$indexfilename" "$TTTT_elapsedTime"
-	exit $errSkip
-fi
+if [[ $TTRO_suiteIndex -ne 0 ]]; then 
+	if [[ -e "${TTRO_inputDirSuite}/SKIP" ]]; then
+		printInfo "SKIP file found suite=$TTRO_suite variant=$TTRO_variantSuite"
+		createSuiteIndex "$indexfilename"
+		echo "SKIPPED" >> "$indexfilename"
+		getElapsedTime "$suiteStartTime"
+		endSuiteIndex "$indexfilename" "$TTTT_elapsedTime"
+		exit $errSkip
+	fi
 
-#source suite file
-if [[ $TTRO_suiteIndex -ne 0 ]]; then
+	#source suite file
 	tmp="${TTRO_inputDirSuite}/${TEST_SUITE_FILE}"
 	if [[ -e "$tmp" ]]; then
 		isVerbose && printVerbose  "Source Suite file $tmp"
@@ -162,23 +162,25 @@ printTestframeEnvironment > "$tmp"
 export >> "$tmp"
 
 #check skip
-if [[ -n $TTPRN_skip ]]; then
-	TTTT_skipthis="true"
-fi
-#check category
-if ! checkCats; then
-	TTTT_skipthis='true'
-fi
-if [[ -n $TTPRN_skipIgnore ]]; then
-	TTTT_skipthis=""
-fi
-if [[ -n $TTTT_skipthis ]]; then
-	printInfo "SKIP variable set; Skip execution suite=$TTRO_suite variant=$TTRO_variantSuite"
-	createSuiteIndex "$indexfilename"
-	echo "SKIPPED" >> "$indexfilename"
-	getElapsedTime "$suiteStartTime"
-	endSuiteIndex "$indexfilename" "$TTTT_elapsedTime"
-	exit $errSkip
+if [[ $TTRO_suiteIndex -ne 0 ]]; then
+	if [[ -n $TTPRN_skip ]]; then
+		TTTT_skipthis="true"
+	fi
+	#check category
+	if ! checkCats; then
+		TTTT_skipthis='true'
+	fi
+	if [[ -n $TTPRN_skipIgnore ]]; then
+		TTTT_skipthis=""
+	fi
+	if [[ -n $TTTT_skipthis ]]; then
+		printInfo "SKIP variable set; Skip execution suite=$TTRO_suite variant=$TTRO_variantSuite"
+		createSuiteIndex "$indexfilename"
+		echo "SKIPPED" >> "$indexfilename"
+		getElapsedTime "$suiteStartTime"
+		endSuiteIndex "$indexfilename" "$TTTT_elapsedTime"
+		exit $errSkip
+	fi
 fi
 
 #--------------------------------------------------
