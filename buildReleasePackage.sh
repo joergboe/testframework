@@ -43,7 +43,7 @@ mkdir -p "$releasedir"
 
 fname="testframeInstaller_v${TTRO_version}.sh"
 
-tar cvJf "$releasedir/tmp.tar.xz" --exclude=.apt_generated --exclude=.toolkitList --exclude=.gitignore bin samples streamsx.testframe README.md RELEASE.INFO
+tar cvJf "$releasedir/tmp.tar.xz" --exclude=.apt_generated --exclude=.toolkitList --exclude=.gitignore --exclude oldcode.sh bin samples streamsx.testframe README.md RELEASE.INFO
 
 cat tools/selfextract.sh releases/tmp.tar.xz > "$releasedir/$fname"
 

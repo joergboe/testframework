@@ -1,5 +1,5 @@
 #####################################################
-# Utilities for the main testframework script
+# Utilities for the main testframework script runTTF
 #####################################################
 
 #
