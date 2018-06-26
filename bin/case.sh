@@ -43,12 +43,12 @@ function usage {
 	cat <<-EOF
 	
 	#usage: ${command} scriptsPath suitePath casePath workdir variant;
-	usage: ${command} casePath workdir variant;
+	usage: ${command} casePath workdir variant preamblError;
 	
 	EOF
 }
 isDebug && printDebug "$0 $*"
-if [[ $# -ne 3 ]]; then
+if [[ $# -ne 4 ]]; then
 	usage
 	exit ${errInvocation}
 fi
@@ -57,7 +57,8 @@ declare -r caseStartTime=$(date -u +%s)
 #setup case values
 declare -rx TTRO_inputDirCase="$1"; shift
 declare -rx TTRO_workDirCase="$1"; shift
-declare -rx TTRO_variantCase="$1"
+declare -rx TTRO_variantCase="$1"; shift
+declare -r TTTT_preamblError="$1"
 #more values to setup
 declare -r suite="${TTRO_inputDirSuite##*/}"
 declare -rx TTRO_case="${TTRO_inputDirCase##*/}"
@@ -177,6 +178,13 @@ printInfo "**** START Case $TTRO_case variant '$TTRO_variantCase' in workdir $TT
 #----------------------------------
 # enter working dir
 cd "$TTRO_workDirCase"
+
+#handle preambl error
+if [[ -n $TTTT_preamblError ]]; then
+	printError "Preambl Error"
+	caseFinalized='true'
+	errorExit
+fi
 
 #check skipfile
 if [[ -e "${TTRO_inputDirCase}/SKIP" ]]; then

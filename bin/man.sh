@@ -142,9 +142,7 @@ function manpage () {
 	=====================
 	The definition of the variables and properties must have the form:
 	#--name=value
-	No spaces are allowed between name '=' and value.
-	The assignment is literally executed. That means no expansion and no word splitting is performed and no quoting is required.
-	Quoting is allowed. (There is a quote removal)
+	No spaces are allowed between name '=' and value. The assignement requires the same quoting as a reqular assignement.
 	The whole assignment must fit into one line.
 	The preamble defines the variants of the test artifacts and in case of a test case, the timeout values for the test case.
 	

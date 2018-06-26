@@ -10,14 +10,16 @@
 # $4 the chain of suite names delim / (parent)
 # $5 the chain of suite string including variants delim :: : (parent value)
 # $6 parent sworkdir
+# $7 preambl error
 # expect suiteVariants suiteErrors suiteSkip
 function exeSuite {
-	isDebug && printDebug "******* $FUNCNAME $*"
+	isDebug && printDebug "******* $FUNCNAME $* number args $#"
 	local suite="${suitesName[$1]}"
 	local suitePath="${suitesPath[$1]}"
 	local nestingLevel=$(($3+1))
 	local suiteNestingPath="$4"
 	local suiteNestingString="$5"
+	local preamblError="$7"
 	if [[ $1 -ne 0 ]]; then
 		if [[ -z $suiteNestingPath ]]; then
 			suiteNestingPath+="${suite}"
@@ -64,7 +66,7 @@ function exeSuite {
 
 	#execute suite variant
 	local result=0
-	if "${TTRO_scriptDir}/suite.sh" "$1" "$2" "${sworkdir}" "$nestingLevel" "$suiteNestingPath" "$suiteNestingString" 2>&1 | tee -i "${sworkdir}/${TEST_LOG}"; then
+	if "${TTRO_scriptDir}/suite.sh" "$1" "$2" "${sworkdir}" "$nestingLevel" "$suiteNestingPath" "$suiteNestingString" "$preamblError" 2>&1 | tee -i "${sworkdir}/${TEST_LOG}"; then
 		result=0;
 	else
 		result=$?
@@ -119,34 +121,32 @@ function exeSuite {
 } #/exeSuite
 
 #
-# Read a test case or a test suite file and extracts the variables
+# Read a test case or a test suite file and evaluate the preambl
 # variantCount and variantList and conditional the type; ignore the rest
 # $1 is the filename to read
 # return 0 in success case
-# exits with ${errRt} if an invalid line was read;
+# return 1 if an invalid line was read;
 # results are returned in global variables variantCount; variantList
-function readVariantFile {
+function evalPreambl {
 	isDebug && printDebug "$FUNCNAME $1"
 	if [[ ! -r $1 ]]; then
 		printErrorAndExit "${FUNCNAME} : Can not open file=$1 for read" ${errRt}
 	fi
-	variantCount=""; variantList=""; splitter=""
+	variantCount=""; variantList=""
 	declare -i lineno=1
 	{
 		local varname=
 		local value=
 		local result=0
-		local unq
 		while [[ result -eq 0 ]]; do
 			if ! read -r; then result=1; fi
 			if [[ ( result -eq 0 ) || ( ${#REPLY} -gt 0 ) ]]; then #do not eval the last and empty line
-				if splitVarValue "$REPLY"; then
+				if SplitPreamblAssign "$REPLY"; then
 					if [[ -n $varname ]] ; then
 						isDebug && printDebug "$FUNCNAME prepare for variant encoding varname=$varname value=$value"
 						case $varname in
 							variantCount )
-								unq=$(dequote "${value}")
-								if ! variantCount="${unq}"; then
+								if ! eval "variantCount=${value}"; then
 									printErrorAndExit "${FUNCNAME} : Invalid value in file=$1 line=$lineno '$REPLY'" ${errRt}
 								fi
 								if ! isPureNumber "$variantCount"; then
@@ -155,15 +155,13 @@ function readVariantFile {
 								isVerbose && printVerbose "variantCount='${variantCount}'"
 							;;
 							variantList )
-								unq=$(dequote "${value}")
-								if ! variantList="${unq}"; then
+								if ! eval "variantList=${value}"; then
 									printErrorAndExit "${FUNCNAME} : Invalid value in file=$1 line=$lineno '$REPLY'" ${errRt}
 								fi
 								isVerbose && printVerbose "variantList='${variantList}'"
 							;;
 							timeout )
-								unq=$(dequote "${value}")
-								if ! timeout="${unq}"; then
+								if ! eval "timeout=${value}"; then
 									printErrorAndExit "${FUNCNAME} : Invalid value in file=$1 line=$lineno '$REPLY'" ${errRt}
 								fi
 								if ! isPureNumber "$timeout"; then
@@ -173,19 +171,58 @@ function readVariantFile {
 							;;
 							* )
 								#other property or variable
-								isDebug && printDebug "${FUNCNAME} : Ignore varname='$varname' in file $1 line=$lineno"
+								printError "${FUNCNAME} : Invalid preambl varname='$varname' in file $1 line=$lineno '$REPLY'"
+								return 1
 							;;
 						esac
 					else
-						printErrorAndExit "${FUNCNAME} : Invalid line or property name in case or suitefile file=$1 line=$lineno '$REPLY'" ${errRt}
+						printError "${FUNCNAME} : Invalid preampl line case or suitefile file=$1 line=$lineno '$REPLY'"
+						return 1
 					fi
 				fi
-					#isDebug && printDebug "Ignore line file=$1 line=$lineno '$REPLY'"
+				#isDebug && printDebug "Ignore line file=$1 line=$lineno '$REPLY'"
 				lineno=$((lineno+1))
 			fi
 		done
 	} < "$1"
 	return 0
+}
+
+#
+# SplitPreamblAssign
+# Split the variable name and value part of an assignement in a preambl line
+# Line must start with [space]#--[space]
+# The assignemtnet must something matching [[:word:]]=
+# Ingnore all other lines
+#	$1 the input line (only one line without nl)
+#	return variables:
+#		varname
+#		value
+#	returns
+#		success(0) if there was a preambl line
+#					the varname is empty if there is no valid assignement in the preambl line
+#		error(1)   if there was no prambl line'
+function SplitPreamblAssign {
+	[[ $# -eq 1 ]] || printErrorAndExit "Wrong number of arguments $# in $FUNCNAME" $errRt
+	isDebug && printDebug "$FUNCNAME \$1='$1'"
+	if [[ $1 =~ ^[[:space:]]*\#--[[:space:]]*(.*) ]]; then
+		#echo true "'${BASH_REMATCH[0]}'" "'${BASH_REMATCH[1]}'"
+		local pl="${BASH_REMATCH[1]}"
+		#echo "'$pl'"
+		if [[ $pl =~ ^([a-zA-Z0-9_]+)=(.*) ]]; then
+			varname="${BASH_REMATCH[1]}"
+			value="${BASH_REMATCH[2]}"
+			isDebug && printDebug "$FUNCNAME varname='$varname' value='$value'"
+		else
+			varname=""
+			value=""
+			printError "no valid preambl line here '$pl'"
+		fi
+		return 0
+	else
+		#echo false
+		return 1
+	fi
 }
 
 #

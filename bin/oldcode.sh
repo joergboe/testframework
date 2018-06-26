@@ -99,3 +99,60 @@ function setProperties {
 		done
 	} < "$1"
 }
+
+TTRO_help_splitVarValue='
+# Function splitVarValue
+#	Split an line #*#varname=value into the components
+#	and           #*#varname:=value
+#
+#	Ignore all other lines
+#	ignore empty lines and lines with only spaces
+#	varname must not be empty and must not contain any blank characters
+#	$1 the input line (only one line without nl)
+#	return variables:
+#		varname
+#		value
+#		splitter
+#	returns
+#		success(0) if the function succeeds
+#		error(1)   otherwise'
+function splitVarValue___ {
+	isDebug && printDebug "$FUNCNAME \$1='$1'"
+	if [[ $1 == \#--* ]]; then
+		local tmp=${1#*#--}
+		if [[ -n $tmp && (${tmp//[[:blank:]]/} != "" ) ]]; then
+			local value1=${tmp#*:=}
+			local name1=${tmp%%:=*}
+			#echo "name1=$name1 value1=$value1"
+			if [[ "$value1" != "$tmp" && "$name1" != "$tmp" ]]; then #there was something removed -> there was a =
+				splitter=':='
+			else
+				value1=${tmp#*=}
+				name1=${tmp%%=*}
+				#echo "name1=$name1 value1=$value1"
+				if [[ "$value1" != "$tmp" && "$name1" != "$tmp" ]]; then #there was something removed -> there was a :=
+					splitter='='
+				else
+					printError "$FUNCNAME: No '=' in special comment line '$1' Ignored"
+					return 1
+				fi
+			fi
+			#if [[ $tmp =~ (.*)=(.*) ]]; then problem if more tah one = in line
+			#	local name1=${BASH_REMATCH[1]}
+			#	local value1=${BASH_REMATCH[2]}
+			if [[ -n $name1 && ! ( $name1 =~ [[:blank:]] ) ]] ; then
+				varname="$name1"
+				value="$value1"
+				return 0
+			else
+				printError "$FUNCNAME: Varname contains blanks in special comment line '$1' Ignored"
+				return 1
+			fi
+		else
+			return 1
+		fi
+	else
+		return 1
+	fi
+}
+

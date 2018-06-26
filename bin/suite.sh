@@ -75,13 +75,13 @@ function usage {
 	local command=${0##*/}
 	cat <<-EOF
 	
-	usage: ${command} suiteIndex suiteVariant suiteWorkdir suiteNestingLevel suiteNestingPath suiteNestingString;
+	usage: ${command} suiteIndex suiteVariant suiteWorkdir suiteNestingLevel suiteNestingPath suiteNestingString preamblError;
 	
 	Requires exported execution list variables
 	EOF
 }
 isDebug && printDebug "$0 $*"
-if [[ $# -ne 6 ]]; then
+if [[ $# -ne 7 ]]; then
 	usage
 	exit ${errInvocation}
 fi
@@ -92,6 +92,7 @@ declare -rx TTRO_workDirSuite="$1"; shift
 declare -rx TTRO_suiteNestingLevel="$1"; shift
 declare -rx TTRO_suiteNestingPath="$1"; shift
 declare -rx TTRO_suiteNestingString="$1"; shift
+declare -rx TTTT_preamblError="$1"; shift
 
 #restore all execution lists from exports
 eval "$TTXX_suitesPath"
@@ -130,6 +131,15 @@ cd "$TTRO_workDirSuite"
 
 #prepare index.html name
 indexfilename="${TTRO_workDirSuite}/suite.html"
+
+#handle preambl error
+if [[ -n $TTTT_preamblError ]]; then
+	createSuiteIndex "$indexfilename"
+	echo "ERROR Preambl Error" >> "$indexfilename"
+	getElapsedTime "$suiteStartTime"
+	endSuiteIndex "$indexfilename" "$TTTT_elapsedTime"
+	printErrorAndExit "Preambl Error" $errRt
+fi
 
 #check skipfile
 if [[ $TTRO_suiteIndex -ne 0 ]]; then 
@@ -223,20 +233,26 @@ function setTimeoutInArray {
 declare -a caseVariantPathes=()		#the case path of all case variants
 declare -a caseVariantIds=()		#the variant id of all cases
 declare -a caseVariantWorkdirs=()	#the workdir of each variant
+declare -a casePreambErrors=()		#true if case has peambl error
 declare -ai caseTimeout=()			#the individual timeout
 declare -i noCaseVariants=0			#the overall number of case variants
-declare variantCount variantList
+declare variantCount='' variantList='' preamblError=''
 for ((i=0; i<noCases; i++)) do
 	casePath="${cases[$i]}"
 	caseName="${casePath##*/}"
 	unset timeout
-	readVariantFile "${casePath}/${TEST_CASE_FILE}" "case"
+	if evalPreambl "${casePath}/${TEST_CASE_FILE}"; then
+		preamblError=''
+	else
+		preamblError='true'; variantCount=''; variantList=''
+	fi
 	#echo "variantCount=$variantCount variantList=$variantList"
 	if [[ -z $variantCount ]]; then
 		if [[ -z $variantList ]]; then
 			caseVariantPathes[$noCaseVariants]="$casePath"
 			caseVariantIds[$noCaseVariants]=""
 			caseVariantWorkdirs[$noCaseVariants]="${TTRO_workDirSuite}/${caseName}"
+			casePreambErrors[$noCaseVariants]="$preamblError"
 			setTimeoutInArray
 			noCaseVariants=$((noCaseVariants+1))
 		else
@@ -244,6 +260,7 @@ for ((i=0; i<noCases; i++)) do
 				caseVariantPathes[$noCaseVariants]="$casePath"
 				caseVariantIds[$noCaseVariants]="${x}"
 				caseVariantWorkdirs[$noCaseVariants]="${TTRO_workDirSuite}/${caseName}/${x}"
+				casePreambErrors[$noCaseVariants]="$preamblError"
 				setTimeoutInArray
 				noCaseVariants=$((noCaseVariants+1))
 			done
@@ -255,12 +272,13 @@ for ((i=0; i<noCases; i++)) do
 				caseVariantPathes[$noCaseVariants]="$casePath"
 				caseVariantIds[$noCaseVariants]="${j}"
 				caseVariantWorkdirs[$noCaseVariants]="${TTRO_workDirSuite}/${caseName}/${j}"
+				casePreambErrors[$noCaseVariants]="$preamblError"
 				setTimeoutInArray
 				noCaseVariants=$((noCaseVariants+1))
 			done
 			unset j
 		else
-			printError "ERROR: In case ${TTRO_suite}:$caseName we have both variant variables variantCount=$variantCount and variantList=$variantList ! Case is skipped"
+			printError "In case ${TTRO_suite}:$caseName we have both variant variables variantCount=$variantCount and variantList=$variantList ! Case is skipped"
 		fi
 	fi
 done
@@ -568,6 +586,7 @@ while [[ -z $allJobsGone ]]; do
 	#start a new job
 	if [[ -n $caseName && -n $availableTpidIndex ]]; then
 		cworkdir="${caseVariantWorkdirs[$jobIndex]}"
+		cpreamblError="${casePreambErrors[$jobIndex]}"
 		#make and cleanup case work dir
 		if [[ -e $cworkdir ]]; then
 			printError "Case workdir exists: $cworkdir"
@@ -585,9 +604,9 @@ while [[ -z $allJobsGone ]]; do
 		printInfo "START: jobIndex=$jobIndex case=$caseName variant=$caseVariant index=$availableTpidIndex running=$tmp systemLoad=$TTTT_systemLoad"
 		#Start job connect output to stdout in single thread case
 		if [[ "$TTRO_noParallelCases" -eq 1 ]]; then
-			$cmd "$casePath" "$cworkdir" "$caseVariant" 2>&1 | tee -i "${cworkdir}/${TEST_LOG}" &
+			$cmd "$casePath" "$cworkdir" "$caseVariant" "$cpreamblError" 2>&1 | tee -i "${cworkdir}/${TEST_LOG}" &
 		else
-			$cmd "$casePath" "$cworkdir" "$caseVariant" &> "${cworkdir}/${TEST_LOG}" &
+			$cmd "$casePath" "$cworkdir" "$caseVariant" "$cpreamblError" &> "${cworkdir}/${TEST_LOG}" &
 		fi
 		tmp=$(jobs %+)
 		isDebug && printDebug "jobspec:$tmp"
@@ -631,14 +650,16 @@ for sindex_xyza in ${childSuites[$TTRO_suiteIndex]}; do
 		break
 	fi
 	isVerbose && printVerbose "**** START Nested Suite: $suite ************************************"
-	variantCount=""; variantList=""; splitter=""
-	readVariantFile "${suitePath}/${TEST_SUITE_FILE}" "suite"
+	variantCount=""; variantList=""; preamblError=""
+	if ! evalPreambl "${suitePath}/${TEST_SUITE_FILE}"; then
+		preamblError='true'; variantCount=""; variantList=""
+	fi
 	if [[ -z $variantCount ]]; then
 		if [[ -z $variantList ]]; then
- 			exeSuite "$sindex_xyza" "" "$TTRO_suiteNestingLevel" "$TTRO_suiteNestingPath" "$TTRO_suiteNestingString" "$TTRO_workDirSuite"
+ 			exeSuite "$sindex_xyza" "" "$TTRO_suiteNestingLevel" "$TTRO_suiteNestingPath" "$TTRO_suiteNestingString" "$TTRO_workDirSuite" "$preamblError"
 		else
 			for x_xyza in $variantList; do
-				exeSuite "$sindex_xyza" "$x_xyza" "$TTRO_suiteNestingLevel" "$TTRO_suiteNestingPath" "$TTRO_suiteNestingString" "$TTRO_workDirSuite"
+				exeSuite "$sindex_xyza" "$x_xyza" "$TTRO_suiteNestingLevel" "$TTRO_suiteNestingPath" "$TTRO_suiteNestingString" "$TTRO_workDirSuite" "$preamblError"
 				if [[ $interruptReceived -gt 0 ]]; then
 					printInfo "SIGINT: end Suites loop"
 					break
@@ -650,7 +671,7 @@ for sindex_xyza in ${childSuites[$TTRO_suiteIndex]}; do
 		if [[ -z $variantList ]]; then
 			declare -i j_xyza
 			for ((j_xyza=0; j_xyza<variantCount; j_xyza++)); do
-				exeSuite "$sindex_xyza" "$j_xyza" "$TTRO_suiteNestingLevel" "$TTRO_suiteNestingPath" "$TTRO_suiteNestingString" "$TTRO_workDirSuite"
+				exeSuite "$sindex_xyza" "$j_xyza" "$TTRO_suiteNestingLevel" "$TTRO_suiteNestingPath" "$TTRO_suiteNestingString" "$TTRO_workDirSuite" "$preamblError"
 				if [[ $interruptReceived -gt 0 ]]; then
 					printInfo "SIGINT: end Suites loop"
 					break

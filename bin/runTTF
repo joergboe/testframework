@@ -635,7 +635,7 @@ export >> "$tmp"
 declare -i suiteVariants=0 suiteErrors=0 suiteSkip=0
 if [[ $interruptReceived -eq 0 ]]; then
 	isVerbose && printVerbose "**** START Root Suite ************************************"
-	exeSuite '0' '' '-1' '' '' "${TTRO_workDir}"
+	exeSuite "0" "" "-1" "" "" "${TTRO_workDir}" "";
 	isVerbose && printVerbose "**** END Root Suite **************************************"
 fi
 
