@@ -114,3 +114,7 @@ Version 2.7.0:
 Version 2.7.2:
 - Some fixes in category handling
 
+Version 2.7.3:
+- Simplified preambl handling: Now quote like a reqular assignement
+
+
