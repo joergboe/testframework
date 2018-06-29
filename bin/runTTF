@@ -113,6 +113,7 @@ declare -r -A singleOptions=(
 	['flat']='-f --flat'
 	['noprompt']='--noprompt'
 	['nobrowser']='--no-browser'
+	['summary']='--summary'
 )
 declare -r -A valueOptions=(
 	['workdir']='-w --workdir'
@@ -300,6 +301,9 @@ setVar 'TTPRN_debug' "$debug"
 setVar 'TTPRN_debugDisable' ''
 setVar 'TTPRN_verbose' "$verbose"
 setVar 'TTPRN_verboseDisable' ''
+if [[ -n $summary ]]; then
+	setVar 'TTPR_summary' 'true'
+fi
 
 #---------------------------------------------------------
 # create workdir if necessary and make it absolute

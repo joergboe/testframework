@@ -792,6 +792,32 @@ fi
 printf "**** Suite: $TTRO_suite Variant: '$TTRO_variantSuite' cases=%i skipped=%i failures=%i errors=%i *****\n" $jobIndex $variantSkiped $variantFailures $variantErrors
 printInfo "**** Elapsed time $TTTT_elapsedTime *****"
 
+#---------------------------------------------------------------------------------
+#print secial summary
+if isExisting 'TTPR_summary'; then
+	if [[ -n $TTPR_summary ]]; then
+		sname="${TTRO_suite}"
+		if [[ -z $sname ]]; then sname='Dummy'; fi
+		if [[ -n ${TTRO_variantSuite} ]]; then sname="${sname}_${TTRO_variantSuite}"; fi
+		reportfile="${TTRO_workDirSuite}/${sname}_summary.txt"
+		#echo "Enter test report into $reportfile"
+		echo "Testsuite: ${sname}" > "$reportfile"
+		echo "Tests run: $jobIndex, Failures: $variantFailures, Errors: $variantErrors, Skipped: $variantSkiped, Time elapsed: ${TTTT_elapsedTime} sec" >> "$reportfile"
+		echo "" >> "$reportfile"
+		for ((x=0;x<jobIndex;x++)); do
+			tmp="${caseVariantPathes[$x]}"
+			variant="${caseVariantIds[$x]}"
+			name="${tmp##*/}"
+			if [[ -n $variant ]]; then
+				cname="${name}_$variant"
+			else
+				cname="$name"
+			fi
+			echo "Testcase: $cname took 1.0 sec" >> "$reportfile"
+		done
+	fi
+fi
+
 builtin echo -n "$suiteResult" > "${TTRO_workDirSuite}/DONE"
 
 isDebug && printDebug "END: Suite $TTRO_suite variant='$TTRO_variantSuite' suite exit code $suiteResult"

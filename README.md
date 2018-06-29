@@ -123,4 +123,5 @@ Version 2.8.0:
 	^[[:space:]]*//<%!varid1:varid2%> are not effective if the argument $3 equal one of the varid1, or varid2..
 	and is able to work with lists of version ids in one line
 - Better logging of job and pid specification
+- Introduced special report for suites for automated tests
 
