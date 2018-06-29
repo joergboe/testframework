@@ -23,6 +23,8 @@ declare -r commandname="${0##*/}"
 declare caseExecutionLoopRunning=''
 #start time
 declare -r suiteStartTime=$(date -u +%s)
+#state
+declare TTTT_state='initializing'
 
 # Function handle SIGINT
 function handleSigint {
@@ -295,6 +297,7 @@ export >> "${TTRO_workDirSuite}/${TEST_ENVIRONMET_LOG}"
 
 #------------------------------------------------
 #execute test suite preparation
+TTTT_state='preparation'
 declare -i executedTestPrepSteps=0
 for name_xyza in 'TTRO_prepsSuite' 'PREPS'; do
 	if isExisting "$name_xyza"; then
@@ -341,6 +344,7 @@ printInfo "$executedTestPrepSteps Test Suite Preparation steps executed"
 
 #-------------------------------------------------
 #test case execution
+TTTT_state='execution'
 unset x
 if [[ $TTRO_noParallelCases -eq 1 ]]; then
 	declare -ri maxParralelJobs=1
@@ -416,9 +420,9 @@ while [[ -z $allJobsGone ]]; do
 		getSystemLoad100
 		if [[ -n $caseName ]]; then
 			for ((i=0; i<currentParralelJobs; i++)); do
-				isDebug && printDebug "Check free index $i"
+				isDebug && printDebug "Check free i=$i"
 				if [[ -z ${tpid[$i]} ]]; then
-					isDebug && printDebug "Index $i is free"
+					isDebug && printDebug "i=$i is free"
 					availableTpidIndex=$i
 					break
 				fi
@@ -440,12 +444,12 @@ while [[ -z $allJobsGone ]]; do
 						else
 							tempjobspec="%${tjobid[$i]}"
 						fi
-						printInfo "Timeout Kill index=${i} jobspec=${tempjobspec} with SIGTERM case=${tcase[$i]} variant=${tvariant[$i]}"
+						printWarning "Timeout Kill i=${i} jobspec=${tempjobspec} with SIGTERM case=${tcase[$i]} variant=${tvariant[$i]} pid=${tpid[$i]}"
 						#SIGINT and SIGHUP seems not to work can not install handler for both signals in case.sh
 						if kill "${tempjobspec}"; then
 							echo "timeout" > "${tcaseWorkDir[$i]}/TIMEOUT"
 						else
-							printWarning "Can not kill index=${i} jobspec=${tempjobspec} Gone?"
+							printWarning "Can not kill i=${i} jobspec=${tempjobspec} Gone?"
 						fi
 						killed[$i]="$now"
 					fi
@@ -457,9 +461,9 @@ while [[ -z $allJobsGone ]]; do
 						else
 							tempjobspec="%${tjobid[$i]}"
 						fi
-						printError "Forced Kill index=${i} jobspec=${tempjobspec} case=${tcase[$i]} variant=${tvariant[$i]}"
+						printError "Forced Kill i=${i} jobspec=${tempjobspec} case=${tcase[$i]} variant=${tvariant[$i]} pid=${tpid[$i]}"
 						if ! kill -9 "${tempjobspec}"; then
-							printWarning "Can not force kill index=${i} jobspec=${tempjobspec} Gone?"
+							printWarning "Can not force kill i=${i} jobspec=${tempjobspec} pid=${tpid[$i]} Gone?"
 						fi
 					fi  
 				fi
@@ -492,7 +496,7 @@ while [[ -z $allJobsGone ]]; do
 							echo "$tmpCaseAndVariant" >> "${TTRO_workDirSuite}/CASE_EXECUTE"
 							
 							#executeList+=("$tmpCaseAndVariant")
-							printInfon "END: index=$i pid=$pid jobspec=%$jobid case=${tmpCase} variant='${tmpVariant}' running=$numberJobsRunning systemLoad=$TTTT_systemLoad"
+							printInfon "END: i=$i pid=$pid jobspec=%$jobid case=${tmpCase} variant='${tmpVariant}' running=$numberJobsRunning systemLoad=$TTTT_systemLoad"
 							tpid[$i]=""
 							tjobid[$i]=""
 							#if there is a new job to start: take only the first free index and only if less than currentParralelJobs
@@ -555,9 +559,9 @@ while [[ -z $allJobsGone ]]; do
 		if [[ -z $caseName ]]; then
 			declare -i j=0
 			for ((i=0; i<maxParralelJobs; i++)); do
-				isDebug && printDebug "Check for all jobs gone: index $i"
+				isDebug && printDebug "Check for all jobs gone: i=$i"
 				if [[ -n ${tpid[$i]} ]]; then
-					isDebug && printDebug "Check for all jobs gone: index $i is not free pid=${tpid[$i]}"
+					isDebug && printDebug "Check for all jobs gone: i=$i is not free pid=${tpid[$i]}"
 					break
 				fi
 				j=$((j+1))
@@ -601,29 +605,36 @@ while [[ -z $allJobsGone ]]; do
 			fi
 		done
 		cmd="${TTRO_scriptDir}/case.sh"
-		printInfo "START: jobIndex=$jobIndex case=$caseName variant=$caseVariant index=$availableTpidIndex running=$tmp systemLoad=$TTTT_systemLoad"
+		printInfon "START: jobIndex=$jobIndex case=$caseName variant=$caseVariant i=$availableTpidIndex running=$tmp systemLoad=$TTTT_systemLoad"
 		#Start job connect output to stdout in single thread case
 		if [[ "$TTRO_noParallelCases" -eq 1 ]]; then
 			$cmd "$casePath" "$cworkdir" "$caseVariant" "$cpreamblError" 2>&1 | tee -i "${cworkdir}/${TEST_LOG}" &
+			tmp4=$!
 		else
 			$cmd "$casePath" "$cworkdir" "$caseVariant" "$cpreamblError" &> "${cworkdir}/${TEST_LOG}" &
+			tmp4=$!
 		fi
 		tmp=$(jobs %+)
+		echo "$tmp" > "$cworkdir/JOBS"
+		echo "Full Job list" >> "$cworkdir/JOBS"
+		jobs -l >> "$cworkdir/JOBS"
 		isDebug && printDebug "jobspec:$tmp"
 		tmp1=$(cut -d ' ' -f1 <<< $tmp)
 		tmp2=$(cut -d ' ' -f2 <<< $tmp)
 		if [[ $tmp1 =~ \[(.*)\]\+ ]]; then
 			tjobid[$availableTpidIndex]="${BASH_REMATCH[1]}"
+			echo " jobspec=%${tjobid[$availableTpidIndex]} pid=$tmp4 state=$tmp2"
 		else
+			echo
 			tjobid[$availableTpidIndex]=""
 			printErrorAndExit "No jobindex extract from jobs output '$tmp'" $errRt
 		fi
-		tpid[$availableTpidIndex]=$!
+		tpid[$availableTpidIndex]=$tmp4
 		tcase[$availableTpidIndex]="$caseName"
 		tvariant[$availableTpidIndex]="$caseVariant"
 		killed[$availableTpidIndex]=""
 		tmp="$(date +'%-s')"
-		isDebug && printDebug "Enter tjobid[$availableTpidIndex]=${tjobid[$availableTpidIndex]} state=$tmp2 tpid[${availableTpidIndex}]=$! time=${tmp} state=$tmp2"
+		isDebug && printDebug "Enter tjobid[$availableTpidIndex]=${tjobid[$availableTpidIndex]} state=$tmp2 tpid[${availableTpidIndex}]=$tmp4 time=${tmp} state=$tmp2"
 		startTime[$availableTpidIndex]="$tmp"
 		tmp1=${caseTimeout[$jobIndex]}
 		if [[ $tmp1 -eq 0 ]]; then
@@ -691,6 +702,7 @@ done
 unset sindex_xyza
 
 #test suite finalization
+TTTT_state='finalization'
 declare -i executedTestFinSteps=0
 if isFunction 'testFinalization'; then
 	if isExisting 'FINS' || isExisting 'TTRO_finSuite'; then

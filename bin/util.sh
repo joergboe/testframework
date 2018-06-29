@@ -30,6 +30,9 @@ TTRO_help_setCategory='
 #	set the use defined categories of a test case or suite
 #	$1 ... the category identifieres of this atrifact'
 function setCategory {
+	if [[ $TTTT_state != 'initializing' ]]; then
+		printErrorAndExit "$FUNCNAME must be called in state 'initializing' state now: $TTTT_state" $errRt
+	fi
 	TTTT_categoryArray=()
 	local i=0
 	while [[ $# -ge 1 ]]; do
@@ -43,6 +46,9 @@ TTRO_help_skip='
 # Function skip
 #	set the skip condition TTPRN_skip=true'
 function skip {
+	if [[ $TTTT_state != 'initializing' ]]; then
+		printErrorAndExit "$FUNCNAME must be called in state 'initializing' state now: $TTTT_state" $errRt
+	fi
 	printInfo "Set SKIP"
 	setVar 'TTPRN_skip' 'true'
 }
@@ -632,7 +638,8 @@ TTRO_help_copyAndTransform='
 #	returns
 #		success(0)
 #	exits  if called with wrong arguments'
-function copyAndTransform {	
+function copyAndTransform {
+	printWarning "$FUNCNAME is deprecated use function 'copyAndMorph'"
 	if [[ $# -lt 3 ]]; then printErrorAndExit "$FUNCNAME missing params. Number of Params is $#" $errRt; fi
 	isDebug && printDebug "$FUNCNAME $*"
 	if [[ -z $3 && ( $# -gt 3 ) ]]; then
@@ -732,11 +739,148 @@ function copyAndTransform {
 	return 0
 }
 
+TTRO_help_copyAndMorph='
+# Function copyAndMorph
+#	Copy and change all files from input directory into workdir
+#	Filenames that match one of the transformation file name pattern are transformed. All other files are copied.
+#	In files that matches the transformation file name pattern will be transformed.
+#	In a transformed file 
+#	^[[:space:]]*//<%varid1:varid2..%> are effective if the argument $3 equal one of the varid1, or varid2..
+#	^[[:space:]]*//<%!varid1:varid2%> are not effective if the argument $3 equal one of the varid1, or varid2..
+#	Effective means that the pattern //<%varid1:varid2..%> or //<%!varid1:varid2..%> is removed
+#	If the variant identifier is empty, the pattern list sould be also empty and the function is a pure copy function
+#	If $3 is empty and $4 .. do not exist, this function is a pure copy
+#	$1 - input dir
+#	$2 - output dir
+#	$3 - the variant identifier
+#	$4 ... pattern for file names to be transformed
+#	returns
+#		success(0)
+#	exits  if called with wrong arguments'
+function copyAndMorph {
+	if [[ $# -lt 3 ]]; then printErrorAndExit "$FUNCNAME missing params. Number of Params is $#" $errRt; fi
+	isDebug && printDebug "$FUNCNAME $*"
+	if [[ -z $3 && ( $# -gt 3 ) ]]; then
+		printWarning "$FUNCNAME: Empty variant identifier but there are pattern for file transformation"
+	fi
+	local -a transformPattern=()
+	local -i max=$(($#+1))
+	local -i j=0
+	local -i i
+	for ((i=4; i<max; i++)); do
+		transformPattern[$j]="${!i}"
+		j=$((j+1))
+	done
+	if isDebug; then
+		local display=$(declare -p transformPattern);
+		printDebug "$display"
+	fi
+	local dest=""
+	local x
+	for x in $1/**; do #first create dir structure
+		if [[ -d $x ]]; then
+			isDebug && printDebug "$FUNCNAME item to process step1 create dir structure: $x"
+			dest="${x#$1}"
+			dest="$2/$dest"
+			echo $dest
+			if isVerbose; then 
+				mkdir -pv "$dest"
+			else
+				mkdir -p "$dest"
+			fi
+		fi
+	done
+	local match=""
+	for x in $1/**; do
+		if [[ ! -d $x ]]; then
+			isDebug && printDebug "$FUNCNAME item to process step2 copy/transform: $x"
+			match=''
+			for ((i=0; i<${#transformPattern[@]}; i++)); do
+				isDebug && printDebug "$FUNCNAME: check transformPattern[$i]=${transformPattern[$i]}"
+				if [[ $x == ${transformPattern[$i]} ]]; then
+					isDebug && printDebug "$FUNCNAME: check transformPattern[$i]=${transformPattern[$i]} Match found"
+					match='true'
+					break;
+				fi
+			done
+			dest="${x#$1}"
+			dest="$2/$dest"
+			if [[ -n $match ]]; then
+				isVerbose && printVerbose "transform $x to $dest"
+				morphFile "$x" "$dest" "$3"
+			else
+				if isVerbose; then
+					cp -pv "$x" "$dest"
+				else
+					cp -p "$x" "$dest"
+				fi
+			fi
+		fi
+	done
+	return 0
+}
+
+TTRO_help_copyAndMorph='
+# morphes a file
+#	Lines like:
+#	^[[:space:]]*//<%varid1:varid2..%> are effective if the argument $3 equal one of the varid1, or varid2..
+#	^[[:space:]]*//<%!varid1:varid2%> are not effective if the argument $3 equal one of the varid1, or varid2..
+#	Effective means that the pattern //<%varid1:varid2..%> or //<%!varid1:varid2..%> is removed
+#	$1 - input file
+#	$2 - output file
+#	$3 - the variant identifier
+#	returns
+#		success(0)
+#	exits  if called with wrong arguments'
+
+function morphFile {
+	if [[ $# -ne 3 ]]; then printErrorAndExit "$FUNCNAME missing params. Number of Params is $#" $errRt; fi
+	isDebug && printDebug "$FUNCNAME $*"
+	rm -f "$2"
+	{
+		local readResult=0
+		local outline writeLine part1 part2 part3
+		while [[ $readResult -eq 0 ]]; do
+			outline=''; writeLine=''
+			if ! read -r; then readResult=1; fi
+			#echo "$REPLY"
+			if [[ $REPLY =~ ^([[:space:]]*)//\<%([0-9a-zA-Z_:]+)%\>(.*) ]]; then
+				part1="${BASH_REMATCH[1]}"
+				part2="${BASH_REMATCH[2]}"
+				part3="${BASH_REMATCH[3]}"
+				if isInListSeparator "$3" "$part2" ':'; then
+					outline="${part1}${part3}"
+					writeLine='true'
+				fi
+			elif [[ $REPLY =~ ^([[:space:]]*)//\<%\!([0-9a-zA-Z_:]+)%\>(.*) ]]; then
+				part1="${BASH_REMATCH[1]}"
+				part2="${BASH_REMATCH[2]}"
+				part3="${BASH_REMATCH[3]}"
+				if ! isInListSeparator "$3" "$part2" ':'; then
+					outline="${part1}${part3}"
+					writeLine='true'
+				fi
+			else
+				outline="$REPLY"
+				writeLine='true'
+			fi
+			if [[ -n $writeLine ]]; then
+				if [[ $readResult -eq 0 ]]; then
+					echo "$outline" >> "$2"
+				else
+					echo -n "$outline" >> "$2"
+				fi
+			fi
+		done
+	} < "$1"
+	return 0
+}
+
 TTRO_help_copyOnly='
 # Function copyOnly
 #	Copy all files from input directory to workdir'
 function copyOnly {
-	copyAndTransform "$TTRO_inputDirCase" "$TTRO_workDirCase" "$TTRO_variantCase"
+	copyAndMorph "$TTRO_inputDirCase" "$TTRO_workDirCase" "$TTRO_variantCase"
 }
 
 TTRO_help_linewisePatternMatch='
@@ -1171,6 +1315,38 @@ function isInList {
 	else
 		local x
 		local isFound=''
+		for x in $2; do
+			if [[ $x == $1 ]]; then
+				isFound="true"
+				break
+			fi
+		done
+		if [[ -n $isFound ]]; then
+			isDebug && printDebug "$FUNCNAME return 0"
+			return 0
+		else
+			isDebug && printDebug "$FUNCNAME return 1"
+			return 1
+		fi
+	fi
+}
+
+TTRO_help_isInListSeparator='
+# check whether a token is in a list of tokens with a special separator
+#	$1 the token to search. It must not contain any of the separator tokens
+#	$2 the list
+#	$3 the separators
+#	returns true if the token was in the list; false otherwise
+#	exits if called with wrong parameters'
+function isInListSeparator {
+	if [[ $# -ne 3 ]]; then printErrorAndExit "$FUNCNAME invalid no of params. Number of Params is $#" $errRt; fi
+	isDebug && printDebug "$FUNCNAME $*"
+	if [[ $1 == *[$3]* ]]; then
+		printErrorAndExit "The token \$1 must not be empty and must not have separator characters \$1='$1'" $errRt
+	else
+		local x
+		local isFound=''
+		local IFS="$3"
 		for x in $2; do
 			if [[ $x == $1 ]]; then
 				isFound="true"

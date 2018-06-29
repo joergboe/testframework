@@ -21,7 +21,7 @@ use com.ibm.streamsx.inet::InetSource;
 composite GetWeather
 {
   graph
-    //_1_@consistent(trigger=periodic, period=5.0)
+    //<%1%>@consistent(trigger=periodic, period=5.0)
     stream<list<rstring> result> Result = InetSource()
     {
       //param URIList : ["http://www.weather.gov/alerts-beta/us.atom"];
@@ -43,6 +43,6 @@ composite GetWeather
           printStringLn("result: " + result[0]);
         } 
     }
-    //_1_() as JCP = JobControlPlane() {}
+    //<%1%>() as JCP = JobControlPlane() {}
 
 }

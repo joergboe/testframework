@@ -1,6 +1,6 @@
 setVar 'TTRO_prepsSuite' 'myFunc'
 
-TTPR_timeout=90
+TTPR_timeout=60
 TTPR_additionalTime=10
 
 function myFunc {

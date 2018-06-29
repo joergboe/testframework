@@ -61,24 +61,51 @@ printInfo "Make toolkit in $TTRO_testframeToolkitDir"
 
 TTRO_help_copyAndTransformSpl='
 # Function copyAndTransformSpl
+#	deprecated use copyAndMorphSpl
 #	Copy all files from input directory to workdir and
 #	Transform spl files
 #	the variant identifier is $TTRO_variantCase'
 function copyAndTransformSpl {
+	printWarning "$FUNCNAME is deprecated use function 'copyAndMorphSpl'"
 	copyAndTransform "$TTRO_inputDirCase" "$TTRO_workDirCase" "$TTRO_variantCase" '*.spl'
 }
 export -f copyAndTransformSpl
 
 TTRO_help_copyAndTransformSpl2='
 # Function copyAndTransformSpl2
+#	deprecated use copyAndMorphSpl2
 #	Copy all files from input directory to workdir and
 #	Transform spl files
 #	the variant identifier is $1'
 function copyAndTransformSpl2 {
+	printWarning "$FUNCNAME is deprecated use function 'copyAndMorphSpl2'"
 	if [[ $# -ne 1 ]]; then printErrorAndExit "${FUNCNAME[0]} called with no or empty command" $errRt; fi
 	copyAndTransform "$TTRO_inputDirCase" "$TTRO_workDirCase" "$1" '*.spl'
 }
 export -f copyAndTransformSpl2
+
+TTRO_help_copyAndMorphSpl='
+# Function copyAndMorphSpl
+#	Copy all files from input directory to workdir and
+#	Transform spl files
+#	the variant identifier is $TTRO_variantCase'
+function copyAndMorphSpl {
+	printWarning "$FUNCNAME is deprecated use function 'copyAndMorphSpl'"
+	copyAndMorph "$TTRO_inputDirCase" "$TTRO_workDirCase" "$TTRO_variantCase" '*.spl'
+}
+export -f copyAndMorphSpl
+
+TTRO_help_copyAndMorphSpl2='
+# Function copyAndMorphSpl2
+#	Copy all files from input directory to workdir and
+#	Transform spl files
+#	the variant identifier is $1'
+function copyAndMorphSpl2 {
+	printWarning "$FUNCNAME is deprecated use function 'copyAndMorphSpl2'"
+	if [[ $# -ne 1 ]]; then printErrorAndExit "${FUNCNAME[0]} called with no or empty command" $errRt; fi
+	copyAndMorph "$TTRO_inputDirCase" "$TTRO_workDirCase" "$1" '*.spl'
+}
+export -f copyAndMorphSpl2
 
 TTRO_help_splCompile='
 # Function splCompile

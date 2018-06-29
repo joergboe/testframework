@@ -65,6 +65,8 @@ declare -rx TTRO_case="${TTRO_inputDirCase##*/}"
 declare -i executedTestSteps=0
 declare -i executedTestPrepSteps=0
 declare -i executedTestFinSteps=0
+declare TTTT_state='initializing'
+declare TTTT_caseFinalized=''
 declare TTTT_failureOccurred=''
 declare TTTT_skipthis=""
 eval "$TTXX_runCategoryPatternArray"
@@ -72,8 +74,11 @@ declare -a TTTT_categoryArray=( 'default' )
 
 #test finalization function
 function caseFinalization {
-	if [[ -z $caseFinalized ]]; then
-		caseFinalized='true'
+	if [[ $TTTT_state == 'initializing' ]]; then
+		return 0
+	fi
+	if [[ -z $TTTT_caseFinalized ]]; then
+		TTTT_caseFinalized='true'
 		local name_xyza
 		for name_xyza in 'TTRO_finsCase' 'FINS'; do
 			if isExisting "$name_xyza"; then
@@ -125,7 +130,6 @@ function caseFinalization {
 	fi
 	return 0
 }
-declare caseFinalized=''
 
 function caseExitFunction {
 	isDebug && printDebug "$FUNCNAME"
@@ -143,14 +147,14 @@ function successExit {
 	caseFinalization
 	printInfo "**** END Case case=${TTRO_case} variant='${TTRO_variantCase}' SUCCESS *****"
 	getElapsedTime "$caseStartTime"
-	printInfo "**** Elapsed time $TTTT_elapsedTime *****"
+	printInfo "**** Elapsed time $TTTT_elapsedTime state=$TTTT_state *****"
 	exit 0
 }
 function skipExit {
 	echo "SKIP" > "${TTRO_workDirCase}/RESULT"
 	printInfo "**** END Case case=${TTRO_case} variant='${TTRO_variantCase}' SKIP **********"
 	getElapsedTime "$caseStartTime"
-	printInfo "**** Elapsed time $TTTT_elapsedTime *****"
+	printInfo "**** Elapsed time $TTTT_elapsedTime state=$TTTT_state *****"
 	exit 0
 }
 function failureExit {
@@ -159,7 +163,7 @@ function failureExit {
 	printError "**** FAILURE : $TTTT_failureOccurred ****"
 	printInfo "**** END Case case=${TTRO_case} variant='${TTRO_variantCase}' FAILURE ********" >&2
 	getElapsedTime "$caseStartTime"
-	printInfo "**** Elapsed time $TTTT_elapsedTime *****"
+	printInfo "**** Elapsed time $TTTT_elapsedTime state=$TTTT_state *****"
 	exit 0
 }
 function errorExit {
@@ -167,13 +171,13 @@ function errorExit {
 	caseFinalization
 	printInfo "END Case case=${TTRO_case} variant='${TTRO_variantCase}' ERROR ***************" >&2
 	getElapsedTime "$caseStartTime"
-	printInfo "**** Elapsed time $TTTT_elapsedTime *****"
+	printInfo "**** Elapsed time $TTTT_elapsedTime state=$TTTT_state *****"
 	exit ${errTestError}
 }
 
 #####################################################################################################
 #Start of main testcase body
-printInfo "**** START Case $TTRO_case variant '$TTRO_variantCase' in workdir $TTRO_workDirCase ********************"
+printInfo "**** START Case $TTRO_case variant '$TTRO_variantCase' in workdir $TTRO_workDirCase pid $$ ********************"
 
 #----------------------------------
 # enter working dir
@@ -182,7 +186,6 @@ cd "$TTRO_workDirCase"
 #handle preambl error
 if [[ -n $TTTT_preamblError ]]; then
 	printError "Preambl Error"
-	caseFinalized='true'
 	errorExit
 fi
 
@@ -229,6 +232,7 @@ if [[ -n $TTTT_skipthis ]]; then
 fi
 
 #test preparation
+TTTT_state='preparation'
 for name_xyza in 'TTRO_prepsCase' 'PREPS'; do
 	if isExisting "$name_xyza"; then
 		if isArray "$name_xyza"; then
@@ -285,6 +289,7 @@ fi
 printInfo "$executedTestPrepSteps Case Test Preparation steps executed"
 
 #test execution
+TTTT_state='execution'
 for name_xyza in 'TTRO_stepsCase' 'STEPS'; do
 	if isExisting "$name_xyza"; then
 		if isArray "$name_xyza"; then
@@ -330,6 +335,7 @@ else
 	printInfo "$executedTestSteps Case test steps executed"
 fi
 
+TTTT_state='finalization'
 if [[ -n $TTTT_failureOccurred ]]; then
 	failureExit
 else

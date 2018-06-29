@@ -3,7 +3,7 @@
 #--variantCount=2
 
 #Case definition
-setVar 'TTRO_prepsCase' 'copyAndTransformSpl'
+setVar 'TTRO_prepsCase' 'copyAndMorphSpl'
 setVar 'TTRO_stepsCase' 'myCompile myEvaluate'
 
 # A customized compiler step expects that the compilation
