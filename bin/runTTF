@@ -408,11 +408,11 @@ printParams
 #-----------------------------------------------------------------------------------------
 # Check test properies file if properties parameter was given
 for ((i=0; i<${#propertyFiles[@]}; i++)) do
-	x="$${propertyFiles[$i]}"
+	x="${propertyFiles[$i]}"
 	if [[ -r "$x" ]]; then
 		isVerbose && printVerbose "Found readable test properties file $x"
 	else
-		printErrorAndExit "No test properties file $x found"
+		printErrorAndExit "No test properties file $x found" $errRt
 	fi
 done
 
