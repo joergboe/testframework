@@ -1,7 +1,7 @@
 
-# runTTFLink 
+# runTTF 
 
-The runTTFLink script is a framework for the control of test case execution.
+The runTTF script is a framework for the control of test case execution.
 The execution of test case/suite variants and the parallel execution is inherently supported.
 
 More docs can be found here:
@@ -136,9 +136,7 @@ Or you may define a colon separated list of Test Tools files in variable TTRO_to
 ## Test File Preamble
 The definition of the variables and properties must have the form:
 #--name=value
-No spaces are allowed between name '=' and value.
-The assignment is literally executed. That means no expansion and no word splitting is performed and no quoting is required.
-Quoting is allowed. (There is a quote removal)
+No spaces are allowed between name '=' and value. The assignement requires the same quoting as a reqular assignement.
 The whole assignment must fit into one line.
 The preamble defines the variants of the test artifacts and in case of a test case, the timeout values for the test case.
 
@@ -175,7 +173,8 @@ The name of a property must be prefixed with TTPR_ or TTPRN_
 Empty values are considered a defined value for properties with prefix TTPR_ and can not be overwritten.
 Empty values are considered a undefined value for properties with prefix TTPRN_ and can be overwritten.
 
-NOTE: Prefer the TTPR_ version.
+NOTE: Prefer the TTPR_ version for varables which can have different values.
+NOTE: The TTPRN_ version is used as switch which can be used only once to become true.
 
 
 ## Simple Global Variables and Global Read-only Variables
@@ -191,7 +190,7 @@ a plain assignment is sufficient. A re-write of an read-only variable will cause
 Logical variables with the semantics of an boolean are considered 'true' if these variables are set to something different than 
 the empty value (null). An empty (null) variable or an unset variable is considered 'false'. Care must be taken if a 
 variable is unset. In general the usage of an unset variable will cause a script failure.
-Use function 'isExisting' or 'isNotExisting' to avoid script abort.
+Use function 'isExisting' or 'isNotExisting' to avoid script aborts.
 
 Some properties are designed that the existence of the property indicates the trueness.
 
@@ -210,9 +209,13 @@ NOTE: The check if an existing variable is empty or not is much faster then the 
 we use here the empty value an consider it as unset property.
 
 
+## Reserved Ranges
+Varaible names starting with TTTT_ are reserved for testframework usage. These variables are not exported. Do not use those names in test case/suite scripts.
+
 ## Variables Used
-- TTPRN_skip             - Skips the execution of test case preparation, test case execution and test case finalization steps
-- TTPRN_skipIgnore       - If set to true, the skip variable is ignored.
+- TTPRN_skip            - Skip-Switch: if this varaible not empty, the execution of the actual Test Case variant or Test Suite variant is skipped.
+                          This variable is set by function skip
+- TTPRN_skipIgnore      - if this varaible not empty, the skip variable is ignored.
 
 - STEPS                 - The space separated list or an array of test step commands with local meaning. If one command returns an failure (return code != 0), 
                           the test execution is stopped
@@ -272,6 +275,12 @@ we use here the empty value an consider it as unset property.
                          If the property is true no Test Suite finalization is called
 - TTPRN_noFinsCase     - This property is not provided.
                          If the property is true no Test Case finalization is called
+                         
+- TTTT_categoryArray   - The indexed array with the categories of the current Case/Suite
+- TTTT_runCategoryPatternArray - The indexed array with the run-category patterns of the current test run
+- TTTT_skipthis        - Signal to skip this artifact
+- TTTT_failureOccurred - The failure condition in test case execution
+- TTTT_result          - Used in some functions to return a result code
 
 
 ## Special Script Execution options
@@ -299,26 +308,54 @@ nullglob: bash allows patterns which match no files to expand to a null string, 
 globstar: The pattern ** used in a path-name expansion context will match all files and zero or more directories and 
 sub-directories. If the pattern is followed by a /, only directories and sub-directories match
 
+If a test case requires the execution of a command that fails intentionally, you should use one of the functions:
+echoExecuteAndIntercept          - echo command and parameters; execute command guarded; return value in TTTT_result
+echoExecuteAndIntercept2,      
+echoExecuteInterceptAndSuccess,  - echo command and parameters; execute command guarded; return value in TTTT_result;
+                                   expect cmd success set failure otherwise
+echoExecuteInterceptAndError,    - echo command and parameters; execute command guarded; return value in TTTT_result;
+                                   expect cmd error set failure otherwise
+executeAndLog                    - echo command and parameters; execute command guarded; return value in TTTT_result;
+                                 - save command output into file
+executeLogAndSuccess             - echo command and parameters; execute command guarded; return value in TTTT_result;
+                                   save command output into file; expect cmd success set failure otherwise
+executeLogAndError               - echo command and parameters; execute command guarded; return value in TTTT_result;
+                                   save command output into file; expect cmd error set failure otherwise
+compileAndIntercept,
+compileInterceptAndSuccess,
+compileInterceptAndError,
+submitJobAndIntercept.
+
 
 ## Test Case Result Failures and Errors
 To signal an failure in a test case set the failure condition with function setFailure. This prevents further
 test step functions from execution.
 
-If a test case function is returns a non zero return code the case is couted as error.
+If a test case function is returns a non zero return code the case is counted as error.
 
 To signal the success of a test case just leave the function with success 'return 0'.
 
 The test frame environment atempts to execute the test finalization functions in case of error and in case of failure.
 
-## Skip Test Cases
-A test case os a test suite is skipped if the function skip is called during initialization phase of the artifact.
+## Skip Test Cases - Category Control
+A test case or a test suite is skipped if the function skip is called during initialization phase of the artifact. 
+This function sets the property TTPRN_skip to true.
 
-Alternatively the existence of an file SKIP in the Test Case/Suite directory inhibits this Case/Suite (all variants).
-
-A test case is skipped if the property TTPRN_skip is defined. This property may be set :
-- In the initialization or preparation phase of an test collection variant - this disables all cases of this collection variant
+A test case is skipped if the property TTPRN_skip is defined ant true. This property may be set :
 - In the initialization or preparation phase of an test suite variant - this disables all cases of this suite variant
 - In the initialization phase of an test case (variant) - this disables only one case variant
+
+Alternatively the existence of an file SKIP in the Test Case/Suite directory inhibits the execution of all variants of the Case/Suite.
+
+The function 'setCategory' defines the categories of a Test Case or Test Suite. If the function 'setCategory' is not called during
+Case or Suite initialization, the artifact has the default category 'default'. If the function 'setCategory' is called with an empty 
+parameter list, all catagories are cleaned. The categories are checked before the Case- or Suite- preparation is executed.
+The run-categories of the a test run can be defined with command line parameter -c|--category VALUE. The run-categories 
+are considered to be patterns.
+If one of the run-category pattern matches any of the categories of the artifact, the Case/Suite is executed. Otherwise it is skipped.
+A test Case or Suite without a defined categorie is always executed independently from the run-categories.
+If no run-category pattern is entered, all Cases and Suite are executed, regardless of the defined categories.
+If the run-caegory 'default' is specified, all Cases and Suites are executed that have no explicit category set.
 
 
 ## Sequence Control

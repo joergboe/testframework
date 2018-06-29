@@ -1,6 +1,12 @@
 #######################################
 		cancelJob
  Function cancelJob
+	$TTTT_jobno the job number
+
+
+#######################################
+		cancelJobOld
+ Function cancelJobOld
 	$1 jobno
 
 
@@ -11,6 +17,14 @@
 	$2 domain id
 	$3 instance id
 	$4 jobno
+
+
+#######################################
+		checkJobNo
+ Function checkJobNo
+	Checks whether the variable TTTT_jobno has a valid job number (>-1)
+	Set the error condition if the check fails
+	retunrs success otherwise
 
 
 #######################################
@@ -51,33 +65,85 @@
 
 
 #######################################
-		compile
- Function compile
-	Compile spl application expect successful result
-	No treatment in case of compiler error
+		copyAndMorphSpl
+ Function copyAndMorphSpl
+	Copy all files from input directory to workdir and
+	Transform spl files
+	the variant identifier is $TTRO_variantCase
 
 
 #######################################
-		compileAndFile
- Function compileAndFile
-	Compile spl application expect successful result
-	compiler colsole & error output is stored into file
-	No treatment in case of compiler error
-
-
-#######################################
-		compileAndIntercept
- Function compileAndIntercept
-	Compile spl application and intercept compile errors
-	compiler colsole & error output is stored into file
-	compiler result code is sored in result
+		copyAndMorphSpl2
+ Function copyAndMorphSpl2
+	Copy all files from input directory to workdir and
+	Transform spl files
+	the variant identifier is $1
 
 
 #######################################
 		copyAndTransformSpl
  Function copyAndTransformSpl
+	deprecated use copyAndMorphSpl
 	Copy all files from input directory to workdir and
 	Transform spl files
+	the variant identifier is $TTRO_variantCase
+
+
+#######################################
+		copyAndTransformSpl2
+ Function copyAndTransformSpl2
+	deprecated use copyAndMorphSpl2
+	Copy all files from input directory to workdir and
+	Transform spl files
+	the variant identifier is $1
+
+
+#######################################
+		jobHealthy
+ Function jobHealthy
+	checks whether a job is healthy
+	TTPRN_streamsZkConnect  zk connect string
+	TTPRN_streamsDomainId   domain id
+	TTPRN_streamsInstanceId instance id
+	TTTT_jobno              job number
+	returns:
+		TTTT_state  the state of the job
+		TTTT_healthy the health information of the job
+		success (0) if job is healthy
+		error       if job is not healthy or is not running
+
+
+#######################################
+		jobHealthyAndIntercept
+ Function jobHealthyAndIntercept
+	checks whether a job is healthy and return code is always 0
+	provides return code of in variable TTTT_result
+	TTPRN_streamsZkConnect  zk connect string
+	TTPRN_streamsDomainId   domain id
+	TTPRN_streamsInstanceId instance id
+	TTTT_jobno              job number
+	returns:
+		TTTT_result         0 if job is healthy
+		TTTT_result         error  if job is not healthy
+		TTTT_state  the state of the job
+		TTTT_healthy the health information of the job
+		success (0)
+
+
+#######################################
+		jobHealthyVariable
+ Function jobHealthyVariable
+	checks whether a job is healthy
+	parameters
+		$1 zk string
+		$2 domain id
+		$3 instance id
+		$4 jobno
+	returns:
+		TTTT_state  the state of the job
+		TTTT_healthy the health information of the job
+		success (0) if job is healthy
+		error       if job is not healthy or is not running
 
 
 #######################################
@@ -120,6 +186,47 @@
 
 
 #######################################
+		splCompile
+ Function splCompile
+	Compile spl application expect successful result
+	No treatment in case of compiler error
+
+
+#######################################
+		splCompileAndIntercept
+ Function splCompileAndIntercept
+	Compile spl application and intercept compile errors
+	compiler console & error output is stored into file TT_evaluationFile
+	compiler result code is sored in TTTT_result
+
+
+#######################################
+		splCompileAndLog
+ Function splCompileAndLog
+	Compile spl application expect successful result
+	compiler colsole & error output is stored into file
+	No treatment in case of compiler error
+
+
+#######################################
+		splCompileInterceptAndError
+ Function splCompileInterceptAndError
+	Compile spl application and intercept compile errors
+	Expect error. Otherwise failure condition is set
+	compiler console & error output is stored into file TT_evaluationFile
+	compiler result code is sored in TTTT_result
+
+
+#######################################
+		splCompileInterceptAndSuccess
+ Function splCompileInterceptAndSuccess
+	Compile spl application and intercept compile errors
+	Expect success. Otherwise failure condition is set
+	compiler console & error output is stored into file TT_evaluationFile
+	compiler result code is sored in TTTT_result
+
+
+#######################################
 		startDomain
  Function startDomain
 	Start domain from global properties
@@ -154,18 +261,20 @@
 
 
 #######################################
-		submitJobAndFile
- Function submitJobAndFile
-	submits a job and provides the joboutput file
-	provide stdout and stderror in file for evaluation
-
-
-#######################################
 		submitJobAndIntercept
  Function submitJobAndIntercept
 	submits a job and provides the joboutput file
 	provide stdout and stderror in file for evaluation
-	provides return code of in variable result
+	provides return code of in variable TTTT_result
+	returns jobnumber in global variable TTTT_jobno
+
+
+#######################################
+		submitJobAndLog
+ Function submitJobAndLog
+	submits a job and provides the joboutput file
+	provide stdout and stderror in file for evaluation
+	returns jobnumber in global variable TTTT_jobno
 
 
 #######################################
@@ -183,6 +292,26 @@
 	$3 instance id
 	$4 sab files
 	$5 output file name
-	use global variable jobno for jobnumber
+	$6 trace level
+	returns jobnumber in global variable TTTT_jobno
+
+
+#######################################
+		waitForFin
+ Function waitForFin
+	waits until the final file appears
+	$TT_waitForFileName - the name of the file to wait for
+	$TT_waitForFileInterval - the interval
+	returns success if the file was found
+
+
+#######################################
+		waitForFinAndHealth
+ Function waitForFinAndHealth
+	waits until the final file appears and the job remains healthy
+	set failure condition if job changes state from healthy to non healthy
+	$TT_waitForFileName - the name of the file to wait for
+	$TT_waitForFileInterval - the interval
+	returns success if the file was found
 
 
