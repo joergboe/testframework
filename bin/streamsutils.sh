@@ -25,11 +25,11 @@ setVar TTPRN_numresources 1
 setVar 'TTPR_waitForJobHealth' 60
 
 if declare -p STREAMS_ZKCONNECT &> /dev/null && [[ -n $STREAMS_ZKCONNECT ]]; then
-	setVar TTPRN_streamsZkConnect "$STREAMS_ZKCONNECT"
+	setVar TTPR_streamsZkConnect "$STREAMS_ZKCONNECT"
 else
-	setVar TTPRN_streamsZkConnect ""
+	setVar TTPR_streamsZkConnect ""
 fi
-echo "streamsutilsInitialization: TTPRN_streamsZkConnect=$TTPRN_streamsZkConnect"
+echo "streamsutilsInitialization: TTPR_streamsZkConnect=$TTPR_streamsZkConnect"
 if declare -p STREAMS_DOMAIN_ID &> /dev/null && [[ -n $STREAMS_DOMAIN_ID ]]; then
 	setVar TTPRN_streamsDomainId "$STREAMS_DOMAIN_ID"
 	echo "streamsutilsInitialization: TTPRN_streamsDomainId=$TTPRN_streamsDomainId"
@@ -183,31 +183,18 @@ function splCompileInterceptAndError {
 }
 export -f splCompileInterceptAndError
 
-TTRO_help_makeZkParameter='
-# Function makeZkParameter
-#	makes the zk parameter from zk environment
-#	$1 zk string
-#	use global variable zkParam'
-function makeZkParameter {
-	zkParam="--embeddedzk"
-	if [[ -n $1 ]]; then
-		zkParam="--zkconnect $1"
-	fi
-}
-export -f makeZkParameter 
-
 TTRO_help_mkDomain='
 # Function mkDomain
 #	Make domain from global properties'
 function mkDomain {
-	mkDomainVariable "$TTPRN_streamsZkConnect" "$TTPRN_streamsDomainId" "$TTPRN_swsPort" "$TTPRN_jmxPort"
+	mkDomainVariable "$TTPR_streamsZkConnect" "$TTPRN_streamsDomainId" "$TTPRN_swsPort" "$TTPRN_jmxPort"
 }
 export -f mkDomain 
 
 TTRO_help_mkDomainVariable='
 # Function mkDomainVariable
 #	Make domain with variable parameters
-#	$1 zk connect string
+#	$1 zk connect string or "" for embeddedzk
 #	$2 domainname
 #	$3 sws port
 #	$4 jmx port'
@@ -217,44 +204,52 @@ function mkDomainVariable {
 		printInfo "$FUNCNAME : function supressed"
 		return 0
 	fi
-	local zkParam
-	makeZkParameter "$1"
-	#local params="$zkstring --property SWS.Port=8443 --property JMX.Port=9443 --property domain.highAvailabilityCount=1 --property domain.checkpointRepository=fileSystem --property domain.checkpointRepositoryConfiguration= { \"Dir\" : \"/home/joergboe/Checkpoint\" } "
-	if ! echoAndExecute $TTPRN_st mkdomain "$zkParam" --domain-id "$2" --property "SWS.Port=$3" --property "JMX.Port=$4" --property domain.highAvailabilityCount=1; then
+	local commandResult
+	if [[ -z $1 ]]; then
+		if echoAndExecute $TTPRN_st mkdomain --embeddedzk --domain-id "$2" --property "SWS.Port=$3" --property "JMX.Port=$4" --property domain.highAvailabilityCount=1; then
+			commandResult=$?
+		else
+			commandResult=$?
+		fi
+	else
+		if echoAndExecute $TTPRN_st mkdomain --zkconnect "$1" --domain-id "$2" --property "SWS.Port=$3" --property "JMX.Port=$4" --property domain.highAvailabilityCount=1; then
+			commandResult=$?
+		else
+			commandResult=$?
+		fi
+	fi
+	if [[ $commandResult -ne 0 ]]; then
 		printError "$FUNCNAME : Can not make domain $2"
 		#return 1
 		return $errTestFail
 	fi
-	if ! echoAndExecute $TTPRN_st genkey "$zkParam"; then
+	if ! echoAndExecute $TTPRN_st genkey; then
 		printError "$FUNCNAME : Can not genrate key $2"
 		return $errTestFail
 	fi
 }
-export -f mkDomainVariable 
+export -f mkDomainVariable
 
 TTRO_help_startDomain='
 # Function startDomain
 #	Start domain from global properties'
 function startDomain {
-	startDomainVariable "$TTPRN_streamsZkConnect" "$TTPRN_streamsDomainId"
+	startDomainVariable "$TTPRN_streamsDomainId"
 }
 export -f startDomain 
 
 TTRO_help_startDomainVariable='
 # Function startDomainVariable
 #	Make domain with variable parameters
-#	$1 zk connect string
-#	$2 domainname'
+#	$1 domainname'
 function startDomainVariable {
 	isDebug && printDebug "$FUNCNAME $*"
 	if [[ -n $TTPRN_noStart ]]; then
 		printInfo "$FUNCNAME : function supressed"
 		return 0
 	fi
-	local zkParam
-	makeZkParameter "$1"
-	if ! echoAndExecute $TTPRN_st startdomain "$zkParam" --domain-id "$2"; then
-		printError "$FUNCNAME : Can not start domain $2"
+	if ! echoAndExecute $TTPRN_st startdomain --domain-id "$1"; then
+		printError "$FUNCNAME : Can not start domain $1"
 		return $errTestFail
 	fi
 }
@@ -264,26 +259,23 @@ TTRO_help_mkInst='
 # Function mkInst
 #	Make instance from global properties'
 function mkInst {
-	mkInstVariable "$TTPRN_streamsZkConnect" "$TTPRN_streamsInstanceId" "$TTPRN_numresources"
+	mkInstVariable "$TTPRN_streamsInstanceId" "$TTPRN_numresources"
 }
 export -f mkInst
 
 TTRO_help_mkInstVariable='
 # Function mkInstVariable
 #	Make instance with variable parameters
-#	$1 zk connect string
-#	$2 instance name
-#	$3 numresources'
+#	$1 instance name
+#	$2 numresources'
 function mkInstVariable {
 	isDebug && printDebug "$FUNCNAME $*"
 	if [[ -n $TTPRN_noStart ]]; then
 		printInfo "$FUNCNAME : function supressed"
 		return 0
 	fi
-	local zkParam
-	makeZkParameter "$1"
-	if ! echoAndExecute $TTPRN_st mkinst "$zkParam" --instance-id "$2" --numresources "$3"; then
-		printError "$FUNCNAME : Can not make instance $2"
+	if ! echoAndExecute $TTPRN_st mkinst --instance-id "$1" --numresources "$2"; then
+		printError "$FUNCNAME : Can not make instance $1"
 		return $errTestFail
 	fi
 }
@@ -293,25 +285,22 @@ TTRO_help_startInst='
 # Function startInst
 #	Start instance from global properties'
 function startInst {
-	startInstVariable "$TTPRN_streamsZkConnect" "$TTPRN_streamsInstanceId"
+	startInstVariable "$TTPRN_streamsInstanceId"
 }
 export -f startInst
 
 TTRO_help_startInstVariable='
 # Function startInstVariable
 #	Start instance with variable parameters
-#	$1 zk connect string
-#	$2 domainname'
+#	$1 domainname'
 function startInstVariable {
 	isDebug && printDebug "$FUNCNAME $*"
 	if [[ -n $TTPRN_noStart ]]; then
 		printInfo "$FUNCNAME : function supressed"
 		return 0
 	fi
-	local zkParam
-	makeZkParameter "$1"
-	if ! echoAndExecute $TTPRN_st startinst "$zkParam" --instance-id "$2"; then
-		printError "$FUNCNAME : Can not start instance $2"
+	if ! echoAndExecute $TTPRN_st startinst --instance-id "$1"; then
+		printError "$FUNCNAME : Can not start instance $1"
 		return $errTestFail
 	fi
 }
@@ -321,7 +310,7 @@ TTRO_help_cleanUpInstAndDomainAtStart='
 # Function cleanUpInstAndDomainAtStart deprecated
 #	stop and clean instance and domain'
 function cleanUpInstAndDomainAtStart {
-	cleanUpInstAndDomainVariableOld "start" "$TTPRN_streamsZkConnect" "$TTPRN_streamsDomainId" "$TTPRN_streamsInstanceId"
+	cleanUpInstAndDomainVariableOld "start" "$TTPR_streamsZkConnect" "$TTPRN_streamsDomainId" "$TTPRN_streamsInstanceId"
 }
 export -f cleanUpInstAndDomainAtStart
 
@@ -329,7 +318,7 @@ TTRO_help_cleanUpInstAndDomainAtStop='
 # Function cleanUpInstAndDomainAtStop deprecated
 #	stop and clean instance and domain'
 function cleanUpInstAndDomainAtStop {
-	cleanUpInstAndDomainVariableOld "stop" "$TTPRN_streamsZkConnect" "$TTPRN_streamsDomainId" "$TTPRN_streamsInstanceId"
+	cleanUpInstAndDomainVariableOld "stop" "$TTPR_streamsZkConnect" "$TTPRN_streamsDomainId" "$TTPRN_streamsInstanceId"
 }
 export -f cleanUpInstAndDomainAtStop
 
@@ -356,31 +345,28 @@ function cleanUpInstAndDomainVariableOld {
 		printErrorAndExit "wrong parameter 1 $1" $errRt
 	fi
 
-	local zkParam
-	makeZkParameter "$2"
-	
-	echo "streamtool lsdomain $zkParam $3"
+	echo "streamtool lsdomain $3"
 	local response
-	if response=$(echoAndExecute $TTPRN_st lsdomain "$zkParam" "$3"); then # domain exists
+	if response=$(echoAndExecute $TTPRN_st lsdomain "$3"); then # domain exists
 		if [[ $response =~ $3\ Started ]]; then # domain is running
 			#Running domain found check instance
-			if echoAndExecute $TTPRN_st lsinst "$zkParam" --domain-id "$3" "$4"; then
-				if echoAndExecute $TTPRN_st lsinst "$zkParam" --started --domain-id "$3" "$4"; then
+			if echoAndExecute $TTPRN_st lsinst --domain-id "$3" "$4"; then
+				if echoAndExecute $TTPRN_st lsinst --started --domain-id "$3" "$4"; then
 					#TODO: check whether the retun code is fine here
-					echoAndExecute $TTPRN_st stopinst "$zkParam" --force --domain-id "$3" --instance-id "$4"
+					echoAndExecute $TTPRN_st stopinst --force --domain-id "$3" --instance-id "$4"
 				else
 					isVerbose && printVerbose "$FUNCNAME : no running instance $4 found in domain $3"
 				fi
-				echoAndExecute $TTPRN_st rminst "$zkParam" --noprompt --domain-id "$3" --instance-id "$4"
+				echoAndExecute $TTPRN_st rminst --noprompt --domain-id "$3" --instance-id "$4"
 			else
 				isVerbose && printVerbose "$FUNCNAME : no instance $4 found in domain $3"
 			fi
 			#End Running domain found check instance
-			echoAndExecute $TTPRN_st stopdomain "$zkParam" --force --domain-id "$3"
+			echoAndExecute $TTPRN_st stopdomain --force --domain-id "$3"
 		else
 			isVerbose && printVerbose "$FUNCNAME : no running domain $3 found"
 		fi
-		echoAndExecute $TTPRN_st rmdomain "$zkParam" --noprompt --domain-id "$3"
+		echoAndExecute $TTPRN_st rmdomain --noprompt --domain-id "$3"
 	else
 		isVerbose && printVerbose "$FUNCNAME : no domain $3 found"
 	fi
@@ -392,7 +378,7 @@ TTRO_help_cleanUpInstAndDomain='
 # Function cleanUpInstAndDomain
 #	stop instance and domain if running and clean instance and domain'
 function cleanUpInstAndDomain {
-	cleanUpInstAndDomainVariable "$TTPRN_streamsZkConnect" "$TTPRN_streamsDomainId" "$TTPRN_streamsInstanceId"
+	cleanUpInstAndDomainVariable "$TTPR_streamsZkConnect" "$TTPRN_streamsDomainId" "$TTPRN_streamsInstanceId"
 }
 export -f cleanUpInstAndDomain
 
@@ -404,31 +390,29 @@ TTRO_help_cleanUpInstAndDomainVariable='
 #	$3 instance id'
 function cleanUpInstAndDomainVariable {
 	isDebug && printDebug "$FUNCNAME $*"
-	local zkParam
-	makeZkParameter "$1"
 	
-	echo "streamtool lsdomain $zkParam $2"
+	echo "streamtool lsdomain $2"
 	local response
-	if response=$(echoAndExecute $TTPRN_st lsdomain "$zkParam" "$2"); then # domain exists
+	if response=$(echoAndExecute $TTPRN_st lsdomain "$2"); then # domain exists
 		if [[ $response =~ $2\ Started ]]; then # domain is running
 			#Running domain found check instance
-			if echoAndExecute $TTPRN_st lsinst "$zkParam" --domain-id "$2" "$3"; then
-				if echoAndExecute $TTPRN_st lsinst "$zkParam" --started --domain-id "$2" "$3"; then
+			if echoAndExecute $TTPRN_st lsinst --domain-id "$2" "$3"; then
+				if echoAndExecute $TTPRN_st lsinst --started --domain-id "$2" "$3"; then
 					#TODO: check whether the retun code is fine here
-					echoAndExecute $TTPRN_st stopinst "$zkParam" --force --domain-id "$2" --instance-id "$3"
+					echoAndExecute $TTPRN_st stopinst --force --domain-id "$2" --instance-id "$3"
 				else
 					isVerbose && printVerbose "$FUNCNAME : no running instance $3 found in domain $2"
 				fi
-				echoAndExecute $TTPRN_st rminst "$zkParam" --noprompt --domain-id "$2" --instance-id "$3"
+				echoAndExecute $TTPRN_st rminst --noprompt --domain-id "$2" --instance-id "$3"
 			else
 				isVerbose && printVerbose "$FUNCNAME : no instance $3 found in domain $2"
 			fi
 			#End Running domain found check instance
-			echoAndExecute $TTPRN_st stopdomain "$zkParam" --force --domain-id "$2"
+			echoAndExecute $TTPRN_st stopdomain --force --domain-id "$2"
 		else
 			isVerbose && printVerbose "$FUNCNAME : no running domain $2 found"
 		fi
-		echoAndExecute $TTPRN_st rmdomain "$zkParam" --noprompt --domain-id "$2"
+		echoAndExecute $TTPRN_st rmdomain --noprompt --domain-id "$2"
 	else
 		isVerbose && printVerbose "$FUNCNAME : no domain $2 found"
 	fi
@@ -441,7 +425,7 @@ TTRO_help_submitJobOld='
 #	$1 sab files
 #	$2 output file name'
 function submitJobOld {
-	submitJobVariable "$TTPRN_streamsZkConnect" "$TTPRN_streamsDomainId" "$TTPRN_streamsInstanceId" "$1" "$2"
+	submitJobVariable "$TTPRN_streamsDomainId" "$TTPRN_streamsInstanceId" "$1" "$2"
 }
 export -f submitJobOld
 
@@ -449,7 +433,7 @@ TTRO_help_submitJob='
 # Function submitJob
 #	submits a job and provides the joboutput file'
 function submitJob {
-	submitJobVariable "$TTPRN_streamsZkConnect" "$TTPRN_streamsDomainId" "$TTPRN_streamsInstanceId" "$TT_sabFile" "$TT_jobFile" "$TT_traceLevel"
+	submitJobVariable "$TTPRN_streamsDomainId" "$TTPRN_streamsInstanceId" "$TT_sabFile" "$TT_jobFile" "$TT_traceLevel"
 }
 export -f submitJob
 
@@ -459,7 +443,7 @@ TTRO_help_submitJobAndLog='
 #	provide stdout and stderror in file for evaluation
 #	returns jobnumber in global variable TTTT_jobno'
 function submitJobAndLog {
-	submitJobVariable "$TTPRN_streamsZkConnect" "$TTPRN_streamsDomainId" "$TTPRN_streamsInstanceId" "$TT_sabFile" "$TT_jobFile" "$TT_traceLevel" 2>&1 | tee "$TT_evaluationFile"
+	submitJobVariable "$TTPRN_streamsDomainId" "$TTPRN_streamsInstanceId" "$TT_sabFile" "$TT_jobFile" "$TT_traceLevel" 2>&1 | tee "$TT_evaluationFile"
 }
 export -f submitJobAndLog
 
@@ -470,7 +454,7 @@ TTRO_help_submitJobAndIntercept='
 #	provides return code of in variable TTTT_result
 #	returns jobnumber in global variable TTTT_jobno'
 function submitJobAndIntercept {
-	if submitJobVariable "$TTPRN_streamsZkConnect" "$TTPRN_streamsDomainId" "$TTPRN_streamsInstanceId" "$TT_sabFile" "$TT_jobFile" "$TT_traceLevel" 2>&1 | tee "$TT_evaluationFile"; then
+	if submitJobVariable "$TTPRN_streamsDomainId" "$TTPRN_streamsInstanceId" "$TT_sabFile" "$TT_jobFile" "$TT_traceLevel" 2>&1 | tee "$TT_evaluationFile"; then
 		TTTT_result=0
 	else
 		TTTT_result=$?
@@ -481,23 +465,20 @@ export -f submitJobAndIntercept
 
 TTRO_help_submitJobVariable='
 # Function submitJobVariable
-#	$1 zk string
-#	$2 domain id
-#	$3 instance id
-#	$4 sab files
-#	$5 output file name
-#	$6 trace level
+#	$1 domain id
+#	$2 instance id
+#	$3 sab files
+#	$4 output file name
+#	$5 trace level
 #	returns jobnumber in global variable TTTT_jobno'
 function submitJobVariable {
 	isDebug && printDebug "$FUNCNAME $*"
-	local zkParam
-	makeZkParameter "$1"
 	if [[ -n $TT_dataDir ]]; then
 		mkdir -p "$TT_dataDir"
 	fi
-	if echoAndExecute $TTPRN_st submitjob "$zkParam" --domain-id "$2" --instance-id "$3" --outfile "$5" -C tracing="$6" "$4"; then
-		if [[ -e $5 ]]; then
-			TTTT_jobno=$(<"$5")
+	if echoAndExecute $TTPRN_st submitjob --domain-id "$1" --instance-id "$2" --outfile "$4" -C tracing="$5" "$3"; then
+		if [[ -e $4 ]]; then
+			TTTT_jobno=$(<"$4")
 			return 0
 		else
 			return $errTestFail
@@ -512,7 +493,7 @@ TTRO_help_cancelJobOld='
 # Function cancelJobOld
 #	$1 jobno'
 function cancelJobOld {
-	cancelJobVariable "$TTPRN_streamsZkConnect" "$TTPRN_streamsDomainId" "$TTPRN_streamsInstanceId" "$1"
+	cancelJobVariable "$TTPRN_streamsDomainId" "$TTPRN_streamsInstanceId" "$1"
 }
 export -f cancelJobOld
 
@@ -521,7 +502,7 @@ TTRO_help_cancelJob='
 #	$TTTT_jobno the job number'
 function cancelJob {
 	if isExisting 'TTTT_jobno'; then
-		cancelJobVariable "$TTPRN_streamsZkConnect" "$TTPRN_streamsDomainId" "$TTPRN_streamsInstanceId" "$TTTT_jobno"
+		cancelJobVariable "$TTPRN_streamsDomainId" "$TTPRN_streamsInstanceId" "$TTTT_jobno"
 	else
 		printWarning "Variable TTTT_jobno is not existing. No job to stop"
 	fi
@@ -530,15 +511,12 @@ export -f cancelJob
 
 TTRO_help_cancelJobVariable='
 # Function cancelJobVariable
-#	$1 zk string
-#	$2 domain id
-#	$3 instance id
-#	$4 jobno'
+#	$1 domain id
+#	$2 instance id
+#	$3 jobno'
 function cancelJobVariable {
 	isDebug && printDebug "$FUNCNAME $*"
-	local zkParam
-	makeZkParameter "$1"
-	if echoAndExecute $TTPRN_st canceljob "$zkParam" --domain-id "$2" --instance-id "$3" "$4"; then
+	if echoAndExecute $TTPRN_st canceljob --domain-id "$1" --instance-id "$2" "$3"; then
 		return 0
 	else
 		return $errTestFail
@@ -565,10 +543,9 @@ TTRO_help_jobHealthyVariable='
 # Function jobHealthyVariable
 #	checks whether a job is healthy
 #	parameters
-#		$1 zk string
-#		$2 domain id
-#		$3 instance id
-#		$4 jobno
+#		$1 domain id
+#		$2 instance id
+#		$3 jobno
 #	returns:
 #		TTTT_state  the state of the job
 #		TTTT_healthy the health information of the job
@@ -576,17 +553,15 @@ TTRO_help_jobHealthyVariable='
 #		error       if job is not healthy or is not running'
 function jobHealthyVariable {
 	isDebug && printDebug "$FUNCNAME $*"
-	if [[ $# -ne 4 ]]; then
+	if [[ $# -ne 3 ]]; then
 		printErrorAndExit "$FUNCNAME $* called with insufficient arguments" $errRt
 	fi
-	local zkParam
-	makeZkParameter "$1"
 	if [[ -n $TT_dataDir ]]; then
 		mkdir -p "$TT_dataDir"
 	fi
 	local rr
-	if ! rr=$(LC_ALL=en_US $TTPRN_st lsjob "$zkParam" --domain-id "$2" --instance-id "$3" --jobs "$4" --xheaders --fmt %Mf); then
-		printError "command failed LC_ALL=en_US $TTPRN_st lsjob $zkParam --domain-id $2 --instance-id $3 --jobs $4 --xheaders --fmt %Mf"
+	if ! rr=$(LC_ALL=en_US $TTPRN_st lsjob --domain-id "$1" --instance-id "$2" --jobs "$3" --xheaders --fmt %Mf); then
+		printError "command failed LC_ALL=en_US $TTPRN_st lsjob --domain-id $1 --instance-id $2 --jobs $3 --xheaders --fmt %Mf"
 		return $errTestFail
 	fi
 	local ifsSave="$IFS"
@@ -631,7 +606,6 @@ export -f jobHealthyVariable
 TTRO_help_jobHealthy='
 # Function jobHealthy
 #	checks whether a job is healthy
-#	TTPRN_streamsZkConnect  zk connect string
 #	TTPRN_streamsDomainId   domain id
 #	TTPRN_streamsInstanceId instance id
 #	TTTT_jobno              job number
@@ -641,7 +615,7 @@ TTRO_help_jobHealthy='
 #		success (0) if job is healthy
 #		error       if job is not healthy or is not running'
 function jobHealthy {
-	jobHealthyVariable "$TTPRN_streamsZkConnect" "$TTPRN_streamsDomainId" "$TTPRN_streamsInstanceId" "$TTTT_jobno"
+	jobHealthyVariable "$TTPRN_streamsDomainId" "$TTPRN_streamsInstanceId" "$TTTT_jobno"
 }
 export -f jobHealthy
 
@@ -649,7 +623,6 @@ TTRO_help_jobHealthyAndIntercept='
 # Function jobHealthyAndIntercept
 #	checks whether a job is healthy and return code is always 0
 #	provides return code of in variable TTTT_result
-#	TTPRN_streamsZkConnect  zk connect string
 #	TTPRN_streamsDomainId   domain id
 #	TTPRN_streamsInstanceId instance id
 #	TTTT_jobno              job number
@@ -660,7 +633,7 @@ TTRO_help_jobHealthyAndIntercept='
 #		TTTT_healthy the health information of the job
 #		success (0)'
 function jobHealthyAndIntercept {
-	if jobHealthyVariable "$TTPRN_streamsZkConnect" "$TTPRN_streamsDomainId" "$TTPRN_streamsInstanceId" "$TTTT_jobno"; then
+	if jobHealthyVariable "$TTPRN_streamsDomainId" "$TTPRN_streamsInstanceId" "$TTTT_jobno"; then
 		TTTT_result=0
 	else
 		TTTT_result=$?
