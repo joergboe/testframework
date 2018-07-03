@@ -117,11 +117,14 @@ Version 2.7.2:
 Version 2.7.3:
 - Simplified preambl handling: Now quote like a reqular assignement
 
-Version 2.8.0:
+Version 2.9.0:
 - New function copyAndMorph now works with expressions like:
-	^[[:space:]]*//<%varid1:varid2..%> are effective if the argument $3 equal one of the varid1, or varid2..
-	^[[:space:]]*//<%!varid1:varid2%> are not effective if the argument $3 equal one of the varid1, or varid2..
+	^[[:space:]]*//<varid1:varid2..> are effective if the argument $3 equal one of the varid1, or varid2..
+	^[[:space:]]*//<!varid1:varid2> are not effective if the argument $3 equal one of the varid1, or varid2..
 	and is able to work with lists of version ids in one line
 - Better logging of job and pid specification
 - Introduced special report for suites for automated tests
+- Check variant id for valid characters [a-zA-Z0-0_]
+- New option setVar xtraprint
+- Make domain now with checkpointRepository and fileStoragePath
 
