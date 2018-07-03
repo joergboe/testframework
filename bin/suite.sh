@@ -525,12 +525,14 @@ while [[ -z $allJobsGone ]]; do
 										variantFailures=$((variantFailures+1))
 										#failureList+=("$tmpCaseAndVariant")
 										addCaseEntry "$indexfilename" "$tmpCase" "$tmpVariant" 'FAILURE' '1' "${tcaseWorkDir[$i]}"
+										[[ ( -n $TTRO_xtraPrint ) && ( "$TTRO_noParallelCases" -ne 1 ) ]] && cat "${tcaseWorkDir[$i]}/${TEST_LOG}"
 									;;
 									ERROR )
 										echo "$tmpCaseAndVariant" >> "${TTRO_workDirSuite}/CASE_ERROR"
 										variantErrors=$((variantErrors+1))
 										#errorList+=("$tmpCaseAndVariant")
 										addCaseEntry "$indexfilename" "$tmpCase" "$tmpVariant" 'ERROR' '1' "${tcaseWorkDir[$i]}"
+										[[ ( -n $TTRO_xtraPrint ) && ( "$TTRO_noParallelCases" -ne 1 ) ]] && cat "${tcaseWorkDir[$i]}/${TEST_LOG}"
 									;;
 									* )
 										printError "${tmpCase}:${tmpVariant} : Invalid Case-variant result $tmp2 case workdir ${tcaseWorkDir[$i]}"
@@ -539,6 +541,7 @@ while [[ -z $allJobsGone ]]; do
 										#errorList+=("$tmpCaseAndVariant")
 										addCaseEntry "$indexfilename" "$tmpCase" "$tmpVariant" 'ERROR' '1' "${tcaseWorkDir[$i]}"
 										tmp2="ERROR"
+										[[ ( -n $TTRO_xtraPrint ) && ( "$TTRO_noParallelCases" -ne 1 ) ]] && cat "${tcaseWorkDir[$i]}/${TEST_LOG}"
 									;;
 								esac
 							else
@@ -548,6 +551,7 @@ while [[ -z $allJobsGone ]]; do
 								#errorList+=("$tmpCaseAndVariant")
 								addCaseEntry "$indexfilename" "$tmpCase" "$tmpVariant" 'ERROR' '1' "${tcaseWorkDir[$i]}"
 								tmp2="ERROR"
+								[[ ( -n $TTRO_xtraPrint ) && ( "$TTRO_noParallelCases" -ne 1 ) ]] && cat "${tcaseWorkDir[$i]}/${TEST_LOG}"
 							fi
 							echo " Result: $tmp2"
 						fi

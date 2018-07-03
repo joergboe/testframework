@@ -114,6 +114,7 @@ declare -r -A singleOptions=(
 	['noprompt']='--noprompt'
 	['nobrowser']='--no-browser'
 	['summary']='--summary'
+	['xtraprint']='--xtraprint'
 )
 declare -r -A valueOptions=(
 	['workdir']='-w --workdir'
@@ -303,6 +304,11 @@ setVar 'TTPRN_verbose' "$verbose"
 setVar 'TTPRN_verboseDisable' ''
 if [[ -n $summary ]]; then
 	setVar 'TTPR_summary' 'true'
+fi
+if [[ -n $xtraprint ]]; then
+	setVar 'TTRO_xtraPrint' 'true'
+else
+	setVar 'TTRO_xtraPrint' ''
 fi
 
 #---------------------------------------------------------
