@@ -618,7 +618,7 @@ while [[ -z $allJobsGone ]]; do
 			$cmd "$casePath" "$cworkdir" "$caseVariant" "$cpreamblError" &> "${cworkdir}/${TEST_LOG}" &
 			tmp4=$!
 		fi
-		tmp=$(jobs %+)
+		tmp=$(LC_ALL=en_US jobs %+)
 		echo "$tmp" > "$cworkdir/JOBS"
 		echo "Full Job list" >> "$cworkdir/JOBS"
 		jobs -l >> "$cworkdir/JOBS"
