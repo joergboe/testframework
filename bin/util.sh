@@ -743,11 +743,7 @@ TTRO_help_copyAndMorph='
 # Function copyAndMorph
 #	Copy and change all files from input directory into workdir
 #	Filenames that match one of the transformation file name pattern are transformed. All other files are copied.
-#	In files that matches the transformation file name pattern will be transformed.
-#	In a transformed file 
-#	^[[:space:]]*//<%varid1:varid2..%> are effective if the argument $3 equal one of the varid1, or varid2..
-#	^[[:space:]]*//<%!varid1:varid2%> are not effective if the argument $3 equal one of the varid1, or varid2..
-#	Effective means that the pattern //<%varid1:varid2..%> or //<%!varid1:varid2..%> is removed
+#	The transformation  of the files is done with function "morphFile"
 #	If the variant identifier is empty, the pattern list sould be also empty and the function is a pure copy function
 #	If $3 is empty and $4 .. do not exist, this function is a pure copy
 #	$1 - input dir
@@ -820,45 +816,55 @@ function copyAndMorph {
 	return 0
 }
 
-TTRO_help_copyAndMorph='
+TTRO_help_morphFile='
 # morphes a file
 #	Lines like:
-#	^[[:space:]]*//<%varid1:varid2..%> are effective if the argument $3 equal one of the varid1, or varid2..
-#	^[[:space:]]*//<%!varid1:varid2%> are not effective if the argument $3 equal one of the varid1, or varid2..
-#	Effective means that the pattern //<%varid1:varid2..%> or //<%!varid1:varid2..%> is removed
+#	^[[:space:]]*//<varid1:varid2..> are effective if the argument $3 equal one of the varid1, or varid2..
+#	^[[:space:]]*//<!varid1:varid2..> are not effective if the argument $3 equal one of the varid1, or varid2..
+#	Effective means that the pattern //<varid1:varid2..> or //<!varid1:varid2..> is removed
 #	$1 - input file
 #	$2 - output file
 #	$3 - the variant identifier
 #	returns
 #		success(0)
 #	exits  if called with wrong arguments'
-
 function morphFile {
 	if [[ $# -ne 3 ]]; then printErrorAndExit "$FUNCNAME missing params. Number of Params is $#" $errRt; fi
+	if [[ -z $3 ]]; then printErrorAndExit "$FUNCNAME wrong params. Empty variant identifier" $errRt; fi
 	isDebug && printDebug "$FUNCNAME $*"
 	rm -f "$2"
 	{
 		local readResult=0
-		local outline writeLine part1 part2 part3
+		local negate=''
+		local -i linenumber=0
+		local outline writeLine ident varidlist code
 		while [[ $readResult -eq 0 ]]; do
-			outline=''; writeLine=''
+			linenumber=$((linenumber+1))
+			outline=''; writeLine=''; negate=''
 			if ! read -r; then readResult=1; fi
 			#echo "$REPLY"
-			if [[ $REPLY =~ ^([[:space:]]*)//\<%([0-9a-zA-Z_:]+)%\>(.*) ]]; then
-				part1="${BASH_REMATCH[1]}"
-				part2="${BASH_REMATCH[2]}"
-				part3="${BASH_REMATCH[3]}"
-				if isInListSeparator "$3" "$part2" ':'; then
-					outline="${part1}${part3}"
-					writeLine='true'
+			if [[ $REPLY =~ ^([[:space:]]*)//\<([^\>]+)\>(.*) ]]; then
+				ident="${BASH_REMATCH[1]}"
+				varidlist="${BASH_REMATCH[2]}"
+				code="${BASH_REMATCH[3]}"
+				if [[ ( -n $varidlist ) && ( ${varidlist:0:1} == '!' ) ]]; then
+					varidlist="${varidlist:1}"
+					negate='true'
 				fi
-			elif [[ $REPLY =~ ^([[:space:]]*)//\<%\!([0-9a-zA-Z_:]+)%\>(.*) ]]; then
-				part1="${BASH_REMATCH[1]}"
-				part2="${BASH_REMATCH[2]}"
-				part3="${BASH_REMATCH[3]}"
-				if ! isInListSeparator "$3" "$part2" ':'; then
-					outline="${part1}${part3}"
-					writeLine='true'
+				if [[ $varidlist =~ ^[0-9a-zA-Z_:]+$ ]]; then
+					if isInListSeparator "$3" "$varidlist" ':'; then
+						if [[ -z $negate ]]; then
+							outline="${ident}${code}"
+							writeLine='true'
+						fi
+					else
+						if [[ -n $negate ]]; then
+							outline="${ident}${code}"
+							writeLine='true'
+						fi
+					fi
+				else
+					printErrorAndExit "Invalid variant list in file: $1 linenumber: $linenumber line: $REPLY" $errRt
 				fi
 			else
 				outline="$REPLY"
