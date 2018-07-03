@@ -12,14 +12,16 @@
 
 #######################################
 		copyAndMorph
- morphes a file
-	Lines like:
-	^[[:space:]]*//<%varid1:varid2..%> are effective if the argument $3 equal one of the varid1, or varid2..
-	^[[:space:]]*//<%!varid1:varid2%> are not effective if the argument $3 equal one of the varid1, or varid2..
-	Effective means that the pattern //<%varid1:varid2..%> or //<%!varid1:varid2..%> is removed
-	$1 - input file
-	$2 - output file
+ Function copyAndMorph
+	Copy and change all files from input directory into workdir
+	Filenames that match one of the transformation file name pattern are transformed. All other files are copied.
+	The transformation  of the files is done with function "morphFile"
+	If the variant identifier is empty, the pattern list sould be also empty and the function is a pure copy function
+	If $3 is empty and $4 .. do not exist, this function is a pure copy
+	$1 - input dir
+	$2 - output dir
 	$3 - the variant identifier
+	$4 ... pattern for file names to be transformed
 	returns
 		success(0)
 	exits  if called with wrong arguments
@@ -416,6 +418,21 @@
 
 
 #######################################
+		morphFile
+ morphes a file
+	Lines like:
+	^[[:space:]]*//<varid1:varid2..> are effective if the argument $3 equal one of the varid1, or varid2..
+	^[[:space:]]*//<!varid1:varid2..> are not effective if the argument $3 equal one of the varid1, or varid2..
+	Effective means that the pattern //<varid1:varid2..> or //<!varid1:varid2..> is removed
+	$1 - input file
+	$2 - output file
+	$3 - the variant identifier
+	returns
+		success(0)
+	exits  if called with wrong arguments
+
+
+#######################################
 		printDebug
  Function printDebug
 	prints debug info
@@ -477,7 +494,7 @@
 #######################################
 		printTestframeEnvironment
  Function printTestframeEnvironment
-	print special testrame environment
+ 	print special testrame environment
 	returns:
 		success (0)
 		error	in exceptional cases

@@ -13,10 +13,9 @@
 #######################################
 		cancelJobVariable
  Function cancelJobVariable
-	$1 zk string
-	$2 domain id
-	$3 instance id
-	$4 jobno
+	$1 domain id
+	$2 instance id
+	$3 jobno
 
 
 #######################################
@@ -102,7 +101,6 @@
 		jobHealthy
  Function jobHealthy
 	checks whether a job is healthy
-	TTPRN_streamsZkConnect  zk connect string
 	TTPRN_streamsDomainId   domain id
 	TTPRN_streamsInstanceId instance id
 	TTTT_jobno              job number
@@ -118,7 +116,6 @@
  Function jobHealthyAndIntercept
 	checks whether a job is healthy and return code is always 0
 	provides return code of in variable TTTT_result
-	TTPRN_streamsZkConnect  zk connect string
 	TTPRN_streamsDomainId   domain id
 	TTPRN_streamsInstanceId instance id
 	TTTT_jobno              job number
@@ -135,23 +132,14 @@
  Function jobHealthyVariable
 	checks whether a job is healthy
 	parameters
-		$1 zk string
-		$2 domain id
-		$3 instance id
-		$4 jobno
+		$1 domain id
+		$2 instance id
+		$3 jobno
 	returns:
 		TTTT_state  the state of the job
 		TTTT_healthy the health information of the job
 		success (0) if job is healthy
 		error       if job is not healthy or is not running
-
-
-#######################################
-		makeZkParameter
- Function makeZkParameter
-	makes the zk parameter from zk environment
-	$1 zk string
-	use global variable zkParam
 
 
 #######################################
@@ -164,10 +152,12 @@
 		mkDomainVariable
  Function mkDomainVariable
 	Make domain with variable parameters
-	$1 zk connect string
+	$1 zk connect string or "" for embeddedzk
 	$2 domainname
 	$3 sws port
 	$4 jmx port
+	$5 checkpointRepository path
+	$6 fileStoragePath
 
 
 #######################################
@@ -180,9 +170,8 @@
 		mkInstVariable
  Function mkInstVariable
 	Make instance with variable parameters
-	$1 zk connect string
-	$2 instance name
-	$3 numresources
+	$1 instance name
+	$2 numresources
 
 
 #######################################
@@ -236,8 +225,7 @@
 		startDomainVariable
  Function startDomainVariable
 	Make domain with variable parameters
-	$1 zk connect string
-	$2 domainname
+	$1 domainname
 
 
 #######################################
@@ -250,8 +238,7 @@
 		startInstVariable
  Function startInstVariable
 	Start instance with variable parameters
-	$1 zk connect string
-	$2 domainname
+	$1 domainname
 
 
 #######################################
@@ -287,12 +274,11 @@
 #######################################
 		submitJobVariable
  Function submitJobVariable
-	$1 zk string
-	$2 domain id
-	$3 instance id
-	$4 sab files
-	$5 output file name
-	$6 trace level
+	$1 domain id
+	$2 instance id
+	$3 sab files
+	$4 output file name
+	$5 trace level
 	returns jobnumber in global variable TTTT_jobno
 
 
