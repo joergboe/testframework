@@ -138,6 +138,7 @@ function evalPreambl {
 		local varname=
 		local value=
 		local result=0
+		local x
 		while [[ result -eq 0 ]]; do
 			if ! read -r; then result=1; fi
 			if [[ ( result -eq 0 ) || ( ${#REPLY} -gt 0 ) ]]; then #do not eval the last and empty line
@@ -159,6 +160,11 @@ function evalPreambl {
 									printErrorAndExit "${FUNCNAME} : Invalid value in file=$1 line=$lineno '$REPLY'" ${errRt}
 								fi
 								isVerbose && printVerbose "variantList='${variantList}'"
+								for x in $variantList; do
+									if ! [[ $x =~ ^[a-zA-Z0-9_]*$ ]]; then
+										printErrorAndExit "Invalid variant $x in list in file=$1 line=$lineno '$REPLY'" ${errRt}
+									fi
+								done
 							;;
 							timeout )
 								if ! eval "timeout=${value}"; then
