@@ -33,6 +33,22 @@ fi
 mkdir -p "$docdir"
 cd bin
 ./runTTF --man | grep -v '===' > "../$docdir/manpage.md.tmp"
+./runTTF --ref '' > ../doc/utils.txt.tmp0
+./runTTF --ref ./streamsutils.sh > ../doc/streamsutils.txt.tmp0
+while read -r; do
+	if [[ $REPLY =~ \#[[:space:]] ]]; then
+		echo "${REPLY:1}"
+	else
+		echo "$REPLY"
+	fi;
+done < ../doc/utils.txt.tmp0 > ../doc/utils.txt.tmp 
+while read -r; do
+	if [[ $REPLY =~ \#[[:space:]] ]]; then
+		echo "${REPLY:1}"
+	else
+		echo "$REPLY"
+	fi;
+done < ../doc/streamsutils.txt.tmp0 > ../doc/streamsutils.txt.tmp 
 cd -
 
 commithash=$(git rev-parse HEAD)
