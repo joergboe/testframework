@@ -21,7 +21,9 @@ setVar 'TTPRN_md' "${STREAMS_INSTALL}/bin/spl-make-doc"
 setVar 'TTPRN_mt' "${STREAMS_INSTALL}/bin/spl-make-toolkit"
 setVar 'TTPRN_swsPort' '8443'
 setVar 'TTPRN_jmxPort' '9443'
-setVar TTPRN_numresources 1
+setVar TTPR_numresources 1
+setVar TTPR_checkpointRepository "$HOME/Checkpoint"
+setVar TTPR_fileStoragePath "$HOME/tmp"
 setVar 'TTPR_waitForJobHealth' 60
 
 if declare -p STREAMS_ZKCONNECT &> /dev/null && [[ -n $STREAMS_ZKCONNECT ]]; then
@@ -55,6 +57,9 @@ TTTT_jobno=-1
 #make toolkit
 printInfo "Make toolkit in $TTRO_testframeToolkitDir"
 "$TTPRN_mt" '-i' "$TTRO_testframeToolkitDir"
+#make file storages
+mkdir -p "$TTPR_checkpointRepository"
+mkdir -p "$TTPR_fileStoragePath"
 
 #########################################################
 # Functions section
@@ -90,7 +95,6 @@ TTRO_help_copyAndMorphSpl='
 #	Transform spl files
 #	the variant identifier is $TTRO_variantCase'
 function copyAndMorphSpl {
-	printWarning "$FUNCNAME is deprecated use function 'copyAndMorphSpl'"
 	copyAndMorph "$TTRO_inputDirCase" "$TTRO_workDirCase" "$TTRO_variantCase" '*.spl'
 }
 export -f copyAndMorphSpl
@@ -101,8 +105,7 @@ TTRO_help_copyAndMorphSpl2='
 #	Transform spl files
 #	the variant identifier is $1'
 function copyAndMorphSpl2 {
-	printWarning "$FUNCNAME is deprecated use function 'copyAndMorphSpl2'"
-	if [[ $# -ne 1 ]]; then printErrorAndExit "${FUNCNAME[0]} called with no or empty command" $errRt; fi
+	if [[ $# -ne 1 ]]; then printErrorAndExit "${FUNCNAME[0]} called with wrong number of params" $errRt; fi
 	copyAndMorph "$TTRO_inputDirCase" "$TTRO_workDirCase" "$1" '*.spl'
 }
 export -f copyAndMorphSpl2
@@ -187,7 +190,8 @@ TTRO_help_mkDomain='
 # Function mkDomain
 #	Make domain from global properties'
 function mkDomain {
-	mkDomainVariable "$TTPR_streamsZkConnect" "$TTPRN_streamsDomainId" "$TTPRN_swsPort" "$TTPRN_jmxPort"
+	mkDomainVariable "$TTPR_streamsZkConnect" "$TTPRN_streamsDomainId" "$TTPRN_swsPort" "$TTPRN_jmxPort" "$TTPR_checkpointRepository" "$TTPR_fileStoragePath"
+
 }
 export -f mkDomain 
 
@@ -197,7 +201,9 @@ TTRO_help_mkDomainVariable='
 #	$1 zk connect string or "" for embeddedzk
 #	$2 domainname
 #	$3 sws port
-#	$4 jmx port'
+#	$4 jmx port
+#	$5 checkpointRepository path
+#	$6 fileStoragePath'
 function mkDomainVariable {
 	isDebug && printDebug "$FUNCNAME $*"
 	if [[ -n $TTPRN_noStart ]]; then
@@ -206,13 +212,13 @@ function mkDomainVariable {
 	fi
 	local commandResult
 	if [[ -z $1 ]]; then
-		if echoAndExecute $TTPRN_st mkdomain --embeddedzk --domain-id "$2" --property "SWS.Port=$3" --property "JMX.Port=$4" --property domain.highAvailabilityCount=1; then
+		if echoAndExecute $TTPRN_st mkdomain --embeddedzk --domain-id "$2" --property "SWS.Port=$3" --property "JMX.Port=$4" --property domain.highAvailabilityCount=1 --property "domain.checkpointRepositoryConfiguration= { \"Dir\" : \"$5\" } " --property "domain.fileStoragePath=$6"; then
 			commandResult=$?
 		else
 			commandResult=$?
 		fi
 	else
-		if echoAndExecute $TTPRN_st mkdomain --zkconnect "$1" --domain-id "$2" --property "SWS.Port=$3" --property "JMX.Port=$4" --property domain.highAvailabilityCount=1; then
+		if echoAndExecute $TTPRN_st mkdomain --zkconnect "$1" --domain-id "$2" --property "SWS.Port=$3" --property "JMX.Port=$4" --property domain.highAvailabilityCount=1 --property "domain.checkpointRepositoryConfiguration= { \"Dir\" : \"$5\" } " --property "domain.fileStoragePath=$6"; then
 			commandResult=$?
 		else
 			commandResult=$?
@@ -259,7 +265,7 @@ TTRO_help_mkInst='
 # Function mkInst
 #	Make instance from global properties'
 function mkInst {
-	mkInstVariable "$TTPRN_streamsInstanceId" "$TTPRN_numresources"
+	mkInstVariable "$TTPRN_streamsInstanceId" "$TTPR_numresources"
 }
 export -f mkInst
 
@@ -592,8 +598,8 @@ function jobHealthyVariable {
 	TTTT_state="$stateLoc"
 	TTTT_healthy="$healthyLoc"
 	isDebug && printDebug "$FUNCNAME loop end result id=$id State=$stateLoc Healthy=$healthyLoc"
-	if [[ $id -ne $4 ]]; then
-		printErrorAndExit "Differet job returned $4 $id" $errRt
+	if [[ $id -ne $3 ]]; then
+		printErrorAndExit "Differet job returned $3 $id" $errRt
 	fi
 	if [[ ( $stateLoc == 'Running' ) && ( $healthyLoc == 'yes' ) ]]; then
 		return 0
