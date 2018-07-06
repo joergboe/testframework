@@ -367,9 +367,11 @@ function manpage () {
 
 	Alternatively the existence of an file SKIP in the Test Case/Suite directory inhibits the execution of all variants of the Case/Suite.
 	
-	The function 'setCategory' defines the categories of a Test Case or Test Suite. If the function 'setCategory' is not called during
-	Case or Suite initialization, the artifact has the default category 'default'. If the function 'setCategory' is called with an empty 
-	parameter list, all catagories are cleaned. The categories are checked before the Case- or Suite- preparation is executed.
+	The function 'setCategory' defines the categories of a Test Case or Test Suite.
+	If the function 'setCategory' is not called during Case initialization the Case has the default category 'default'.
+	If the function 'setCategory' is not called during Suite initialization the Suite has no category.
+	If the function 'setCategory' is called with an empty parameter list, all catagories are cleaned.
+	The categories are checked before the Case- or Suite- preparation is executed.
 	The run-categories of the a test run can be defined with command line parameter -c|--category VALUE. The run-categories 
 	are considered to be patterns.
 	If one of the run-category pattern matches any of the categories of the artifact, the Case/Suite is executed. Otherwise it is skipped.
