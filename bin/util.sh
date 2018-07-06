@@ -348,14 +348,15 @@ TTRO_help_setVar='
 # Function setVar
 #	Set framework variable or property at runtime
 #	The name of the variable must startg with TT_, TTRO_, TTPR_ or TTPRN_
+# Parameters:
 #	$1 - the name of the variable to set
 #	$2 - the value
-#	returns success (0):
-#		if the variable could be set or if an property value is ignored
-#	exits:
-#		if variable is not of type TT_, TTRO_, TTPR_ or TTPRN_
-#		or if the variable could not be set (e.g a readonly variable was already set
-#		ignored property values do not generate an error'
+# Returns
+#	success (0) - if the variable could be set or if an property value is ignored
+# Exits:
+#	if variable is not of type TT_, TTRO_, TTPR_ or TTPRN_
+#	or if the variable could not be set (e.g a readonly variable was already set
+#	ignored property values do not generate an error'
 function setVar {
 	if [[ $# -ne 2 ]]; then printErrorAndExit "$FUNCNAME missing params. Number of Params is $#" $errRt; fi
 	isDebug && printDebug "$FUNCNAME $1 $2"
@@ -414,10 +415,13 @@ function setVar {
 TTRO_help_isExisting='
 # Function isExisting
 #	check if variable exists
-#	$1 var name to be checked
-#	returns
+# Parameters:
+#	$1 - variable name to be checked
+# Returns:
 #		success(0)    if the variable exists
-#		error(1)      otherwise'
+#		error(1)      otherwise
+# Exits
+#	if called without argument'
 function isExisting {
 	if declare -p "${1}" &> /dev/null; then
 		isDebug && printDebug "$FUNCNAME $1 return 0"
@@ -431,10 +435,13 @@ function isExisting {
 TTRO_help_isNotExisting='
 # Function isNotExisting
 #	check if variable not exists
-#	$1 var name to be checked
-#	returns
-#		success(0)    if the variable not exists
-#		error(1)      otherwise'
+# Parameters:
+#	$1 - variable name to be checked
+# Returns:
+#	success(0) - if the variable not exists
+#	error(1)   -   otherwise
+# Exits
+#	if called without argument'
 function isNotExisting {
 	if declare -p "${1}" &> /dev/null; then
 		isDebug && printDebug "$FUNCNAME $1 return 1"
@@ -448,10 +455,13 @@ function isNotExisting {
 TTRO_help_isExistingAndTrue='
 # Function isExistingAndTrue
 #	check if variable exists and has a non empty value
-#	$1 var name to be checked
-#	returns
-#		success(0)    exists and has a non empty value
-#		error(1)      otherwise'
+# Parameters:
+#	$1 - var name to be checked
+# Returns
+#	success(0) - the variable exists and has a non empty value
+#	error(1)   - otherwise
+# Exits
+#	if called without argument'
 function isExistingAndTrue {
 	if declare -p "${1}" &> /dev/null; then
 		if [[ -n ${!1} ]]; then
@@ -470,10 +480,13 @@ function isExistingAndTrue {
 TTRO_help_isExistingAndFalse='
 # Function isExistingAndFalse
 #	check if variable exists and has an empty value
-#	$1 var name to be checked
-#	returns
-#		success(0)    exists and has an empty value
-#		error(1)      otherwise'
+# Parameters:
+#	$1 - var name to be checked
+# Returns
+#	success(0) - exists and has an empty value
+#	error(1)   - otherwise
+# Exits
+#	if called without argument'
 function isExistingAndFalse {
 	if declare -p "${1}" &> /dev/null; then
 		if [[ -z ${!1} ]]; then
@@ -492,11 +505,14 @@ function isExistingAndFalse {
 TTRO_help_isTrue='
 # Function isTrue
 #	check if a variable has a non empty value
-#	$1 var name to be checked
-#	returns
-#		success(0)    variable exists and has a non empty value
-#		error(1)      variable exists and has a empty value
-#	exits if variable not exists'
+# Parameters:
+#	$1 - var name to be checked
+# Returns
+#	success(0) - variable exists and has a non empty value
+#	error(1)   - variable exists and has a empty value
+# Exits:
+#	if variable not exists
+#	if called without argument'
 function isTrue {
 	if declare -p "${1}" &> /dev/null; then
 		if [[ -n ${!1} ]]; then
@@ -514,11 +530,14 @@ function isTrue {
 TTRO_help_isFalse='
 # Function isFalse
 #	check if a variable has an empty value
-#	$1 var name to be checked
-#	returns
-#		success(0)    if the variable exists and has a empty value
-#		error(1)      if the variable exists and has an non empty value
-#	exits if variable not exists'
+# Parameters:
+#	$1 - var name to be checked
+# Returns
+#	success(0)  - if the variable exists and has a empty value
+#	error(1)    - if the variable exists and has an non empty value
+# Exits:
+#	if variable not exists
+#	if called without argument'
 function isFalse {
 	if declare -p "${1}" &> /dev/null; then
 		if [[ -z ${!1} ]]; then
@@ -536,10 +555,13 @@ function isFalse {
 TTRO_help_isArray='
 # Function isArray
 #	checks whether an variable exists and is an indexed array
-#	$1 var name to be checked
-#	returns
-#		success(0)   if the variable exists and is an indexed array
-#		error(1)     otherwise'
+# Parameters:
+#	$1 - var name to be checked
+# Returns
+#	success(0) - if the variable exists and is an indexed array
+#	error(1)   -  otherwise
+# Exits:
+#	if called without argument'
 function isArray {
 	local v
 	if v=$(declare -p "${1}" 2> /dev/null); then
@@ -559,10 +581,13 @@ function isArray {
 TTRO_help_isAssociativeArray='
 # Function isAssociativeArray
 #	checks whether an variable exists and is an associative array
-#	$1 var name to be checked
-#	returns
-#		success(0)   if the variable exists and is an indexed array
-#		error(1)     otherwise'
+# Parameters:
+#	$1 - var name to be checked
+# Returns
+#	success(0) - if the variable exists and is an indexed array
+#	error(1)   - otherwise
+# Exits:
+#	if called without argument'
 function isAssociativeArray {
 	local v
 	if v=$(declare -p "${1}" 2> /dev/null); then
@@ -582,9 +607,13 @@ function isAssociativeArray {
 TTRO_help_isFunction='
 # Function isFunction
 #	checks whether an given name is defined as function
-#	$1 name to be checked
-#		success(0)   if the function exists
-#		error(1)     otherwise'
+# Parameters:
+#	$1 - name to be checked
+# Returns:
+#	success(0)  - if the function exists
+#	error(1)    - otherwise
+# Exits:
+#	if called without argument'
 function isFunction {
 	if declare -F "$1" &> /dev/null; then
 		isDebug && printDebug "$FUNCNAME $1 return 0"
@@ -598,12 +627,14 @@ function isFunction {
 TTRO_help_arrayHasKey='
 # Function arrayHasKey
 #	check is an array has key
+# Parameters:
 #	$1 the array name
 #	$2 the key value to search must not contain spaces
-#	returns
-#		success(0)    if key exists in array
-#		error(1)      otherwise
-#	exits if called with wrong arguments'
+# Returns:
+#	success(0) - if key exists in array
+#	error(1)   -   otherwise
+# Exits:
+#	exits if called with wrong number of arguments'
 function arrayHasKey {
 	if [[ $# -ne 2 ]]; then printErrorAndExit "$FUNCNAME must have 2 aruments" $errRt; fi
 	isDebug && printDebug "$FUNCNAME $1 $2"
