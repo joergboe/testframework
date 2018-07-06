@@ -1,4 +1,4 @@
-#--variantList='noParm emptyCommand true false simpleCommands1 simpleCommands2 noParmCheck emptyCommandCheck trueCheck falseCheck simpleCommands1Check simpleCommands2Check'
+#--variantList='noParm emptyCommand true true1 false simpleCommands1 simpleCommands2 noParmCheck emptyCommandCheck trueCheck true1Check falseCheck simpleCommands1Check simpleCommands2Check'
 
 checkedCase=''
 if [[ $TTRO_variantCase == *Check ]]; then
@@ -15,8 +15,21 @@ function expect3Params {
 }
 
 function returnSucc {
-	echo "returnSucc"
-	return 0
+	echo "returnSucc \$#=$#"
+	if [[ $# -ne 0 ]]; then
+		return 1
+	else
+		return 0
+	fi
+}
+
+function returnSucc1 {
+	echo "returnSucc1 \$#=$#"
+	if [[ $# -ne 1 ]]; then
+		return 1
+	else
+		return 0
+	fi
 }
 
 function returnFail {
@@ -37,6 +50,12 @@ function testStep {
 				if echoAndExecute ''; then echo true; else setFailure "failure in $TTRO_variantCase"; fi
 			else
 				echoAndExecute ''
+			fi;;
+		true1*)
+			if [[ -n $checkedCase ]]; then
+				if echoAndExecute 'returnSucc1' ''; then echo true; else setFailure "failure in $TTRO_variantCase"; fi
+			else
+				echoAndExecute 'returnSucc1' ""
 			fi;;
 		true*)
 			if [[ -n $checkedCase ]]; then

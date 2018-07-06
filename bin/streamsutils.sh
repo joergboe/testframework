@@ -52,8 +52,6 @@ TT_dataDir='data'
 TT_waitForFileName="$TT_dataDir/FinalMarker"
 TT_waitForFileInterval=3
 
-TTTT_jobno=-1
-
 #make toolkit
 printInfo "Make toolkit in $TTRO_testframeToolkitDir"
 "$TTPRN_mt" '-i' "$TTRO_testframeToolkitDir"
@@ -393,7 +391,8 @@ TTRO_help_cleanUpInstAndDomainVariable='
 #	stop and clean instance and domain from variable params
 #	$1 zk string
 #	$2 domain id
-#	$3 instance id'
+#	$3 instance id
+#	return_code: success'
 function cleanUpInstAndDomainVariable {
 	isDebug && printDebug "$FUNCNAME $*"
 	
@@ -429,38 +428,60 @@ export -f cleanUpInstAndDomainVariable
 TTRO_help_submitJobOld='
 # Function submitJobOld
 #	$1 sab files
-#	$2 output file name'
+#	$2 output file name
+#	return_code: the returncode of the called function'
 function submitJobOld {
+	printWarning "$FUNCNAME is deprecated use submitJob"
 	submitJobVariable "$TTPRN_streamsDomainId" "$TTPRN_streamsInstanceId" "$1" "$2"
 }
 export -f submitJobOld
 
 TTRO_help_submitJob='
 # Function submitJob
-#	submits a job and provides the joboutput file'
+#	create data directory if data directory variable is non empty
+#	and submit the job
+#	submits a job and provides the jobnumber file
+# Parameters:
+#	$1 ...$n - optionally more config and submission time parameters
+#	$TTPRN_streamsDomainId   - domain id
+#	$TTPRN_streamsInstanceId - instance id
+#	$TT_sabFile              - sab file
+#	$TT_jobFile              - output jobnumber file name
+#	$TT_traceLevel           - trace level
+#	TT_dataDir - the data directory variable
+# Returns:
+#	the return code of the executed command
+# Exits:
+#	if the job was started and the jobnumber file does not exists
+# Side Effects:
+#	TTTT_jobno - jobnumber if job was started or empty'
 function submitJob {
-	submitJobVariable "$TTPRN_streamsDomainId" "$TTPRN_streamsInstanceId" "$TT_sabFile" "$TT_jobFile" "$TT_traceLevel"
+	submitJobVariable "$TTPRN_streamsDomainId" "$TTPRN_streamsInstanceId" "$TT_sabFile" "$TT_jobFile" "$TT_traceLevel" "$@"
 }
 export -f submitJob
 
-TTRO_help_submitJobAndLog='
-# Function submitJobAndLog
-#	submits a job and provides the joboutput file
-#	provide stdout and stderror in file for evaluation
-#	returns jobnumber in global variable TTTT_jobno'
-function submitJobAndLog {
-	submitJobVariable "$TTPRN_streamsDomainId" "$TTPRN_streamsInstanceId" "$TT_sabFile" "$TT_jobFile" "$TT_traceLevel" 2>&1 | tee "$TT_evaluationFile"
-}
-export -f submitJobAndLog
-
 TTRO_help_submitJobAndIntercept='
 # Function submitJobAndIntercept
-#	submits a job and provides the joboutput file
-#	provide stdout and stderror in file for evaluation
-#	provides return code of in variable TTTT_result
-#	returns jobnumber in global variable TTTT_jobno'
+#	create data directory if data directory variable is non empty
+#	and submit the job and write the result code into TTTT_result
+#	submits a job and provides the jobnumber file
+# Parameters:
+#	$1 ...$n - optionally more config and submission time parameters
+#	$TTPRN_streamsDomainId   - domain id
+#	$TTPRN_streamsInstanceId - instance id
+#	$TT_sabFile              - sab file
+#	$TT_jobFile              - output jobnumber file name
+#	$TT_traceLevel           - trace level
+#	TT_dataDir - the data directory variable
+# Returns:
+#	success
+# Exits:
+#	if the job was started and the jobnumber file does not exists
+# Side Effects:
+#	TTTT_result - the result code of the executed command
+#	TTTT_jobno - jobnumber if job was started or empty'
 function submitJobAndIntercept {
-	if submitJobVariable "$TTPRN_streamsDomainId" "$TTPRN_streamsInstanceId" "$TT_sabFile" "$TT_jobFile" "$TT_traceLevel" 2>&1 | tee "$TT_evaluationFile"; then
+	if submitJobVariable "$TTPRN_streamsDomainId" "$TTPRN_streamsInstanceId" "$TT_sabFile" "$TT_jobFile" "$TT_traceLevel" "$@"; then
 		TTTT_result=0
 	else
 		TTTT_result=$?
@@ -469,28 +490,116 @@ function submitJobAndIntercept {
 }
 export -f submitJobAndIntercept
 
+TTRO_help_submitJobInterceptAndSuccess='
+# Function submitJobInterceptAndSuccess
+#	create data directory if data directory variable is non empty
+#	and submit the job and expect a successful submission
+#	submits a job and provides the jobnumber file
+# Parameters:
+#	$1 ...$n - optionally more config and submission time parameters
+#	$TTPRN_streamsDomainId   - domain id
+#	$TTPRN_streamsInstanceId - instance id
+#	$TT_sabFile              - sab file
+#	$TT_jobFile              - output jobnumber file name
+#	$TT_traceLevel           - trace level
+#	TT_dataDir - the data directory variable
+# Returns:
+#	success
+# Exits:
+#	if the job was started and the jobnumber file does not exists
+# Side Effects:
+#	TTTT_result - the result code of the executed command
+#	TTTT_jobno - jobnumber if job was started or empty
+#	the failure condition is set if the job submission fails'
+function submitJobInterceptAndSuccess {
+	if submitJobVariable "$TTPRN_streamsDomainId" "$TTPRN_streamsInstanceId" "$TT_sabFile" "$TT_jobFile" "$TT_traceLevel" "$@"; then
+		TTTT_result=0
+	else
+		TTTT_result=$?
+		setFailure "Job submission failed: $TT_sabFile"
+	fi
+	return 0
+}
+export -f submitJobInterceptAndSuccess
+
+TTRO_help_submitJobLogAndIntercept='
+# Function submitJobLogAndIntercept
+#	create data directory if data directory variable is non empty
+#	and submit the job and and write the result code into TTTT_result
+#	submits a job and provides the jobnumber file and the console output of the command in evaluation file
+# Parameters:
+#	$1 ...$n - optionally more config and submission time parameters
+#	$TTPRN_streamsDomainId   - domain id
+#	$TTPRN_streamsInstanceId - instance id
+#	$TT_sabFile              - sab file
+#	$TT_jobFile              - output jobnumber file name
+#	$TT_traceLevel           - trace level
+#	TT_dataDir - the data directory variable
+#	$TT_evaluationFile - the file name of the evaluation file
+# Returns:
+#	success
+# Exits:
+#	if the job was started and the jobnumber file does not exists
+# Side Effects:
+#	TTTT_result - the result code of the executed command
+#	TTTT_jobno - jobnumber if job was started or empty'
+function submitJobLogAndIntercept {
+	TTTT_result=0
+	TTTT_jobno=''
+	if submitJobVariable "$TTPRN_streamsDomainId" "$TTPRN_streamsInstanceId" "$TT_sabFile" "$TT_jobFile" "$TT_traceLevel" "$@" 2>&1 | tee "$TT_evaluationFile"; then
+		if [[ -e $TT_jobFile ]]; then
+			TTTT_jobno=$(<"$TT_jobFile")
+			return 0
+		else
+			printErrorAndExit "Job was started but not joblog was found: $TT_jobFile" $errRt
+		fi
+	else
+		TTTT_result=$?
+	fi
+	return 0
+}
+export -f submitJobLogAndIntercept
+
 TTRO_help_submitJobVariable='
 # Function submitJobVariable
-#	$1 domain id
-#	$2 instance id
-#	$3 sab files
-#	$4 output file name
-#	$5 trace level
-#	returns jobnumber in global variable TTTT_jobno'
+#	create data directory if data directory variable is non empty
+#	and submit the job
+# Parameters:
+#	$1     - domain id
+#	$2     - instance id
+#	$3     - sab file
+#	$4     - output jobnumber file name
+#	$5     - trace level
+#	$6 ... - optionally more command line parameters (submission time and config params)
+#	TT_dataDir - the data directory variable
+# Returns:
+#	the return code of the executed command
+# Exits:
+#	if the command is called with wrong parameters
+#	if the job was started and the jobnumber file does not exists
+# Side Effects:
+#	TTTT_jobno - jobnumber if job was started or empty'
 function submitJobVariable {
 	isDebug && printDebug "$FUNCNAME $*"
+	[[ $# -lt 5 ]] && printErrorAndExit "$FUNCNAME called with wrong number of params: $#" $errRt
+	TTTT_jobno=''
 	if [[ -n $TT_dataDir ]]; then
 		mkdir -p "$TT_dataDir"
 	fi
-	if echoAndExecute $TTPRN_st submitjob --domain-id "$1" --instance-id "$2" --outfile "$4" -C tracing="$5" "$3"; then
-		if [[ -e $4 ]]; then
-			TTTT_jobno=$(<"$4")
+	local d_id="$1"; local i_id="$2"; local sab_f="$3"; local out_f="$4"; local tr_l="$5"
+	shift; shift; shift; shift; shift;
+	local rcode=0
+	if echoAndExecute $TTPRN_st submitjob --domain-id "$d_id" --instance-id "$i_id" --outfile "$out_f" -C tracing="$tr_l" "$sab_f" "$@"; then
+		if [[ -e $out_f ]]; then
+			TTTT_jobno=$(<"$out_f")
 			return 0
 		else
-			return $errTestFail
+			printErrorAndExit "Job was started but not joblog was found: $out_f" $errRt
 		fi
 	else
-		return $errTestFail
+		TTTT_jobno=''
+		rcode=$?
+		return $rcode
 	fi
 }
 export -f submitJobVariable
@@ -505,65 +614,79 @@ export -f cancelJobOld
 
 TTRO_help_cancelJob='
 # Function cancelJob
-#	$TTTT_jobno the job number'
+#	if TTTT_jobno is not empty, cancel the job
+# Parameters:
+#	$TTTT_jobno - the job number
+#	$TTPRN_streamsDomainId - domain id
+#	$TTPRN_streamsInstanceId - instance id
+# Returns:
+#	the result code of the executed command
+# Side Effect:
+#	TTTT_jobno is empty'
 function cancelJob {
-	if isExisting 'TTTT_jobno'; then
+	if isExistingAndTrue 'TTTT_jobno'; then
 		cancelJobVariable "$TTPRN_streamsDomainId" "$TTPRN_streamsInstanceId" "$TTTT_jobno"
+		TTTT_jobno=''
 	else
-		printWarning "Variable TTTT_jobno is not existing. No job to stop"
+		printWarning "Variable TTTT_jobno is empty. No job to stop"
 	fi
 }
 export -f cancelJob
 
 TTRO_help_cancelJobVariable='
 # Function cancelJobVariable
-#	$1 domain id
-#	$2 instance id
-#	$3 jobno'
+# Parameters:
+#	$1 - domain id
+#	$2 - instance id
+#	$3 - jobno
+# Returns:
+#	the result code of the executed command'
 function cancelJobVariable {
 	isDebug && printDebug "$FUNCNAME $*"
-	if echoAndExecute $TTPRN_st canceljob --domain-id "$1" --instance-id "$2" "$3"; then
-		return 0
-	else
-		return $errTestFail
-	fi
+	echoAndExecute $TTPRN_st canceljob --domain-id "$1" --instance-id "$2" "$3"
 }
 export -f cancelJobVariable
 
 TTRO_help_checkJobNo='
 # Function checkJobNo
-#	Checks whether the variable TTTT_jobno has a valid job number (>-1)
-#	Set the error condition if the check fails
-#	retunrs success otherwise'
+#	Checks whether the variable TTTT_jobno has a valid job number (is not empty)
+#	and set the error condition if the check fails
+# Parameters:
+#	TTTT_jobno - the job number to check
+# Returns:
+#	success
+# Side Effects:
+#	set failure variable if chck has failed'
 function checkJobNo {
-	if [[ $TTTT_jobno -gt -1 ]]; then
+	if isExistingAndTrue 'TTTT_jobno'; then
 		printInfo "The job number is \$TTTT_jobno=$TTTT_jobno"
-		return 0
 	else
-		setFailure "Invalif job number \$TTTT_jobno=$TTTT_jobno"
+		setFailure "TTTT_jobno is not existing or empty"
 	fi
+	return 0
 }
 export -f checkJobNo
 
 TTRO_help_jobHealthyVariable='
 # Function jobHealthyVariable
 #	checks whether a job is healthy
-#	parameters
-#		$1 domain id
-#		$2 instance id
-#		$3 jobno
-#	returns:
-#		TTTT_state  the state of the job
-#		TTTT_healthy the health information of the job
-#		success (0) if job is healthy
-#		error       if job is not healthy or is not running'
+# Parameters:
+#	$1 - domain id
+#	$2 - instance id
+#	$3 - jobno
+# Returns:
+#	success (0) if job is healthy and running
+#	error       if job is not healthy or is not running or the command (streamtool lsjob failed
+# Exits:
+#	if the command is called with wrong parameters
+#	if the streamtool lsjob return wrong information
+# Side Effects:
+#	TTTT_state - the state of the job
+#	TTTT_healthy the health information of the job'
 function jobHealthyVariable {
 	isDebug && printDebug "$FUNCNAME $*"
 	if [[ $# -ne 3 ]]; then
 		printErrorAndExit "$FUNCNAME $* called with insufficient arguments" $errRt
-	fi
-	if [[ -n $TT_dataDir ]]; then
-		mkdir -p "$TT_dataDir"
 	fi
 	local rr
 	if ! rr=$(LC_ALL=en_US $TTPRN_st lsjob --domain-id "$1" --instance-id "$2" --jobs "$3" --xheaders --fmt %Mf); then
@@ -578,6 +701,7 @@ function jobHealthyVariable {
 	local stateLoc=''
 	for x in $rr; do
 		if [[ $x =~ (.*):(.*) ]]; then
+			local TTTT_trim
 			trim "${BASH_REMATCH[1]}"
 			if [[ $TTTT_trim == 'Id' ]]; then
 				if [[ -n $id ]]; then printErrorAndExit "Duplicate Id in lsjob response \n $rr" $errRt; fi
@@ -612,14 +736,17 @@ export -f jobHealthyVariable
 TTRO_help_jobHealthy='
 # Function jobHealthy
 #	checks whether a job is healthy
-#	TTPRN_streamsDomainId   domain id
-#	TTPRN_streamsInstanceId instance id
-#	TTTT_jobno              job number
-#	returns:
-#		TTTT_state  the state of the job
-#		TTTT_healthy the health information of the job
-#		success (0) if job is healthy
-#		error       if job is not healthy or is not running'
+#	This function has the same function as function jobHealthyVariable except parameters
+# Parameters:
+#	TTPRN_streamsDomainId   - domain id
+#	TTPRN_streamsInstanceId - instance id
+#	TTTT_jobno              - job number
+# Returns:
+#	see jobHealthyVariable
+# Exits:
+#	see jobHealthyVariable
+# Side Effects:
+#	see jobHealthyVariable'
 function jobHealthy {
 	jobHealthyVariable "$TTPRN_streamsDomainId" "$TTPRN_streamsInstanceId" "$TTTT_jobno"
 }
@@ -628,16 +755,18 @@ export -f jobHealthy
 TTRO_help_jobHealthyAndIntercept='
 # Function jobHealthyAndIntercept
 #	checks whether a job is healthy and return code is always 0
+#	This function has the same function as function jobHealthy except return and side effects
 #	provides return code of in variable TTTT_result
-#	TTPRN_streamsDomainId   domain id
-#	TTPRN_streamsInstanceId instance id
-#	TTTT_jobno              job number
-#	returns:
-#		TTTT_result         0 if job is healthy
-#		TTTT_result         error  if job is not healthy
-#		TTTT_state  the state of the job
-#		TTTT_healthy the health information of the job
-#		success (0)'
+# Parameters:
+#	see jobHealthy
+# Returns:
+#	success
+# Exits:
+#	see jobHealthyVariable
+# Side Effects:
+#	see jobHealthyVariable
+#	TTTT_result - success if job is healthy and running
+#	              error  if job is not healthy or not running or command has failed'
 function jobHealthyAndIntercept {
 	if jobHealthyVariable "$TTPRN_streamsDomainId" "$TTPRN_streamsInstanceId" "$TTTT_jobno"; then
 		TTTT_result=0
@@ -651,9 +780,13 @@ export -f jobHealthyAndIntercept
 TTRO_help_waitForFin='
 # Function waitForFin
 #	waits until the final file appears
+#	see also function waitForFileToAppear
+# Parameters:
 #	$TT_waitForFileName - the name of the file to wait for
-#	$TT_waitForFileInterval - the interval
-#	returns success if the file was found'
+#	$TT_waitForFileInterval - the interval for that check
+# Returns
+#	success if the file was found
+#	failure otherwise'
 function waitForFin {
 	waitForFileToAppear "$TT_waitForFileName" "$TT_waitForFileInterval"
 }

@@ -1057,10 +1057,14 @@ TTRO_help_echoAndExecute='
 # Function echoAndExecute
 #	echo and execute a command with variable arguments
 #	success is expected and no further evaluation of the output is required
-#	$1 the command string
-#	$2 .. the parameters of the command
-#	returns the result code of the executed command
-#	exits if no command string is given or command is empty'
+# Parameters:
+#	$1    - the command string
+#	$2 .. - optional the parameters of the command
+# Returns:
+#	the result code of the executed command
+# Exits:
+#	if no command string is given or the command is empty
+#	if the function is not guarded with conditional statement and the executed command returns an error code'
 function echoAndExecute {
 	if [[ $# -lt 1 || -z $1 ]]; then
 		printErrorAndExit "${FUNCNAME[0]} called with no or empty command" $errRt
@@ -1076,9 +1080,15 @@ TTRO_help_echoExecuteAndIntercept='
 # Function echoExecuteAndIntercept
 #	echo and execute the command line
 #	the command execution is guarded and the result code is stored
-#	$1 the command string
-#	$2 .. the parameters of the command
-#	return the result code of the executed comman in TTTT_result'
+# Parameters:
+#	$1    - the command string
+#	$2 .. - optional the parameters of the command
+# Returns:
+#	success
+# Exits:
+#	if no command string is given or the command is empty
+# Side Effects:
+#	TTTT_result - the result code of the executed command'
 function echoExecuteAndIntercept {
 	if [[ $# -lt 1 || -z $1 ]]; then
 		printErrorAndExit "${FUNCNAME[0]} called with no or empty command" $errRt
@@ -1101,9 +1111,16 @@ TTRO_help_echoExecuteInterceptAndSuccess='
 #	echo and execute the command line
 #	a successfull command execution is expected
 #	the failure condition is set in case of failure
-#	$1 the command string
-#	$2 .. the parameters of the command
-#	command result code is sored in TTTT_result'
+# Parameters:
+#	$1    - the command string
+#	$2 .. - optional the parameters of the command
+# Returns
+#	success
+# Exits:
+#	if no command string is given or the command is empty
+# Side Effects:
+#	TTTT_result - the result code of the executed command
+#	The failure condition is set if the command returns failure'
 function echoExecuteInterceptAndSuccess {
 	if [[ $# -lt 1 || -z $1 ]]; then
 		printErrorAndExit "${FUNCNAME[0]} called with no or empty command" $errRt
@@ -1125,11 +1142,18 @@ function echoExecuteInterceptAndSuccess {
 TTRO_help_echoExecuteInterceptAndError='
 # Function echoExecuteInterceptAndError
 #	echo and execute the command line
-#	a error code is expected
+#	a failure code is expected in the command return
 #	the failure condition is set in case of cmd success
-#	$1 the command string
-#	$2 .. the parameters of the command
-#	command result code is sored in TTTT_result'
+# Parameters:
+#	$1    - the command string
+#	$2 .. - optionally the parameters of the command
+# Returns:
+#	success
+# Exits:
+#	if no command string is given or the command is empty
+# Side Effects_
+#	TTTT_result - the result code of the executed command
+#	The failure condition is set if the command returns success'
 function echoExecuteInterceptAndError {
 	if [[ $# -lt 1 || -z $1 ]]; then
 		printErrorAndExit "${FUNCNAME[0]} called with no or empty command" $errRt
@@ -1155,12 +1179,19 @@ TTRO_help_echoExecuteAndIntercept2='
 #	if the expected result is not received the failure condition is set 
 #	the function returns success(0)
 #	the function exits if an input parameter is wrong
+# Parameters:
 #	$1 success - returncode 0 expected
 #	   error   - returncode ne 0 expected
 #	   X       - any return value is accepted
 #	   number  - the numeric return code is expected
-#	$2 the command string
-#	$3 the parameters as one string - during execution expansion and word splitting is applied'
+#	$2 - the command string
+#	$3 .. - optional the parameters for the command
+# Returns:
+#	success
+# Exits:
+#	If the number of parameters is -lt 2 ot the command is empty
+# Side Effects:
+#'
 function echoExecuteAndIntercept2 {
 	if [[ $# -lt 2 || -z $2 ]]; then
 		printErrorAndExit "${FUNCNAME[0]} called with no or empty command" $errRt
@@ -1212,10 +1243,16 @@ TTRO_help_executeAndLog='
 #	echo and execute a command
 #	the command execution is guarded and the result code is stored
 #	the std- and error-out is logged into a file for further evaluation
-#	$1 the command string
-#	$2 .. the parameters of the command
-#	$TT_evaluationFile the file name of the log file default is ./EVALUATION.log
-#	return the result code of the executed comman in TTTT_result'
+# Parameters:
+#	$1    - the command string
+#	$2 .. - optional the parameters of the command
+#	$TT_evaluationFile - the file name of the log file default is ./EVALUATION.log
+# Returns:
+#	success
+# Exits:
+#	if no command string is given or the command is empty
+# Side Effects:
+#	TTTT_result - the result code of the executed command'
 function executeAndLog {
 	if [[ $# -lt 1 || -z $1 ]]; then
 		printErrorAndExit "${FUNCNAME[0]} called with no or empty command" $errRt
@@ -1239,10 +1276,17 @@ TTRO_help_executeLogAndSuccess='
 #	the command execution is guarded and the result code is stored
 #	the std- and error-out is logged into a file for further evaluation
 #	a successfull command execution is expected, otherwise the failure condition is set
-#	$1 the command string
-#	$2 .. the parameters of the command
-#	$TT_evaluationFile the file name of the log file default is ./EVALUATION.log
-#	return the result code of the executed comman in TTTT_result'
+# Parameters:
+#	$1    - the command string
+#	$2 .. - optional the parameters of the command
+#	$TT_evaluationFile - the file name of the log file default is ./EVALUATION.log
+# Returns:
+#	success
+# Exits:
+#	if no command string is given or the command is empty
+# Side Effects:
+#	TTTT_result - the result code of the executed command
+#	The failure condition is set if the command returns failure'
 function executeLogAndSuccess {
 	if [[ $# -lt 1 || -z $1 ]]; then
 		printErrorAndExit "${FUNCNAME[0]} called with no or empty command" $errRt
@@ -1267,10 +1311,17 @@ TTRO_help_executeLogAndError='
 #	the command execution is guarded and the result code is stored
 #	the std- and error-out is logged into a file for further evaluation
 #	an error command execution is expected, otherwise the failure condition is set
-#	$1 the command string
-#	$2 .. the parameters of the command
-#	$TT_evaluationFile the file name of the log file default is ./EVALUATION.log
-#	return the result code of the executed comman in TTTT_result'
+# Parameters:
+#	$1    - the command string
+#	$2 .. - optional the parameters of the command
+#	$TT_evaluationFile - the file name of the log file default is ./EVALUATION.log
+# Returns:
+#	success
+# Exits:
+#	if no command string is given or the command is empty
+# Side Effects:
+#	TTTT_result - the result code of the executed command
+#	The failure condition is set if the command returns success'
 function executeLogAndError {
 	if [[ $# -lt 1 || -z $1 ]]; then
 		printErrorAndExit "${FUNCNAME[0]} called with no or empty command" $errRt
@@ -1389,9 +1440,14 @@ function import {
 
 TTRO_help_waitForFileToAppear='
 # Function waitForFileToAppear
-#	Wait for a file to appear
-#	$1	the file name to check
-#	$2	the interval optional default is 3 sec.'
+#	Wait until a file appears
+# Parameters:
+#	$1 - the file name to check
+#	$2 - optional the check interval default is 3 sec.
+# Returns:
+#	success if the file was found
+# Exits:
+# if the function was called with invalid parameters'
 function waitForFileToAppear {
 	if [[ ( $# -lt 1 ) || ( $# -gt 2 ) ]]; then printErrorAndExit "$FUNCNAME invalid no of params. Number of Params is $#" $errRt; fi
 	local timeoutValue=3
@@ -1409,8 +1465,14 @@ function waitForFileToAppear {
 TTRO_help_getLineCount='
 # Function getLineCount
 #	Get the number of lines in a file
+# Parameters:
 #	$1 the file name
-#	output TTTT_lineCount'
+# Returns:
+#	the status of the ececuted commands
+# Exits:
+# if the function was called with invalid parameters
+# Side Effects:
+#	TTTT_lineCount - the number of lines in the file'
 function getLineCount {
 	if [[ $# -ne 1 ]]; then printErrorAndExit "$FUNCNAME invalid no of params. Number of Params is $#" $errRt; fi
 	TTTT_lineCount=$(wc -l "$1" | cut -f 1 -d ' ')
