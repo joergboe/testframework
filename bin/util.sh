@@ -8,21 +8,30 @@ TTTT_result=-1 # the global result var
 
 TTRO_help_setFailure='
 # Function setFailure
-#	set a use defined failure condition
-#	to be used in failed test cases
-#	$1 the failure text'
+#	set the user defined failure condition in a test case script
+#	to be used in failed test case steps only
+# Parameters:
+#	$1 - the user defined failure text
+# Returns:
+#	success
+# Exits:
+#	if called from a test suite script
+#	if '
 function setFailure {
-	if [[ $# -gt 0 ]]; then
-		if [[ -n $1 ]]; then
+	if isExisting 'TTRO_variantCase'; then # this is a case
+		if [[ $TTTT_state != 'execution' ]]; then
+			printWarning "$FUNCNAME called no phase $TTTT_state. Use this function only in phase 'execution'"
+		fi
+		if [[ ( $# -gt 0 ) && ( -n $1 ) ]]; then
 			TTTT_failureOccurred="$1"
 		else
-			TTTT_failureOccurred='true'
+			TTTT_failureOccurred='unspecified'
 		fi
-	else
-		TTTT_failureOccurred='true'
+		printError "$FUNCNAME : $TTTT_failureOccurred"
+		return 0
+	else # this is not a case
+		printErrorAndExit "Do not call the function $FUNCNAME in a test suite context" $errRt
 	fi
-	printError "$FUNCNAME : $TTTT_failureOccurred"
-	return 0
 }
 
 TTRO_help_setCategory='
@@ -1102,7 +1111,7 @@ function echoAndExecute {
 	fi
 	local cmd="$1"
 	shift
-	local disp0="${FUNCNAME[0]} called from ${FUNCNAME[1]}: "
+	local disp0="${FUNCNAME[1]} -> ${FUNCNAME[0]}: "
 	printInfo "$disp0 $cmd $*"
 	"$cmd" "$@"
 }
@@ -1126,7 +1135,7 @@ function echoExecuteAndIntercept {
 	fi
 	local cmd="$1"
 	shift
-	local disp0="${FUNCNAME[0]} called from ${FUNCNAME[1]}: "
+	local disp0="${FUNCNAME[1]} -> ${FUNCNAME[0]}: "
 	printInfo "$disp0 $cmd $*"
 	if "$cmd" "$@"; then
 		TTTT_result=0
@@ -1158,7 +1167,7 @@ function echoExecuteInterceptAndSuccess {
 	fi
 	local cmd="$1"
 	shift
-	local disp0="${FUNCNAME[0]} called from ${FUNCNAME[1]}: "
+	local disp0="${FUNCNAME[1]} -> ${FUNCNAME[0]}: "
 	printInfo "$disp0 $cmd $*"
 	if "$cmd" "$@"; then
 		TTTT_result=0
@@ -1191,7 +1200,7 @@ function echoExecuteInterceptAndError {
 	fi
 	local cmd="$1"
 	shift
-	local disp0="${FUNCNAME[0]} called from ${FUNCNAME[1]}: "
+	local disp0="${FUNCNAME[1]} -> ${FUNCNAME[0]}: "
 	printInfo "$disp0 $cmd $*"
 	if "$cmd" "$@"; then
 		TTTT_result=0
@@ -1237,7 +1246,7 @@ function echoExecuteAndIntercept2 {
 	local cmd="$1"
 	shift
 	local myresult=''
-	local disp0="${FUNCNAME[0]} called from ${FUNCNAME[1]}: "
+	local disp0="${FUNCNAME[1]} -> ${FUNCNAME[0]}: "
 	printInfo "$disp0 $cmd $*"
 	if "$cmd" "$@"; then
 		myresult=0
@@ -1290,7 +1299,7 @@ function executeAndLog {
 	fi
 	local cmd="$1"
 	shift
-	local disp0="${FUNCNAME[0]} called from ${FUNCNAME[1]}: "
+	local disp0="${FUNCNAME[1]} -> ${FUNCNAME[0]}: "
 	printInfo "$disp0 $cmd $*"
 	if "$cmd" "$@" 2>&1 | tee "$TT_evaluationFile"; then
 		TTTT_result=0
@@ -1324,7 +1333,7 @@ function executeLogAndSuccess {
 	fi
 	local cmd="$1"
 	shift
-	local disp0="${FUNCNAME[0]} called from ${FUNCNAME[1]}: "
+	local disp0="${FUNCNAME[1]} -> ${FUNCNAME[0]}: "
 	printInfo "$disp0 $cmd $*"
 	if "$cmd" "$@" 2>&1 | tee "$TT_evaluationFile"; then
 		TTTT_result=0
@@ -1359,7 +1368,7 @@ function executeLogAndError {
 	fi
 	local cmd="$1"
 	shift
-	local disp0="${FUNCNAME[0]} called from ${FUNCNAME[1]}: "
+	local disp0="${FUNCNAME[1]} -> ${FUNCNAME[0]}: "
 	printInfo "$disp0 $cmd $*"
 	if "$cmd" "$@" 2>&1 | tee "$TT_evaluationFile"; then
 		TTTT_result=0
