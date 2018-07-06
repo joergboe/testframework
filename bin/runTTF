@@ -115,6 +115,7 @@ declare -r -A singleOptions=(
 	['nobrowser']='--no-browser'
 	['summary']='--summary'
 	['xtraprint']='--xtraprint'
+	['sequential']='-s --sequential'
 )
 declare -r -A valueOptions=(
 	['workdir']='-w --workdir'
@@ -370,12 +371,12 @@ done
 
 #-------------------------------------------
 # set the global programm defined properties
-declare -x TTRO_noParallelCases="$threads"
-# declare -x TTRO_noCpus="$noCpus"
-if [[ TTRO_noParallelCases -eq 1 ]]; then
-	declare -x TTRO_treads="$noCpus"
+if [[ -n $sequential ]]; then
+	setVar 'TTRO_noParallelCases' 1
+	setVar 'TTRO_treads' "$threads"
 else
-	declare -x TTRO_treads=1
+	setVar 'TTRO_noParallelCases' "$threads"
+	setVar 'TTRO_treads' 1
 fi
 
 #some more property definitions

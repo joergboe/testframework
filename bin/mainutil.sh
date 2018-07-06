@@ -25,9 +25,11 @@ function usage {
 	-t|--tools VALUE         : Includes (source) files with test tool scripts. This option can be given more than one time.
 	-c|--category VALUE      : Enter the category pattern for this test run. The pattern must not contain white spaces. 
 	                           Quote the value or escape special characters. This option can be given more than one time.
-	-s|--skip-ignore         : If this option is given the skip and category attributes of the cases and suite are ignored
-	-j|--threads VALUE       : The number of parallel test executions. (you have ${noCpus} (virtual) cores this is default)
-	                           If the value is set to 1 no parallel execution is performed
+	--skip-ignore            : If this option is given the skip and category attributes of the cases and suite are ignored
+	-s|--sequential          : Sequential test execution. No parallel test execution is performed.
+	-j|--threads VALUE       : The number of parallel threads used. (you have ${noCpus} (virtual) cores this is default)
+	                           If parallel job execution is enabled, this number is taken as number of parallel jobs and each job takes one thread.
+	                           If parallel job execution is disabled, each job takes all treads
 	-l|--link                : Content found in data directoy are linked to workspace not copied (Set TTPRN_link=true)
 	--no-start               : Supress the execution of the start sequence (Set TTPRN_noStart)
 	--no-stop                : Supress the execution of tear stop sequencd (Set TTPRN_noStop)
