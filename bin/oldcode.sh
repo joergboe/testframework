@@ -156,3 +156,11 @@ function splitVarValue___ {
 	fi
 }
 
+		#local len=$((${#pl}-1))
+		#if [[ ${pl:$len} == '\' ]]; then
+		#	if ! read -r; then echo "read error"; fi
+		#	if [[ $1 =~ ^[[:space:]]*\#--[[:space:]]*(.*) ]]; then
+		#		pl="${pl}${BASH_REMATCH[1]}"
+		#		echo "$pl"
+		#	fi
+		#fi
