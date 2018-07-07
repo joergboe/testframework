@@ -148,9 +148,10 @@ if [[ $TTRO_suiteIndex -ne 0 ]]; then
 		printInfo "SKIP file found suite=$TTRO_suite variant='$TTRO_variantSuite'"
 		setSkip 'SKIP file found'
 		createSuiteIndex "$indexfilename"
-		echo "SKIPPED" >> "$indexfilename"
+		echo "SKIPPED: $TTPRN_skip" >> "$indexfilename"
 		getElapsedTime "$suiteStartTime"
 		endSuiteIndex "$indexfilename" "$TTTT_elapsedTime"
+		echo "$TTPRN_skip" > "${TTRO_workDirSuite}/REASON"
 		exit $errSkip
 	fi
 
@@ -182,9 +183,10 @@ if [[ $TTRO_suiteIndex -ne 0 ]]; then
 	if isSkip; then
 		printInfo "SKIP variable set; Skip execution suite=$TTRO_suite variant=$TTRO_variantSuite"
 		createSuiteIndex "$indexfilename"
-		echo "SKIPPED" >> "$indexfilename"
+		echo "SKIPPED: $TTPRN_skip" >> "$indexfilename"
 		getElapsedTime "$suiteStartTime"
 		endSuiteIndex "$indexfilename" "$TTTT_elapsedTime"
+		echo "$TTPRN_skip" > "${TTRO_workDirSuite}/REASON"
 		exit $errSkip
 	fi
 fi
@@ -509,13 +511,15 @@ while [[ -z $allJobsGone ]]; do
 										addCaseEntry "$indexfilename" "$tmpCase" "$tmpVariant" 'SUCCESS' '1' "${tcaseWorkDir[$i]}" 
 									;;
 									SKIP )
-										echo "$tmpCaseAndVariant" >> "${TTRO_workDirSuite}/CASE_SKIP"
+										{ if read -r; then :; fi; } < "${tcaseWorkDir[$i]}/REASON" #read one line from reason
+										echo "$tmpCaseAndVariant: $REPLY" >> "${TTRO_workDirSuite}/CASE_SKIP"
 										variantSkiped=$((variantSkiped+1))
 										#skipList+=("$tmpCaseAndVariant")
 										addCaseEntry "$indexfilename" "$tmpCase" "$tmpVariant" 'SKIP' '1' "${tcaseWorkDir[$i]}"
 									;;
 									FAILURE )
-										echo "$tmpCaseAndVariant" >> "${TTRO_workDirSuite}/CASE_FAILURE"
+										{ if read -r; then :; fi; } < "${tcaseWorkDir[$i]}/REASON" #read one line from reason
+										echo "$tmpCaseAndVariant: $REPLY" >> "${TTRO_workDirSuite}/CASE_FAILURE"
 										variantFailures=$((variantFailures+1))
 										#failureList+=("$tmpCaseAndVariant")
 										addCaseEntry "$indexfilename" "$tmpCase" "$tmpVariant" 'FAILURE' '1' "${tcaseWorkDir[$i]}"

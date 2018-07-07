@@ -20,7 +20,7 @@ function testStep {
 		success)
 			return 0 ;;
 		failure)
-			setFailure;;
+			setFailure "user defined failure";;
 		error)
 			return 1 ;;
 		scripterror)

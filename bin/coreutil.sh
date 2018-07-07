@@ -87,7 +87,8 @@ function exeSuite {
 		elif [[ $result -eq $errSkip ]]; then
 			printInfo "Suite skipped suite ${suite} variant '$2'"
 			suiteSkip=$(( suiteSkip+1 ))
-			builtin echo "$suiteNestingString" >> "${6}/SUITE_SKIP"
+			{ if read -r; then :; fi; } < "${sworkdir}/REASON" #read one line from reason
+			builtin echo "$suiteNestingString: $REPLY" >> "${6}/SUITE_SKIP"
 		else
 			if [[ $nestingLevel -gt 0 ]]; then
 				printError "Execution of suite ${suite} variant '$2' ended with result=$result"
@@ -417,7 +418,6 @@ function addCaseEntry {
 		ERROR )
 			echo "<li style=\"color: red\">$2:$3 workdir <a href=\"$6\">$6</a> $4</li>" >> "$1";;
 		FAILURE )
-			local reason=''
 			echo "<li style=\"color: red\">$2:$3 workdir <a href=\"$6\">$6</a> $4 : $reason</li>" >> "$1";;
 		SKIP )
 			echo "<li style=\"color: blue\">$2:$3 workdir <a href=\"$6\">$6</a> $4 : $reason</li>" >> "$1";;
@@ -458,13 +458,16 @@ function addSuiteEntry {
 		0 )
 			echo -n "<li><a href=\"$5/suite.html\">$2</a> result code: $3  work dir: <a href=\"$5\">$5</a>" >> "$1";;
 		$errSkip )
-			echo -n "<li style=\"color: blue\"><a href=\"$5/suite.html\">$2</a> result code: $3  work dir: <a href=\"$5\">$5</a>" >> "$1";;
+			{ if read -r; then :; fi; } < "$5/REASON" #read one line from reason
+			echo -n "<li style=\"color: blue\"><a href=\"$5/suite.html\">$2</a> result code: $3  work dir: <a href=\"$5\">$5</a> : $REPLY" >> "$1";;
 		$errSigint )
 			echo -n "<li style=\"color: red\"><a href=\"$5/suite.html\">$2</a> result code: $3  work dir: <a href=\"$5\">$5</a>" >> "$1";;
 		* )
 			echo -n "<li style=\"color: red\"><a href=\"$5/suite.html\">$2</a> result code: $3  work dir: <a href=\"$5\">$5</a>" >> "$1"
 	esac
-	echo "      <b>Cases</b> executed=$6 skipped=$7 failures=$8 errors=$9 <b>Suites</b> executed=${10} skipped=${11} errors=${12}</li>" >> "$1"
+	if [[ $3 != $errSkip ]]; then
+		echo "      <b>Cases</b> executed=$6 skipped=$7 failures=$8 errors=$9 <b>Suites</b> executed=${10} skipped=${11} errors=${12}</li>" >> "$1"
+	fi
 }
 
 #
