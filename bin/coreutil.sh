@@ -132,6 +132,51 @@ function exeSuite {
 } #/exeSuite
 
 #
+# Function fixPropsVars
+#	This function fixes all ro-variables and propertie variables
+#	Property and variables setting is a two step action:
+#	Unset help variables if no reference is printed
+#	make vars STEPS PREPS FINS read-only
+#	returns:
+#		success (0)
+#		error	in exceptional cases
+function fixPropsVars {
+	local var=""
+	if [[ -z $TTRO_reference ]]; then
+		for var in "${!TTRO_help@}"; do
+			unset "$var"
+		done
+	fi
+	for var in "${!TT_@}"; do
+		isDebug && printDebug "${FUNCNAME} : TT_   $var=${!var}"
+		export "${var}"
+	done
+	for var in "${!TTRO_@}"; do
+		isDebug && printDebug "${FUNCNAME} : TTRO_ $var=${!var}"
+		readonly "${var}"
+		export "${var}"
+	done
+	for var in "${!TTPR_@}"; do
+		isDebug && printDebug "${FUNCNAME} : TTPR_  $var=${!var}"
+		readonly "${var}"
+		export "${var}"
+	done
+	for var in "${!TTPRN_@}"; do
+		isDebug && printDebug "${FUNCNAME} : TTPRN_ $var=${!var}"
+		if [[ -n "${!var}" ]]; then
+			readonly "${var}"
+		fi
+		export "${var}"
+	done
+	#fix special local vars
+	for var in 'STEPS' 'PREPS' 'FINS'; do
+		if declare -p "$var" &> /dev/null; then
+			declare -r "$var"
+		fi
+	done
+}
+
+#
 # Read a test case or a test suite file and evaluate the preambl
 # variantCount and variantList and conditional the type; ignore the rest
 # $1 is the filename to read

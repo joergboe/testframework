@@ -2,7 +2,7 @@
 function testPreparation {
 	echo "*********************************************************"
 	echo " this suite tests helper functions and expected result is"
-	echo "cases  executed=100 skipped=0 failures=16 errors=24"
+	echo "cases  executed=109 skipped=0 failures=16 errors=25"
 	echo "*********************************************************"
 	echo
 	echo "Expected failures are:"
@@ -52,6 +52,7 @@ echo "Functions::isExisting:noArgumentIs"
 echo "Functions::isExisting:noArgumentNot"
 echo "Functions::isFalse:varNotExists"
 echo "Functions::isTrue:varNotExists"
+echo "Functions::setVar::setVar:2"
 
 	promptYesNo
 }
