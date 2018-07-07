@@ -5,7 +5,7 @@ FINS=( "myTestFin $TTRO_variantCase" )
 
 #Initialization handle the skip case
 if [[ "$TTRO_variantCase" == "skip" ]]; then
-	skip
+	setSkip
 fi
 
 # Demonstrates an testcase which produces an

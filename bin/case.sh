@@ -68,7 +68,6 @@ declare -i executedTestFinSteps=0
 declare TTTT_state='initializing'
 declare TTTT_caseFinalized=''
 declare TTTT_failureOccurred=''
-declare TTTT_skipthis=""
 eval "$TTXX_runCategoryPatternArray"
 declare -a TTTT_categoryArray=( 'default' )
 
@@ -133,7 +132,7 @@ function caseFinalization {
 
 function caseExitFunction {
 	isDebug && printDebug "$FUNCNAME"
-	if [[ -z "$TTTT_skipthis" ]]; then
+	if ! isSkip; then
 		caseFinalization
 	fi
 }
@@ -152,6 +151,7 @@ function successExit {
 }
 function skipExit {
 	echo "SKIP" > "${TTRO_workDirCase}/RESULT"
+	echo "$TTPRN_skip" > "${TTRO_workDirCase}/REASON"
 	printInfo "**** END Case case=${TTRO_case} variant='${TTRO_variantCase}' SKIP **********"
 	getElapsedTime "$caseStartTime"
 	printInfo "**** Elapsed time $TTTT_elapsedTime state=$TTTT_state *****"
@@ -159,6 +159,7 @@ function skipExit {
 }
 function failureExit {
 	echo "FAILURE" > "${TTRO_workDirCase}/RESULT"
+	echo "$TTTT_failureOccurred" > "${TTRO_workDirCase}/REASON"
 	caseFinalization
 	printError "**** FAILURE : $TTTT_failureOccurred ****"
 	printInfo "**** END Case case=${TTRO_case} variant='${TTRO_variantCase}' FAILURE ********" >&2
@@ -190,8 +191,9 @@ if [[ -n $TTTT_preamblError ]]; then
 fi
 
 #check skipfile
-if [[ -e "${TTRO_inputDirCase}/SKIP" ]]; then
-	printInfo "SKIP file found case=$TTRO_case variant=$TTRO_variantCase"
+if [[ ( -e "${TTRO_inputDirCase}/SKIP" ) && ( -z $TTPRN_skipIgnore ) ]]; then
+	printInfo "SKIP file found case=$TTRO_case variant='$TTRO_variantCase'"
+	setSkip 'SKIP file found'
 	skipExit
 fi
 
@@ -214,20 +216,12 @@ tmp="${TTRO_workDirCase}/${TEST_ENVIRONMET_LOG}"
 printTestframeEnvironment > "$tmp"
 export >> "$tmp"
 
-#check skip variable
-if [[ -n $TTPRN_skip ]]; then
-	TTTT_skipthis="true"
-fi
 #check category
 if ! checkCats; then
-	TTTT_skipthis='true'
+	setSkip 'No matching runtime category'
 fi
-if [[ -n $TTPRN_skipIgnore ]]; then
-	TTTT_skipthis=""
-fi
-#checkKategories
-if [[ -n $TTTT_skipthis ]]; then
-	printInfo "SKIP variable set; Skip execution case=$TTRO_case variant=$TTRO_variantCase"
+if isSkip; then
+	printInfo "SKIP variable set; Skip execution reason $TTPRN_skip case=$TTRO_case variant=$TTRO_variantCase"
 	skipExit
 fi
 

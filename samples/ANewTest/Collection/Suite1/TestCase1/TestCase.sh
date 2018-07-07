@@ -16,7 +16,7 @@ echo "********************************"
 echo "global Case initialization steps"
 echo "********************************"
 if [[ $TTRO_variantCase -eq 4 ]]; then
-	skip
+	setSkip
 fi
 
 #Function definitions for test collections

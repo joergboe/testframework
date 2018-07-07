@@ -479,9 +479,9 @@ if [[ ${#cases[@]} -eq 0 ]]; then
 	#the command line specified no cases -> all found cases are executed
 	#and skip attributes are honoured
 	if [[ -n ${skipIgnore} ]]; then
-		declare -rx TTRO_skipIgnore="true"
+		setVar 'TTPRN_skipIgnore' 'true'
 	else
-		declare -rx TTRO_skipIgnore=""
+		setVar 'TTPRN_skipIgnore' ''
 	fi
 	takeAllCases="true"
 	for ((i=0; i<${#executeSuite[@]}; i++)); do
@@ -492,7 +492,7 @@ if [[ ${#cases[@]} -eq 0 ]]; then
 	done
 else
 	#the command line specifies a cases list
-	declare -rx TTRO_skipIgnore="true"
+	setVar 'TTPRN_skipIgnore' "true"
 	takeAllCases=""
 	declare caseToExecuteParent=''
 	checkCaseMatch '0' '0' '' ''

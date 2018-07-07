@@ -110,7 +110,6 @@ eval "$TTXX_runCategoryPatternArray"
 #more common vars
 declare -rx TTRO_suite="${suitesName[$TTRO_suiteIndex]}"
 declare -rx TTRO_inputDirSuite="${suitesPath[$TTRO_suiteIndex]}"
-declare TTTT_skipthis=''
 declare -a TTTT_categoryArray=()
 
 declare -a cases=() # case pathes
@@ -145,8 +144,9 @@ fi
 
 #check skipfile
 if [[ $TTRO_suiteIndex -ne 0 ]]; then 
-	if [[ -e "${TTRO_inputDirSuite}/SKIP" ]]; then
-		printInfo "SKIP file found suite=$TTRO_suite variant=$TTRO_variantSuite"
+	if [[ ( -e "${TTRO_inputDirSuite}/SKIP" ) && ( -z $TTPRN_skipIgnore ) ]]; then
+		printInfo "SKIP file found suite=$TTRO_suite variant='$TTRO_variantSuite'"
+		setSkip 'SKIP file found'
 		createSuiteIndex "$indexfilename"
 		echo "SKIPPED" >> "$indexfilename"
 		getElapsedTime "$suiteStartTime"
@@ -175,17 +175,11 @@ export >> "$tmp"
 
 #check skip
 if [[ $TTRO_suiteIndex -ne 0 ]]; then
-	if [[ -n $TTPRN_skip ]]; then
-		TTTT_skipthis="true"
-	fi
 	#check category
 	if ! checkCats; then
-		TTTT_skipthis='true'
+		setSkip 'No matching runtime category'
 	fi
-	if [[ -n $TTPRN_skipIgnore ]]; then
-		TTTT_skipthis=""
-	fi
-	if [[ -n $TTTT_skipthis ]]; then
+	if isSkip; then
 		printInfo "SKIP variable set; Skip execution suite=$TTRO_suite variant=$TTRO_variantSuite"
 		createSuiteIndex "$indexfilename"
 		echo "SKIPPED" >> "$indexfilename"

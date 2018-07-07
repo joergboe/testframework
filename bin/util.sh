@@ -51,15 +51,30 @@ function setCategory {
 	done
 }
 
-TTRO_help_skip='
-# Function skip
-#	set the skip condition TTPRN_skip=true'
-function skip {
+TTRO_help_setSkip='
+# Function setSkip
+#	set the skip condition TTPRN_skip in initialization phase of case or suite
+#	use the supplied value or unspecified
+# Params:
+#	$1 - optional the reason to skip this value must not be empty
+# Returns:
+#	success
+# Exits:
+#	if called in another phase than initializing
+#	if called with empty argument'
+function setSkip {
 	if [[ $TTTT_state != 'initializing' ]]; then
 		printErrorAndExit "$FUNCNAME must be called in state 'initializing' state now: $TTTT_state" $errRt
 	fi
-	printInfo "Set SKIP"
-	setVar 'TTPRN_skip' 'true'
+	if [[ $# -gt 0 ]]; then
+		if [[ -z $1 ]]; then
+			printErrorAndExit "$FUNCNAME must not be called with empty argument \$1" $errRt
+		fi
+		setVar 'TTPRN_skip' "$1"
+	else
+		setVar 'TTPRN_skip' 'unspecified'
+	fi
+	printInfo "Set SKIP reason $TTPRN_skip"
 }
 
 TTRO_help_printErrorAndExit="
@@ -209,16 +224,6 @@ function isVerbose {
 	else
 		return 1
 	fi
-}
-
-TTRO_help_skip='
-# Function skip
-#	if this function is called during initialization
-#	the case or suite is skipped'
-function skip {
-	printInfo "Skip this Case/Suite"
-	TTTT_skipthis='true'
-	return 0
 }
 
 TTRO_help_printTestframeEnvironment="

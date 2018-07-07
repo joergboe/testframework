@@ -1,5 +1,5 @@
 if [[ "$TTRO_variantSuite" == "skip" ]]; then
-	skip
+	setSkip 'any reason'
 fi
 
 function testStep {

@@ -3,6 +3,17 @@
 #####################################################
 
 #
+# isSkip
+# returns true if the script is to skip
+function isSkip {
+	if [[ ( -n $TTPRN_skip ) && ( -z $TTPRN_skipIgnore ) ]]; then
+		return 0
+	else
+		return 1
+	fi
+}
+
+#
 # function to execute the variants of suites
 # $1 the suite index to execute
 # $2 is the variant to execute
@@ -351,15 +362,20 @@ function createSuiteIndex {
 # $5 Case input dir
 # $6 Case work dir
 function addCaseEntry {
+	local reason=''
+	if [[ -e "$6/REASON" ]]; then
+		reason=$(<"$6/REASON")
+	fi
 	case $4 in
 		SUCCESS ) 
 			echo "<li>$2:$3 workdir <a href=\"$6\">$6</a> $4</li>" >> "$1";;
 		ERROR )
 			echo "<li style=\"color: red\">$2:$3 workdir <a href=\"$6\">$6</a> $4</li>" >> "$1";;
 		FAILURE )
-			echo "<li style=\"color: red\">$2:$3 workdir <a href=\"$6\">$6</a> $4</li>" >> "$1";;
+			local reason=''
+			echo "<li style=\"color: red\">$2:$3 workdir <a href=\"$6\">$6</a> $4 : $reason</li>" >> "$1";;
 		SKIP )
-			echo "<li style=\"color: blue\">$2:$3 workdir <a href=\"$6\">$6</a> $4</li>" >> "$1";;
+			echo "<li style=\"color: blue\">$2:$3 workdir <a href=\"$6\">$6</a> $4 : $reason</li>" >> "$1";;
 		*) 
 			printErrorAndExit "Wrong result string $4" $errRt
 	esac

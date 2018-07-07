@@ -295,7 +295,6 @@ function manpage () {
 	                         
 	- TTTT_categoryArray   - The indexed array with the categories of the current Case/Suite
 	- TTTT_runCategoryPatternArray - The indexed array with the run-category patterns of the current test run
-	- TTTT_skipthis        - Signal to skip this artifact
 	- TTTT_failureOccurred - The failure condition in test case execution
 	- TTTT_result          - Used in some functions to return a result code
 

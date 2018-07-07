@@ -1,7 +1,7 @@
 
 #--variantList='success failure skip error skipSuite errorSuite'
 if [[ $TTRO_variantSuite == 'skipSuite' ]]; then
-	skip
+	setSkip 'User defined skip reason'
 fi
 
 function testPreparation {
