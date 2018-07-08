@@ -33,6 +33,7 @@ function setFailure {
 		printErrorAndExit "Do not call the function $FUNCNAME in a test suite context" $errRt
 	fi
 }
+readonly -f setFailure
 
 TTRO_help_setCategory='
 # Function setCategory
@@ -50,6 +51,7 @@ function setCategory {
 		shift
 	done
 }
+readonly -f setCategory
 
 TTRO_help_setSkip='
 # Function setSkip
@@ -76,6 +78,7 @@ function setSkip {
 	fi
 	printInfo "Set SKIP reason $TTPRN_skip"
 }
+readonly -f setSkip
 
 TTRO_help_printErrorAndExit="
 # Function printErrorAndExit
@@ -93,6 +96,7 @@ function printErrorAndExit {
 	echo -e "************************************************\033[0m"
 	exit $2
 }
+readonly -f printErrorAndExit
 
 TTRO_help_printError="
 # Function printError
@@ -105,6 +109,7 @@ function printError {
 	local dd=$(date "+%T %N")
 	echo -e "\033[31m$dd ERROR: $1\033[0m" >&2
 }
+readonly -f printError
 
 TTRO_help_printWarning="
 # Function printWarning
@@ -117,6 +122,7 @@ function printWarning {
 	local dd=$(date "+%T %N")
 	echo -e "\033[33m$dd WARNING: $1\033[0m" >&2
 }
+readonly -f printWarning
 
 TTRO_help_printDebug="
 # Function printDebug
@@ -134,6 +140,7 @@ function printDebug {
 	done
 	echo -e "\033[32m$dd DEBUG: ${commandname}${stackInfo}: ${1}\033[0m"
 }
+readonly -f printDebug
 
 TTRO_help_printDebugn="
 # Function printDebugn
@@ -151,6 +158,7 @@ function printDebugn {
 	done
 	echo -en "\033[32m$dd DEBUG:${commandname}${stackInfo}: ${1}\033[0m"
 }
+readonly -f printDebugn
 
 TTRO_help_printInfo="
 # Function printInfo
@@ -163,6 +171,7 @@ function printInfo {
 	local dd=$(date "+%T %N")
 	echo -e "$dd INFO: ${1}"
 }
+readonly -f printInfo
 
 TTRO_help_printInfon="
 # Function printInfon
@@ -175,6 +184,7 @@ function printInfon {
 	local dd=$(date "+%T %N")
 	echo -en "$dd INFO: ${1}"
 }
+readonly -f printInfon
 
 TTRO_help_printVerbose="
 # Function printVerbose
@@ -187,6 +197,7 @@ function printVerbose {
 	local dd=$(date "+%T %N")
 	echo -e "$dd VERBOSE: ${1}"
 }
+readonly -f printVerbose
 
 TTRO_help_printVerbosen="
 # Function printVerbosen
@@ -199,6 +210,7 @@ function printVerbosen {
 	local dd=$(date "+%T %N")
 	echo -en "$dd VERBOSE: ${1}"
 }
+readonly -f printVerbosen
 
 TTRO_help_isDebug="
 # Function isDebug
@@ -212,6 +224,7 @@ function isDebug {
 		return 1
 	fi
 }
+readonly -f isDebug
 
 TTRO_help_isVerbose="
 # Function isVerbose
@@ -225,6 +238,7 @@ function isVerbose {
 		return 1
 	fi
 }
+readonly -f isVerbose
 
 TTRO_help_printTestframeEnvironment="
 # Function printTestframeEnvironment
@@ -260,6 +274,7 @@ function printTestframeEnvironment {
 	done
 	echo "*******************************"
 }
+readonly -f printTestframeEnvironment
 
 TTRO_help_dequote='
 # Removes the sorounding quotes
@@ -273,6 +288,7 @@ function dequote {
 	#eval printf %s "$1" 2> /dev/null
 	eval printf %s "$1"
 }
+readonly -f dequote
 
 TTRO_help_isPureNumber='
 # Checks whether the input string is a ubsigned number [0-9]+
@@ -290,6 +306,7 @@ function isPureNumber {
 	isDebug && printDebug "$FUNCNAME '$1' return 1"
 	return 1
 }
+readonly -f isPureNumber
 
 TTRO_help_isNumber='
 # Checks whether the input string is a signed or unsigned number ([-+])[0-9]+
@@ -312,6 +329,7 @@ function isNumber {
 	isDebug && printDebug "$FUNCNAME '$1' return 1"
 	return 1
 }
+readonly -f isNumber
 
 TTRO_help_setVar='
 # Function setVar
@@ -382,6 +400,7 @@ function setVar {
 	esac
 	:
 }
+readonly -f setVar
 
 TTRO_help_isExisting='
 # Function isExisting
@@ -402,6 +421,7 @@ function isExisting {
 		return 1
 	fi
 }
+readonly -f isExisting
 
 TTRO_help_isNotExisting='
 # Function isNotExisting
@@ -422,6 +442,7 @@ function isNotExisting {
 		return 0
 	fi
 }
+readonly -f isNotExisting
 
 TTRO_help_isExistingAndTrue='
 # Function isExistingAndTrue
@@ -447,6 +468,7 @@ function isExistingAndTrue {
 		return 1
 	fi
 }
+readonly -f isExistingAndTrue
 
 TTRO_help_isExistingAndFalse='
 # Function isExistingAndFalse
@@ -472,6 +494,7 @@ function isExistingAndFalse {
 		return 1
 	fi
 }
+readonly -f isExistingAndFalse
 
 TTRO_help_isTrue='
 # Function isTrue
@@ -497,6 +520,7 @@ function isTrue {
 		printErrorAndExit "Variable $1 not exists" $errRt
 	fi
 }
+readonly -f isTrue
 
 TTRO_help_isFalse='
 # Function isFalse
@@ -522,6 +546,7 @@ function isFalse {
 		printErrorAndExit "Variable $1 not exists" $errRt
 	fi
 }
+readonly -f isFalse
 
 TTRO_help_isArray='
 # Function isArray
@@ -548,6 +573,7 @@ function isArray {
 		return 1
 	fi
 }
+readonly -f isArray
 
 TTRO_help_isAssociativeArray='
 # Function isAssociativeArray
@@ -574,6 +600,7 @@ function isAssociativeArray {
 		return 1
 	fi
 }
+readonly -f isAssociativeArray
 
 TTRO_help_isFunction='
 # Function isFunction
@@ -594,6 +621,7 @@ function isFunction {
 		return 1
 	fi
 }
+readonly -f isFunction
 
 TTRO_help_arrayHasKey='
 # Function arrayHasKey
@@ -624,6 +652,7 @@ function arrayHasKey {
 	isDebug && printDebug "$FUNCNAME $1 return $in"
 	return $in
 }
+readonly -f arrayHasKey
 
 TTRO_help_copyAndTransform='
 # Function copyAndTransform
@@ -817,6 +846,7 @@ function copyAndMorph {
 	done
 	return 0
 }
+readonly -f copyAndMorph
 
 TTRO_help_morphFile='
 # morphes a file
@@ -883,6 +913,7 @@ function morphFile {
 	} < "$1"
 	return 0
 }
+readonly -f morphFile
 
 TTRO_help_copyOnly='
 # Function copyOnly
@@ -890,6 +921,7 @@ TTRO_help_copyOnly='
 function copyOnly {
 	copyAndMorph "$TTRO_inputDirCase" "$TTRO_workDirCase" "$TTRO_variantCase"
 }
+readonly -f copyOnly
 
 TTRO_help_linewisePatternMatch='
 # Function linewisePatternMatch
@@ -919,6 +951,7 @@ function linewisePatternMatch {
 		return $?
 	fi
 }
+readonly -f linewisePatternMatch
 
 TTRO_help_linewisePatternMatchAndIntercept='
 # Function linewisePatternMatchAndIntercept
@@ -937,6 +970,7 @@ function linewisePatternMatchAndIntercept {
 	fi
 	return 0
 }
+readonly -f linewisePatternMatchAndIntercept
 
 TTRO_help_linewisePatternMatchInterceptAndSuccess='
 # Function linewisePatternMatchInterceptAndSuccess
@@ -957,6 +991,7 @@ function linewisePatternMatchInterceptAndSuccess {
 	fi
 	return 0
 }
+readonly -f linewisePatternMatchInterceptAndSuccess
 
 TTRO_help_linewisePatternMatchInterceptAndError='
 # Function linewisePatternMatchInterceptAndError
@@ -977,6 +1012,7 @@ function linewisePatternMatchInterceptAndError {
 	fi
 	return 0
 }
+readonly -f linewisePatternMatchInterceptAndError
 
 TTRO_help_linewisePatternMatchArray='
 # Function linewisePatternMatchArray
@@ -1054,6 +1090,7 @@ function linewisePatternMatchArray {
 		return $errTestFail
 	fi
 }
+readonly -f linewisePatternMatchArray
 
 TTRO_help_echoAndExecute='
 # Function echoAndExecute
@@ -1077,6 +1114,7 @@ function echoAndExecute {
 	printInfo "$disp0 $cmd $*"
 	"$cmd" "$@"
 }
+readonly -f echoAndExecute
 
 TTRO_help_echoExecuteAndIntercept='
 # Function echoExecuteAndIntercept
@@ -1107,6 +1145,7 @@ function echoExecuteAndIntercept {
 	printInfo "$cmd returns $TTTT_result"
 	return 0
 }
+readonly -f echoExecuteAndIntercept
 
 TTRO_help_echoExecuteInterceptAndSuccess='
 # Function echoExecuteInterceptAndSuccess
@@ -1140,6 +1179,7 @@ function echoExecuteInterceptAndSuccess {
 	printInfo "$TTTT_result : returned from $cmd"
 	return 0
 }
+readonly -f echoExecuteInterceptAndSuccess
 
 TTRO_help_echoExecuteInterceptAndError='
 # Function echoExecuteInterceptAndError
@@ -1173,6 +1213,7 @@ function echoExecuteInterceptAndError {
 	printInfo "$TTTT_result : returned from $cmd"
 	return 0
 }
+readonly -f echoExecuteInterceptAndError
 
 TTRO_help_echoExecuteAndIntercept2='
 # Function echoExecuteAndIntercept2
@@ -1239,6 +1280,7 @@ function echoExecuteAndIntercept2 {
 	esac
 	return 0
 }
+readonly -f echoExecuteAndIntercept2
 
 TTRO_help_executeAndLog='
 # Function executeAndLog
@@ -1271,6 +1313,7 @@ function executeAndLog {
 	printInfo "$TTTT_result : returned from $cmd"
 	return 0
 }
+readonly -f executeAndLog
 
 TTRO_help_executeLogAndSuccess='
 # Function executeLogAndSuccess
@@ -1306,6 +1349,7 @@ function executeLogAndSuccess {
 	printInfo "$TTTT_result : returned from $cmd"
 	return 0
 }
+readonly -f executeLogAndSuccess
 
 TTRO_help_executeLogAndError='
 # Function executeLogAndError
@@ -1341,6 +1385,7 @@ function executeLogAndError {
 	printInfo "$TTTT_result : returned from $cmd"
 	return 0
 }
+readonly -f executeLogAndError
 
 TTRO_help_renameInSubdirs='
 # Function renameInSubdirs
@@ -1359,6 +1404,7 @@ function renameInSubdirs {
 	done
 	return 0
 }
+readonly -f renameInSubdirs
 
 TTRO_help_isInList='
 # check whether a token is in a space separated list of tokens
@@ -1389,6 +1435,7 @@ function isInList {
 		fi
 	fi
 }
+readonly -f isInList
 
 TTRO_help_isInListSeparator='
 # check whether a token is in a list of tokens with a special separator
@@ -1421,6 +1468,7 @@ function isInListSeparator {
 		fi
 	fi
 }
+readonly -f isInListSeparator
 
 TTRO_help_import='
 # Function import
@@ -1439,6 +1487,7 @@ function import {
 		source "$tmp"
 	fi
 }
+readonly -f import
 
 TTRO_help_waitForFileToAppear='
 # Function waitForFileToAppear
@@ -1463,6 +1512,7 @@ function waitForFileToAppear {
 	printInfo "File to appear $1 exists"
 	return 0
 }
+readonly -f waitForFileToAppear
 
 TTRO_help_getLineCount='
 # Function getLineCount
@@ -1479,7 +1529,7 @@ function getLineCount {
 	if [[ $# -ne 1 ]]; then printErrorAndExit "$FUNCNAME invalid no of params. Number of Params is $#" $errRt; fi
 	TTTT_lineCount=$(wc -l "$1" | cut -f 1 -d ' ')
 }
-
+readonly -f getLineCount
 
 TTRO_help_promptYesNo='
 # Function promptYesNo
@@ -1512,6 +1562,7 @@ function promptYesNo {
 		return 1
 	fi
 }
+readonly -f promptYesNo
 
 TTRO_help_getSystemLoad='
 # Function get the current system load
@@ -1520,6 +1571,7 @@ function getSystemLoad {
 	local v1=$(</proc/loadavg)
 	TTTT_systemLoad="${v1%% *}"
 }
+readonly -f getSystemLoad
 
 TTRO_help_getSystemLoad100='
 # Function get the current system load as integer
@@ -1544,6 +1596,7 @@ function getSystemLoad100 {
 	integer=$((integer*100))
 	TTTT_systemLoad100=$((integer+fraction))
 }
+readonly -f getSystemLoad100
 
 TTRO_help_trim='
 # Function trim removes leading trailing whitespace characters
@@ -1556,6 +1609,7 @@ function trim {
 	TTTT_trim="${locvar%${locvar##*[![:space:]]}}"
 	return 0
 }
+readonly -f trim
 
 TTRO_help_timeFromSeconds='
 # Function timeFromSeconds
@@ -1578,6 +1632,7 @@ function timeFromSeconds {
 	TTTT_timeFromSeconds="${hour}:${minutes}:${sec}"
 	return 0
 }
+readonly -f timeFromSeconds
 
 TTRO_help_getElapsedTime='
 # Function get the elapsed time string in TTTT_elapsedTime
@@ -1593,6 +1648,6 @@ function getElapsedTime {
 	TTTT_elapsedTime="$TTTT_timeFromSeconds"
 	return 0
 }
-
+readonly -f getElapsedTime
 #Guard for the last statement - make returncode always 0
 :

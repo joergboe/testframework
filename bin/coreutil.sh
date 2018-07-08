@@ -12,6 +12,7 @@ function isSkip {
 		return 1
 	fi
 }
+readonly -f isSkip
 
 #
 # function to execute the variants of suites
@@ -131,6 +132,7 @@ function exeSuite {
 	printInfo "**** END Suite: ${suite} variant='$2' in ${suitePath} *******************"
 	return 0
 } #/exeSuite
+readonly -f exeSuite
 
 #
 # Function fixPropsVars
@@ -176,6 +178,7 @@ function fixPropsVars {
 		fi
 	done
 }
+readonly -f fixPropsVars
 
 #
 # Read a test case or a test suite file and evaluate the preambl
@@ -275,6 +278,7 @@ function evalPreambl {
 	} < "$1"
 	return 0
 }
+readonly -f evalPreambl
 
 #
 # SplitPreamblAssign
@@ -304,6 +308,7 @@ function SplitPreamblAssign {
 		return 1
 	fi
 }
+readonly -f SplitPreamblAssign
 
 #
 # write protect all exported fuinctions
@@ -316,6 +321,7 @@ function writeProtectExportedFunctions {
 		readonly -f "$fname"
 	done
 }
+readonly -f writeProtectExportedFunctions
 
 #
 # Check if test run category matches any of the atrifact categories
@@ -359,6 +365,7 @@ function checkCats {
 	printInfo "No run category pattern match found: $FUNCNAME returns false"
 	return 1
 }
+readonly -f checkCats
 
 #
 # Create the global index.html
@@ -393,6 +400,7 @@ function createGlobalIndex {
 	</html>
 	EOF
 }
+readonly -f createGlobalIndex
 
 #
 # Create the suite index file
@@ -415,6 +423,7 @@ function createSuiteIndex {
 		<ul>
 	EOF
 }
+readonly -f createSuiteIndex
 
 #
 # Add Case entry to suite index
@@ -442,6 +451,7 @@ function addCaseEntry {
 			printErrorAndExit "Wrong result string $4" $errRt
 	esac
 }
+readonly -f addCaseEntry
 
 #
 # Start suite index and end case list
@@ -454,6 +464,7 @@ function startSuiteList {
 		<ul>
 	EOF
 }
+readonly -f startSuiteList
 
 #
 # Add Suite entry to suite index
@@ -490,6 +501,7 @@ function addSuiteEntry {
 		echo "      <b>Cases</b> executed=$6 skipped=$7 failures=$8 errors=$9 <b>Suites</b> executed=${10} skipped=${11} errors=${12}</li>" >> "$1"
 	fi
 }
+readonly -f addSuiteEntry
 
 #
 # end suite index html
@@ -503,5 +515,5 @@ function endSuiteIndex {
 	</html>
 	EOF
 }
-
+readonly -f endSuiteIndex
 :

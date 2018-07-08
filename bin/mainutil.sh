@@ -351,11 +351,12 @@ function createCSS {
 	}
 	EOF
 }
+readonly -f createCSS
 
 #
 # start a command async
 function startAsync2 {
 	"$1" "$2"&
 }
-
+readonly -f startAsync2
 :
