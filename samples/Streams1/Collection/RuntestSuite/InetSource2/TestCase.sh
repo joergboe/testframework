@@ -6,7 +6,7 @@ FINS='cancelJob'
 
 function myEvaluate {
 	if ! linewisePatternMatch "$TT_dataDir/Tuples" '' '*http://httpbin.org/get*'; then
-		setFailure
+		setFailure 'No match found'
 	fi
 }
 

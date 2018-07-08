@@ -116,6 +116,7 @@ declare -r -A singleOptions=(
 	['summary']='--summary'
 	['xtraprint']='--xtraprint'
 	['sequential']='-s --sequential'
+	['clean']='--clean'
 )
 declare -r -A valueOptions=(
 	['workdir']='-w --workdir'
@@ -303,6 +304,7 @@ setVar 'TTPRN_debug' "$debug"
 setVar 'TTPRN_debugDisable' ''
 setVar 'TTPRN_verbose' "$verbose"
 setVar 'TTPRN_verboseDisable' ''
+setVar 'TTPRN_clean' "$clean"
 if [[ -n $summary ]]; then
 	setVar 'TTPR_summary' 'true'
 fi

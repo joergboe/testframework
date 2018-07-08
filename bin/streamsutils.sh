@@ -395,31 +395,36 @@ TTRO_help_cleanUpInstAndDomainVariable='
 #	return_code: success'
 function cleanUpInstAndDomainVariable {
 	isDebug && printDebug "$FUNCNAME $*"
-	
-	echo "streamtool lsdomain $2"
 	local response
-	if response=$(echoAndExecute $TTPRN_st lsdomain "$2"); then # domain exists
-		if [[ $response =~ $2\ Started ]]; then # domain is running
-			#Running domain found check instance
-			if echoAndExecute $TTPRN_st lsinst --domain-id "$2" "$3"; then
-				if echoAndExecute $TTPRN_st lsinst --started --domain-id "$2" "$3"; then
-					#TODO: check whether the retun code is fine here
-					echoAndExecute $TTPRN_st stopinst --force --domain-id "$2" --instance-id "$3"
+	if [[ -n $TTPRN_clean ]]; then
+		if response=$(echoAndExecute $TTPRN_st lsdomain "$2"); then # domain exists
+			if [[ $response =~ $2\ Started ]]; then # domain is running
+				#Running domain found check instance
+				if echoAndExecute $TTPRN_st lsinst --domain-id "$2" "$3"; then
+					if echoAndExecute $TTPRN_st lsinst --started --domain-id "$2" "$3"; then
+						#TODO: check whether the retun code is fine here
+						echoAndExecute $TTPRN_st stopinst --force --domain-id "$2" --instance-id "$3"
+					else
+						isVerbose && printVerbose "$FUNCNAME : no running instance $3 found in domain $2"
+					fi
+					echoAndExecute $TTPRN_st rminst --noprompt --domain-id "$2" --instance-id "$3"
 				else
-					isVerbose && printVerbose "$FUNCNAME : no running instance $3 found in domain $2"
+					isVerbose && printVerbose "$FUNCNAME : no instance $3 found in domain $2"
 				fi
-				echoAndExecute $TTPRN_st rminst --noprompt --domain-id "$2" --instance-id "$3"
+				#End Running domain found check instance
+				echoAndExecute $TTPRN_st stopdomain --force --domain-id "$2"
 			else
-				isVerbose && printVerbose "$FUNCNAME : no instance $3 found in domain $2"
+				isVerbose && printVerbose "$FUNCNAME : no running domain $2 found"
 			fi
-			#End Running domain found check instance
-			echoAndExecute $TTPRN_st stopdomain --force --domain-id "$2"
+			echoAndExecute $TTPRN_st rmdomain --noprompt --domain-id "$2"
 		else
-			isVerbose && printVerbose "$FUNCNAME : no running domain $2 found"
+			isVerbose && printVerbose "$FUNCNAME : no domain $2 found"
 		fi
-		echoAndExecute $TTPRN_st rmdomain --noprompt --domain-id "$2"
 	else
-		isVerbose && printVerbose "$FUNCNAME : no domain $2 found"
+		if echoAndExecute $TTPRN_st lsinst --started --domain-id "$2" "$3"; then
+			printInfo "Instance $3 of domain $2 is running -> start over"
+			setVar 'TTPRN_noStart' 'true'
+		fi
 	fi
 	return 0
 }

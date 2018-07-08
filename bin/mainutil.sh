@@ -37,6 +37,7 @@ function usage {
 	                           If this parameter is not set, the programm opens the web browser with a summary
 	                           of the test execution. The default browser command stored in environment BROWSER is used. If variable BROWSER is empty,
 	                           no browser is started at all. If environment BROWSER is missing command 'firefox' is used.
+	--clean                  : Clean start ant stop. Forces a clean start and cleans all at end. (Set TTPRN_clean)
 	-D value                 : Set the specified TT_-, TTRO_-, TTPR_- or TTPRN_- variable value (Use one of varname=value)
 	-v|--verbose             : Be verbose to stdout
 	-V|--version             : Print the version string
