@@ -182,7 +182,7 @@ function fixPropsVars {
 # variantCount and variantList and conditional the type; ignore the rest
 # $1 is the filename to read
 # return 0 in success case
-# return 1 if an invalid line was read;
+# return 1 if an invalid preambl was read;
 # results are returned in global variables variantCount; variantList
 function evalPreambl {
 	isDebug && printDebug "$FUNCNAME $1"
@@ -196,50 +196,75 @@ function evalPreambl {
 		local value=
 		local result=0
 		local x
+		local preamblLine=''
+		local len
 		while [[ result -eq 0 ]]; do
 			if ! read -r; then result=1; fi
 			if [[ ( result -eq 0 ) || ( ${#REPLY} -gt 0 ) ]]; then #do not eval the last and empty line
-				if SplitPreamblAssign "$REPLY"; then
-					if [[ -n $varname ]] ; then
-						isDebug && printDebug "$FUNCNAME prepare for variant encoding varname=$varname value=$value"
-						case $varname in
-							variantCount )
-								if ! eval "variantCount=${value}"; then
-									printErrorAndExit "${FUNCNAME} : Invalid value in file=$1 line=$lineno '$REPLY'" ${errRt}
-								fi
-								if ! isPureNumber "$variantCount"; then
-									printErrorAndExit "${FUNCNAME} : variantCount is no digit in file=$1 line=$lineno '$REPLY'" ${errRt}
-								fi
-								isVerbose && printVerbose "variantCount='${variantCount}'"
-							;;
-							variantList )
-								if ! eval "variantList=${value}"; then
-									printErrorAndExit "${FUNCNAME} : Invalid value in file=$1 line=$lineno '$REPLY'" ${errRt}
-								fi
-								isVerbose && printVerbose "variantList='${variantList}'"
-								for x in $variantList; do
-									if ! [[ $x =~ ^[a-zA-Z0-9_]*$ ]]; then
-										printErrorAndExit "Invalid variant $x in list in file=$1 line=$lineno '$REPLY'" ${errRt}
-									fi
-								done
-							;;
-							timeout )
-								if ! eval "timeout=${value}"; then
-									printErrorAndExit "${FUNCNAME} : Invalid value in file=$1 line=$lineno '$REPLY'" ${errRt}
-								fi
-								if ! isPureNumber "$timeout"; then
-									printErrorAndExit "${FUNCNAME} : timeout is no digit in file=$1 line=$lineno '$REPLY'" ${errRt}
-								fi
-								isVerbose && printVerbose "timeout='${timeout}'"
-							;;
-							* )
-								#other property or variable
-								printError "${FUNCNAME} : Invalid preambl varname='$varname' in file $1 line=$lineno '$REPLY'"
-								return 1
-							;;
-						esac
+				if [[ $REPLY =~ ^[[:space:]]*\#--[[:space:]]*(.*) ]]; then
+					#echo true "'${BASH_REMATCH[0]}'" "'${BASH_REMATCH[1]}'"
+					preamblLine="${preamblLine}${BASH_REMATCH[1]}"
+					len=$((${#preamblLine}-1))
+					if [[ ${preamblLine:$len} == '\' ]]; then
+						preamblLine="${preamblLine:0:$len}"
 					else
-						printError "${FUNCNAME} : Invalid preampl line case or suitefile file=$1 line=$lineno '$REPLY'"
+						if SplitPreamblAssign "$preamblLine"; then
+							if [[ -n $varname ]] ; then
+								isDebug && printDebug "$FUNCNAME prepare for variant encoding varname=$varname value=$value"
+								case $varname in
+									variantCount )
+										if ! eval "variantCount=${value}"; then
+											printError "${FUNCNAME} : Invalid value in file=$1 line=$lineno '$preamblLine'"
+											return 1
+										fi
+										if ! isPureNumber "$variantCount"; then
+											printError "${FUNCNAME} : variantCount is no digit in file=$1 line=$lineno '$preamblLine'"
+											return 1
+										fi
+										isVerbose && printVerbose "variantCount='${variantCount}'"
+									;;
+									variantList )
+										if ! eval "variantList=${value}"; then
+											printError "${FUNCNAME} : Invalid value in file=$1 line=$lineno '$preamblLine'"
+											return 1
+										fi
+										isVerbose && printVerbose "variantList='${variantList}'"
+										for x in $variantList; do
+											if ! [[ $x =~ ^[a-zA-Z0-9_-]*$ ]]; then
+												printError "Invalid variant $x in list in file=$1 line=$lineno '$preamblLine'"
+												return 1
+											fi
+										done
+									;;
+									timeout )
+										if ! eval "timeout=${value}"; then
+											printError "${FUNCNAME} : Invalid value in file=$1 line=$lineno '$preamblLine'"
+											return 1
+										fi
+										if ! isPureNumber "$timeout"; then
+											printError "${FUNCNAME} : timeout is no digit in file=$1 line=$lineno 'preamblLine'"
+											return 1
+										fi
+										isVerbose && printVerbose "timeout='${timeout}'"
+									;;
+									* )
+										#other property or variable
+										printError "${FUNCNAME} : Invalid preambl varname='$varname' in file $1 line=$lineno '$preamblLine'"
+										return 1
+									;;
+								esac
+							else
+								printError "${FUNCNAME} : Invalid preampl line case or suitefile file=$1 line=$lineno '$preamblLine'"
+								return 1
+							fi
+						else
+							return 1
+						fi
+						preamblLine=''
+					fi
+				else
+					if [[ -n $preamblLine ]]; then
+						printError "Invalid line after preambl continuation file=$1 line=$lineno '$preamblLine'"
 						return 1
 					fi
 				fi
@@ -254,7 +279,6 @@ function evalPreambl {
 #
 # SplitPreamblAssign
 # Split the variable name and value part of an assignement in a preambl line
-# Line must start with [space]#--[space]
 # The assignemtnet must something matching [[:word:]]=
 # Ingnore all other lines
 #	$1 the input line (only one line without nl)
@@ -262,28 +286,21 @@ function evalPreambl {
 #		varname
 #		value
 #	returns
-#		success(0) if there was a preambl line
+#		success(0) if the line was sucessfully split
 #					the varname is empty if there is no valid assignement in the preambl line
 #		error(1)   if there was no prambl line'
 function SplitPreamblAssign {
 	[[ $# -eq 1 ]] || printErrorAndExit "Wrong number of arguments $# in $FUNCNAME" $errRt
 	isDebug && printDebug "$FUNCNAME \$1='$1'"
-	if [[ $1 =~ ^[[:space:]]*\#--[[:space:]]*(.*) ]]; then
-		#echo true "'${BASH_REMATCH[0]}'" "'${BASH_REMATCH[1]}'"
-		local pl="${BASH_REMATCH[1]}"
-		#echo "'$pl'"
-		if [[ $pl =~ ^([a-zA-Z0-9_]+)=(.*) ]]; then
-			varname="${BASH_REMATCH[1]}"
-			value="${BASH_REMATCH[2]}"
-			isDebug && printDebug "$FUNCNAME varname='$varname' value='$value'"
-		else
-			varname=""
-			value=""
-			printError "no valid preambl line here '$pl'"
-		fi
+	if [[ $1 =~ ^([a-zA-Z0-9_]+)=(.*) ]]; then
+		varname="${BASH_REMATCH[1]}"
+		value="${BASH_REMATCH[2]}"
+		isDebug && printDebug "$FUNCNAME varname='$varname' value='$value'"
 		return 0
 	else
-		#echo false
+		varname=""
+		value=""
+		printError "no valid preambl line here '$1'"
 		return 1
 	fi
 }

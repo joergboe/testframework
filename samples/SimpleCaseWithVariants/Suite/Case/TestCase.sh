@@ -1,4 +1,5 @@
-#--variantList='success failure error scripterror skip'
+ #-- variantList='success failure \
+ #-- error scripterror skip'
 
 #Declare test finalization array and call function with parameter
 FINS=( "myTestFin $TTRO_variantCase" )

@@ -64,8 +64,8 @@ function manpage () {
 	These files have in general two sections: The preamble and a script code section. Both sections may be empty.
 	
 	The preamble defines variables which are necessary before execution of appropriate artifacts starts.
-	A preamble statement starts with the character sequence '#--' and the variable definition must follow
-	immediately. (No spaces allowd).
+	A preamble statement starts with the character sequence '#--'. A preamble line may be continued after a single
+	\ before nl. The continuation line must start also with sequence '#--'
 	
 	The script code section is a bash script. In the script section, you can define required code for the initialization
 	and the custom functions for the test preparation, for the test step execution and the test finalization. 
