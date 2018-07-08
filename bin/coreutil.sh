@@ -456,7 +456,11 @@ function addSuiteEntry {
 	if [[ $# -ne 12 ]]; then printErrorAndExit "wrong no of arguments $#" $errRt; fi
 	case $3 in
 		0 )
-			echo -n "<li><a href=\"$5/suite.html\">$2</a> result code: $3  work dir: <a href=\"$5\">$5</a>" >> "$1";;
+		if [[ ( $8 -gt 0 ) || ( $9 -gt 0 ) || ( $12 -gt 0 ) ]]; then
+			echo -n "<li style=\"color: red\"><a href=\"$5/suite.html\">$2</a> result code: $3  work dir: <a href=\"$5\">$5</a>" >> "$1"
+		else
+			echo -n "<li><a href=\"$5/suite.html\">$2</a> result code: $3  work dir: <a href=\"$5\">$5</a>" >> "$1"
+		fi;;
 		$errSkip )
 			{ if read -r; then :; fi; } < "$5/REASON" #read one line from reason
 			echo -n "<li style=\"color: blue\"><a href=\"$5/suite.html\">$2</a> result code: $3  work dir: <a href=\"$5\">$5</a> : $REPLY" >> "$1";;
