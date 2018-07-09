@@ -568,11 +568,11 @@ export TTXX_childCases=$(declare -p childCases)
 
 #----------------
 #make output dir
+declare -r TTTT_datestring=$(date +%Y%m%d-%H%M%S)
 if [[ $flat == 'true' ]]; then
 	TTRO_workDir="${workdir}"
 else
-	datestring=$(date +%Y%m%d-%H%M%S)
-	TTRO_workDir="${workdir}/${datestring}"
+	TTRO_workDir="${workdir}/${TTTT_datestring}"
 fi
 if [[ $flat != 'true' && -e $TTRO_workDir ]]; then
 	printErrorAndExit "Output directory already exists $TTRO_workDir" $errRt
@@ -687,15 +687,20 @@ if [[ ${#TTTT_runCategoryPatternArray[*]} -gt 0 ]]; then
 	cats="${TTTT_runCategoryPatternArray[@]}"
 fi
 echo
-printf "*******************************************************************************************************\n"
-printf "***** suites executed=%i skipped=%i errors=%i\n" $SUITE_EXECUTECount $SUITE_SKIPCount $SUITE_ERRORCount
-printf "***** cases  executed=%i skipped=%i failures=%i errors=%i\n" $CASE_EXECUTECount $CASE_SKIPCount $CASE_FAILURECount $CASE_ERRORCount
-printf "***** categories of this run: %s\n" "$cats"
-printf "***** used workdir: %s\n" "$TTRO_workDir"
-printf "***** Index in %s\n" "$indexfilename"
-getElapsedTime "$collectionStartTime"
-printf "***** Elapsed time : %s\n" "$TTTT_elapsedTime"
-printf "*******************************************************************************************************\n"
+{
+	printf "*******************************************************************************************************\n"
+	printf "***** suites executed=%i skipped=%i errors=%i\n" $SUITE_EXECUTECount $SUITE_SKIPCount $SUITE_ERRORCount
+	printf "***** cases  executed=%i skipped=%i failures=%i errors=%i\n" $CASE_EXECUTECount $CASE_SKIPCount $CASE_FAILURECount $CASE_ERRORCount
+	printf "***** categories of this run: %s\n" "$cats"
+	printf "***** used workdir: %s\n" "$TTRO_workDir"
+	printf "***** Index in %s\n" "$indexfilename"
+	getElapsedTime "$collectionStartTime"
+	printf "***** Elapsed time : %s\n" "$TTTT_elapsedTime"
+	printf "***** Datestring : %s\n" "$TTTT_datestring"
+	printf "*******************************************************************************************************\n"
+} > "$TTRO_workDir/SUMMARY.txt"
+
+cat "$TTRO_workDir/SUMMARY.txt"
 
 #--------------------------------------------
 # prepare html docs
