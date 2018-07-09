@@ -154,8 +154,10 @@ function manpage () {
 	The variantCount must be in the form:
 	#--variantCount=number
 	
-	The variantList must be a space separated list of identifiers or numbers or a mixture of identifiers and numbers:
+	The variantList must be a space separated list of identifiers:
 	#--variantList='space separated list of variant identifiers'
+	An identifier must be composed from following characters : 0-9a-zA-Z-_
+	No other characters are allowd in variant list identifiers.
 	
 	## Test Case timeouts
 	=====================

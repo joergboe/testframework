@@ -1,5 +1,5 @@
- #-- variantList='success failure \
- #-- error scripterror skip'
+ #-- variantList='success fail-ure \
+ #-- error script_error skip'
 
 #Declare test finalization array and call function with parameter
 FINS=( "myTestFin $TTRO_variantCase" )
@@ -20,11 +20,11 @@ function testStep {
 	case $TTRO_variantCase in
 		success)
 			return 0 ;;
-		failure)
+		fail-ure)
 			setFailure "user defined failure";;
 		error)
 			return 1 ;;
-		scripterror)
+		script_error)
 			executewrongcommand ;;
 	esac
 }

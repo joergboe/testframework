@@ -1,4 +1,4 @@
-#--variantList='one two three four 5 6'
+#--variantList='one two thre-e fo_ur 5 6'
 
 STEPS=( 
 	'setVar "TTPRN_debug" "true"'
@@ -20,11 +20,11 @@ function myEval {
 		linewisePatternMatchInterceptAndSuccess $1 'true' 'one two three' '!four 5 6 '               '!one 6'
 		linewisePatternMatchInterceptAndError   $1 ''                                  'one' 'one 6'
 		return 0;;
-	three)
+	thre-e)
 		linewisePatternMatchInterceptAndSuccess $1 'true' 'one two three' '!four 5 6 '               '!one 6'
 		linewisePatternMatchInterceptAndError   $1 ''                                  'one' 'one 6'
 		return 0;;
-	four)
+	fo_ur)
 		linewisePatternMatchInterceptAndSuccess $1 'true'                                            '!one 6'
 		linewisePatternMatchInterceptAndError   $1 ''     'one two three' '!four 5 6 ' 'one' 'one 6'
 		return 0;;
@@ -37,7 +37,7 @@ function myEval {
 		linewisePatternMatchInterceptAndError   $1 ''    'one two three' '!four 5 6 '  'one'          '!one 6'
 		return 0;;
 	*)
-		printErrorAndExit "wrong variant $TTRO_variantCase";;
+		printErrorAndExit "wrong variant $TTRO_variantCase" $errRt;;
 	esac
 	return 0
 }

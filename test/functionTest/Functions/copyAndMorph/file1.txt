@@ -11,9 +11,9 @@ fadgb  gsb sgbgbs sgfb sgb sgbgbs g
 		 s d dhn hdtz ds sfbg
 	 th srt
 ###########
-//<%one:two:three
-//<%one:two:three:%> dfdfabbdgfbdgfb
-//<%!one:two:three:%> dfdfabbdgfbdgfb
+//<%one:two:thre-e
+//<%one:two:thre-e:%> dfdfabbdgfbdgfb
+//<%!one:two:thre-e:%> dfdfabbdgfbdgfb
 ***********
 dcasf a 
 faf 

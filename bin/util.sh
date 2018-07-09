@@ -883,7 +883,7 @@ function morphFile {
 					varidlist="${varidlist:1}"
 					negate='true'
 				fi
-				if [[ $varidlist =~ ^[0-9a-zA-Z_:]+$ ]]; then
+				if [[ $varidlist =~ ^[0-9a-zA-Z_:-]+$ ]]; then
 					if isInListSeparator "$3" "$varidlist" ':'; then
 						if [[ -z $negate ]]; then
 							outline="${ident}${code}"
