@@ -851,9 +851,9 @@ readonly -f copyAndMorph
 TTRO_help_morphFile='
 # morphes a file
 #	Lines like:
-#	^[[:space:]]*//<varid1:varid2..> are effective if the argument $3 equal one of the varid1, or varid2..
-#	^[[:space:]]*//<!varid1:varid2..> are not effective if the argument $3 equal one of the varid1, or varid2..
-#	Effective means that the pattern //<varid1:varid2..> or //<!varid1:varid2..> is removed
+#	^[[:space:]]*//<varid1 varid2..> are effective if the argument $3 equal one of the varid1, or varid2..
+#	^[[:space:]]*//<!varid1 varid2..> are not effective if the argument $3 equal one of the varid1, or varid2..
+#	Effective means that the pattern //<varid1 varid2..> or //<!varid1 varid2..> is removed
 #	$1 - input file
 #	$2 - output file
 #	$3 - the variant identifier
@@ -883,8 +883,8 @@ function morphFile {
 					varidlist="${varidlist:1}"
 					negate='true'
 				fi
-				if [[ $varidlist =~ ^[0-9a-zA-Z_:-]+$ ]]; then
-					if isInListSeparator "$3" "$varidlist" ':'; then
+				if [[ $varidlist =~ ^[0-9a-zA-Z_\ \	-]+$ ]]; then
+					if isInList "$3" "$varidlist"; then
 						if [[ -z $negate ]]; then
 							outline="${ident}${code}"
 							writeLine='true'

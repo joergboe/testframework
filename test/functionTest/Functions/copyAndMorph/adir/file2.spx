@@ -11,11 +11,11 @@ fadgb  gsb sgbgbs sgfb sgb sgbgbs g
 		 s d dhn hdtz ds sfbg
 	 th srt
 ###########
-//<one:two:thre-e:>one two three
-//<!fo_ur:5:6:>!four 5 6 
+//<one two thre-e	>one two three
+//<!fo_ur	5	6	>!four 5 6 
 //<one>one
-//<one:6>one 6
-//<!one:6>!one 6
+//<one 6>one 6
+//<!one	6>!one 6
 ***********
 dcasf a 
 faf 
