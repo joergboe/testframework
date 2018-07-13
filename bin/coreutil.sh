@@ -440,13 +440,13 @@ function addCaseEntry {
 	fi
 	case $4 in
 		SUCCESS ) 
-			echo "<li>$2:$3 workdir <a href=\"$6\">$6</a> $4</li>" >> "$1";;
+			echo "<li>$2:$3 $4 <br>workdir <a href=\"$6\">$6</a></li>" >> "$1";;
 		ERROR )
-			echo "<li style=\"color: red\">$2:$3 workdir <a href=\"$6\">$6</a> $4</li>" >> "$1";;
+			echo "<li style=\"color: red\">$2:$3 $4 <br>workdir <a href=\"$6\">$6</a></li>" >> "$1";;
 		FAILURE )
-			echo "<li style=\"color: red\">$2:$3 workdir <a href=\"$6\">$6</a> $4 : $reason</li>" >> "$1";;
+			echo "<li style=\"color: red\">$2:$3 $4 : $reason <br>workdir <a href=\"$6\">$6</a></li>" >> "$1";;
 		SKIP )
-			echo "<li style=\"color: blue\">$2:$3 workdir <a href=\"$6\">$6</a> $4 : $reason</li>" >> "$1";;
+			echo "<li style=\"color: blue\">$2:$3  $4 : $reason <br>workdir <a href=\"$6\">$6</a></li>" >> "$1";;
 		*) 
 			printErrorAndExit "Wrong result string $4" $errRt
 	esac
@@ -485,20 +485,22 @@ function addSuiteEntry {
 	case $3 in
 		0 )
 		if [[ ( $8 -gt 0 ) || ( $9 -gt 0 ) || ( $12 -gt 0 ) ]]; then
-			echo -n "<li style=\"color: red\"><a href=\"$5/suite.html\">$2</a> result code: $3  work dir: <a href=\"$5\">$5</a>" >> "$1"
+			echo -n "<li style=\"color: red\"><a href=\"$5/suite.html\">$2</a> result code: $3" >> "$1"
 		else
-			echo -n "<li><a href=\"$5/suite.html\">$2</a> result code: $3  work dir: <a href=\"$5\">$5</a>" >> "$1"
+			echo -n "<li><a href=\"$5/suite.html\">$2</a> result code: $3" >> "$1"
 		fi;;
 		$errSkip )
 			{ if read -r; then :; fi; } < "$5/REASON" #read one line from reason
-			echo -n "<li style=\"color: blue\"><a href=\"$5/suite.html\">$2</a> result code: $3  work dir: <a href=\"$5\">$5</a> : $REPLY" >> "$1";;
+			echo -n "<li style=\"color: blue\"><a href=\"$5/suite.html\">$2</a> result code: $3 : $REPLY work dir: <a href=\"$5\">$5</a>" >> "$1";;
 		$errSigint )
 			echo -n "<li style=\"color: red\"><a href=\"$5/suite.html\">$2</a> result code: $3  work dir: <a href=\"$5\">$5</a>" >> "$1";;
 		* )
 			echo -n "<li style=\"color: red\"><a href=\"$5/suite.html\">$2</a> result code: $3  work dir: <a href=\"$5\">$5</a>" >> "$1"
 	esac
 	if [[ $3 != $errSkip ]]; then
-		echo "      <b>Cases</b> executed=$6 skipped=$7 failures=$8 errors=$9 <b>Suites</b> executed=${10} skipped=${11} errors=${12}</li>" >> "$1"
+		echo "      <br><b>Cases</b> executed=$6 skipped=$7 failures=$8 errors=$9 <b>Suites</b> executed=${10} skipped=${11} errors=${12}</li>" >> "$1"
+	else
+		echo "      <br> ... </li>" >> "$1"
 	fi
 }
 readonly -f addSuiteEntry
