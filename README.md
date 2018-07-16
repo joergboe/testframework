@@ -128,3 +128,22 @@ Version 2.9.0:
 - New option setVar xtraprint
 - Make domain now with checkpointRepository and fileStoragePath
 
+Version 3.0.0:
+- new command line option --summary
+- Corrections in streams utils: better jobno handling; submitjob may have optional submission time params
+- New command line parameter -s|--sequential - Sequential test execution and option -j with new semantics
+- Per default a suite has no category
+- Function setFailure with better state check
+- New functions: setSkip, isSkip. Print reason for skipped cases and failures
+- correction in props TTPRN and added property test
+- Print skip reason and failure reason to index
+- Suites with error cases are now in read in html
+- Allow preambl lienes to be continued
+- Add command line option --clean to enable clean start of streams instances
+- Write protect used utils and other functions
+- correct identifier character class of variants to 0-9a-zA-Z-_
+- Produce global SUMMARY.txt file
+- Allow preambl lines to be continued
+- Better jobid control. Now re-used jobids should not cause errors
+- Use other formatting in web index
+- Add elapsed time and add result to special report
