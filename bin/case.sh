@@ -147,6 +147,7 @@ function successExit {
 	printInfo "**** END Case case=${TTRO_case} variant='${TTRO_variantCase}' SUCCESS *****"
 	getElapsedTime "$caseStartTime"
 	printInfo "**** Elapsed time $TTTT_elapsedTime state=$TTTT_state *****"
+	echo "$TTTT_elapsedTime" > "${TTRO_workDirCase}/ELAPSED"
 	exit 0
 }
 function skipExit {
@@ -155,6 +156,7 @@ function skipExit {
 	printInfo "**** END Case case=${TTRO_case} variant='${TTRO_variantCase}' SKIP **********"
 	getElapsedTime "$caseStartTime"
 	printInfo "**** Elapsed time $TTTT_elapsedTime state=$TTTT_state *****"
+	echo "$TTTT_elapsedTime" > "${TTRO_workDirCase}/ELAPSED"
 	exit 0
 }
 function failureExit {
@@ -165,6 +167,7 @@ function failureExit {
 	printInfo "**** END Case case=${TTRO_case} variant='${TTRO_variantCase}' FAILURE ********" >&2
 	getElapsedTime "$caseStartTime"
 	printInfo "**** Elapsed time $TTTT_elapsedTime state=$TTTT_state *****"
+	echo "$TTTT_elapsedTime" > "${TTRO_workDirCase}/ELAPSED"
 	exit 0
 }
 function errorExit {
@@ -173,6 +176,7 @@ function errorExit {
 	printInfo "END Case case=${TTRO_case} variant='${TTRO_variantCase}' ERROR ***************" >&2
 	getElapsedTime "$caseStartTime"
 	printInfo "**** Elapsed time $TTTT_elapsedTime state=$TTTT_state *****"
+	echo "$TTTT_elapsedTime" > "${TTRO_workDirCase}/ELAPSED"
 	exit ${errTestError}
 }
 

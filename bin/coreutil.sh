@@ -433,6 +433,7 @@ readonly -f createSuiteIndex
 # $4 Case result
 # $5 Case input dir
 # $6 Case work dir
+# $7 Elapsed time
 function addCaseEntry {
 	local reason=''
 	if [[ -e "$6/REASON" ]]; then
@@ -440,16 +441,21 @@ function addCaseEntry {
 	fi
 	case $4 in
 		SUCCESS ) 
-			echo "<li>$2:$3 $4 <br>workdir <a href=\"$6\">$6</a></li>" >> "$1";;
+			echo "<li>$2:$3 $4  Time : $7<br>workdir <a href=\"$6\">$6</a></li>" >> "$1";;
 		ERROR )
-			echo "<li style=\"color: red\">$2:$3 $4 <br>workdir <a href=\"$6\">$6</a></li>" >> "$1";;
+			echo "<li style=\"color: red\">$2:$3 $4  Time : $7<br>workdir <a href=\"$6\">$6</a></li>" >> "$1";;
 		FAILURE )
-			echo "<li style=\"color: red\">$2:$3 $4 : $reason <br>workdir <a href=\"$6\">$6</a></li>" >> "$1";;
+			echo "<li style=\"color: red\">$2:$3 $4 : $reason  Time : $7<br>workdir <a href=\"$6\">$6</a></li>" >> "$1";;
 		SKIP )
-			echo "<li style=\"color: blue\">$2:$3  $4 : $reason <br>workdir <a href=\"$6\">$6</a></li>" >> "$1";;
+			echo "<li style=\"color: blue\">$2:$3 $4 : $reason  Time : $7<br>workdir <a href=\"$6\">$6</a></li>" >> "$1";;
 		*) 
 			printErrorAndExit "Wrong result string $4" $errRt
 	esac
+	if [[ -n $3 ]]; then
+		tresultList+=("$2:$3 $4 Elapsed time: $7")
+	else
+		tresultList+=("$2 $4 Elapsed time: $7")
+	fi
 }
 readonly -f addCaseEntry
 
