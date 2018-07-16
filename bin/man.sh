@@ -142,9 +142,10 @@ function manpage () {
 	=====================
 	The definition of the variables and properties must have the form:
 	#--name=value
-	No spaces are allowed between name '=' and value. The assignement requires the same quoting as a reqular assignement.
-	The whole assignment must fit into one line.
-	The preamble defines the variants of the test artifacts and in case of a test case, the timeout values for the test case.
+	No spaces are allowed between name '=' and value. The assignement requires the same quoting as a reqular bash assignement.
+	The assignment can use a continuation line if the line ends with an escaped newline character (backlslash before newline)
+	The continuation line must also start with #--
+	The preamble may define the variants of the test artifact and in case of a test case, the timeout value for the test case.
 	
 	## Test Collection, Test Case and Test Suite variants
 	=====================================================
