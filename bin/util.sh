@@ -853,6 +853,7 @@ TTRO_help_morphFile='
 #	Lines like:
 #	^[[:space:]]*//<varid1 varid2..> are effective if the argument $3 equal one of the varid1, or varid2..
 #	^[[:space:]]*//<!varid1 varid2..> are not effective if the argument $3 equal one of the varid1, or varid2..
+#	and patterns like <#$varname#> are replaced with the expansion of $varname
 #	Effective means that the pattern //<varid1 varid2..> or //<!varid1 varid2..> is removed
 #	$1 - input file
 #	$2 - output file
@@ -869,10 +870,11 @@ function morphFile {
 		local readResult=0
 		local negate=''
 		local -i linenumber=0
-		local outline writeLine ident varidlist code
+		local templine writeLine ident varidlist code
+		local trans varname outline2
 		while [[ $readResult -eq 0 ]]; do
 			linenumber=$((linenumber+1))
-			outline=''; writeLine=''; negate=''
+			templine=''; writeLine=''; negate=''
 			if ! read -r; then readResult=1; fi
 			#echo "$REPLY"
 			if [[ $REPLY =~ ^([[:space:]]*)//\<([^\>]+)\>(.*) ]]; then
@@ -886,12 +888,12 @@ function morphFile {
 				if [[ $varidlist =~ ^[0-9a-zA-Z_\ \	-]+$ ]]; then
 					if isInList "$3" "$varidlist"; then
 						if [[ -z $negate ]]; then
-							outline="${ident}${code}"
+							templine="${ident}${code}"
 							writeLine='true'
 						fi
 					else
 						if [[ -n $negate ]]; then
-							outline="${ident}${code}"
+							templine="${ident}${code}"
 							writeLine='true'
 						fi
 					fi
@@ -899,14 +901,39 @@ function morphFile {
 					printErrorAndExit "Invalid variant list in file: $1 linenumber: $linenumber line: $REPLY" $errRt
 				fi
 			else
-				outline="$REPLY"
+				templine="$REPLY"
 				writeLine='true'
 			fi
 			if [[ -n $writeLine ]]; then
+				outline2=''
+				while [[ $templine =~ \<\#\$([^#\>]+)\#\>(.*) ]]; do
+					#echo "templine=$templine"
+					local match="${BASH_REMATCH[0]}"
+					local lmatch=${#match}
+					local ltempline=${#templine}
+					local splitat=$((ltempline-lmatch))
+					local part1="${templine:0:$splitat}"
+					local part2="${templine:$splitat}"
+					outline2="${outline2}${part1}"
+					varname="${BASH_REMATCH[1]}"
+					templine="${BASH_REMATCH[2]}"
+					if [[ $varname =~ [[:space:]] ]]; then
+						printErrorAndExit "Invalid variable name: $varname in file: $1 linenumber: $linenumber line: $REPLY" $errRt
+					else
+						#echo "$varname"
+						if trans=$(eval echo -n "\"\$$varname\""); then
+							outline2="${outline2}${trans}"
+						else
+							printErrorAndExit "Invalid assignemtnet: \"\$$varname\" in file: $1 linenumber: $linenumber line: $REPLY" $errRt
+						fi
+					fi
+				done
+				outline2="${outline2}${templine}"
+				#write output
 				if [[ $readResult -eq 0 ]]; then
-					echo "$outline" >> "$2"
+					echo "$outline2" >> "$2"
 				else
-					echo -n "$outline" >> "$2"
+					echo -n "$outline2" >> "$2"
 				fi
 			fi
 		done

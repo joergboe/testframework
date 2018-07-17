@@ -147,3 +147,5 @@ Version 3.0.0:
 - Better jobid control. Now re-used jobids should not cause errors
 - Use other formatting in web index
 - Add elapsed time and add result to special report
+- New replacement in New function morphFile:
+	patterns like <#$varname#> are replaced with the expansion of $varname
