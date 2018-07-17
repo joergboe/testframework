@@ -2,12 +2,14 @@
 		arrayHasKey
  Function arrayHasKey
 	check is an array has key
+ Parameters:
 	$1 the array name
 	$2 the key value to search must not contain spaces
-	returns
-		success(0)    if key exists in array
-		error(1)      otherwise
-	exits if called with wrong arguments
+ Returns:
+	success(0) - if key exists in array
+	error(1)   -   otherwise
+ Exits:
+	exits if called with wrong number of arguments
 
 
 #######################################
@@ -67,10 +69,14 @@
  Function echoAndExecute
 	echo and execute a command with variable arguments
 	success is expected and no further evaluation of the output is required
-	$1 the command string
-	$2 .. the parameters of the command
-	returns the result code of the executed command
-	exits if no command string is given or command is empty
+ Parameters:
+	$1    - the command string
+	$2 .. - optional the parameters of the command
+ Returns:
+	the result code of the executed command
+ Exits:
+	if no command string is given or the command is empty
+	if the function is not guarded with conditional statement and the executed command returns an error code
 
 
 #######################################
@@ -78,9 +84,15 @@
  Function echoExecuteAndIntercept
 	echo and execute the command line
 	the command execution is guarded and the result code is stored
-	$1 the command string
-	$2 .. the parameters of the command
-	return the result code of the executed comman in TTTT_result
+ Parameters:
+	$1    - the command string
+	$2 .. - optional the parameters of the command
+ Returns:
+	success
+ Exits:
+	if no command string is given or the command is empty
+ Side Effects:
+	TTTT_result - the result code of the executed command
 
 
 #######################################
@@ -91,23 +103,37 @@
 	if the expected result is not received the failure condition is set 
 	the function returns success(0)
 	the function exits if an input parameter is wrong
+ Parameters:
 	$1 success - returncode 0 expected
 	   error   - returncode ne 0 expected
 	   X       - any return value is accepted
 	   number  - the numeric return code is expected
-	$2 the command string
-	$3 the parameters as one string - during execution expansion and word splitting is applied
+	$2 - the command string
+	$3 .. - optional the parameters for the command
+ Returns:
+	success
+ Exits:
+	If the number of parameters is -lt 2 ot the command is empty
+ Side Effects:
+#
 
 
 #######################################
 		echoExecuteInterceptAndError
  Function echoExecuteInterceptAndError
 	echo and execute the command line
-	a error code is expected
+	a failure code is expected in the command return
 	the failure condition is set in case of cmd success
-	$1 the command string
-	$2 .. the parameters of the command
-	command result code is sored in TTTT_result
+ Parameters:
+	$1    - the command string
+	$2 .. - optionally the parameters of the command
+ Returns:
+	success
+ Exits:
+	if no command string is given or the command is empty
+ Side Effects_
+	TTTT_result - the result code of the executed command
+	The failure condition is set if the command returns success
 
 
 #######################################
@@ -116,9 +142,16 @@
 	echo and execute the command line
 	a successfull command execution is expected
 	the failure condition is set in case of failure
-	$1 the command string
-	$2 .. the parameters of the command
-	command result code is sored in TTTT_result
+ Parameters:
+	$1    - the command string
+	$2 .. - optional the parameters of the command
+ Returns
+	success
+ Exits:
+	if no command string is given or the command is empty
+ Side Effects:
+	TTTT_result - the result code of the executed command
+	The failure condition is set if the command returns failure
 
 
 #######################################
@@ -127,10 +160,16 @@
 	echo and execute a command
 	the command execution is guarded and the result code is stored
 	the std- and error-out is logged into a file for further evaluation
-	$1 the command string
-	$2 .. the parameters of the command
-	$TT_evaluationFile the file name of the log file default is ./EVALUATION.log
-	return the result code of the executed comman in TTTT_result
+ Parameters:
+	$1    - the command string
+	$2 .. - optional the parameters of the command
+	$TT_evaluationFile - the file name of the log file default is ./EVALUATION.log
+ Returns:
+	success
+ Exits:
+	if no command string is given or the command is empty
+ Side Effects:
+	TTTT_result - the result code of the executed command
 
 
 #######################################
@@ -140,10 +179,17 @@
 	the command execution is guarded and the result code is stored
 	the std- and error-out is logged into a file for further evaluation
 	an error command execution is expected, otherwise the failure condition is set
-	$1 the command string
-	$2 .. the parameters of the command
-	$TT_evaluationFile the file name of the log file default is ./EVALUATION.log
-	return the result code of the executed comman in TTTT_result
+ Parameters:
+	$1    - the command string
+	$2 .. - optional the parameters of the command
+	$TT_evaluationFile - the file name of the log file default is ./EVALUATION.log
+ Returns:
+	success
+ Exits:
+	if no command string is given or the command is empty
+ Side Effects:
+	TTTT_result - the result code of the executed command
+	The failure condition is set if the command returns success
 
 
 #######################################
@@ -153,22 +199,17 @@
 	the command execution is guarded and the result code is stored
 	the std- and error-out is logged into a file for further evaluation
 	a successfull command execution is expected, otherwise the failure condition is set
-	$1 the command string
-	$2 .. the parameters of the command
-	$TT_evaluationFile the file name of the log file default is ./EVALUATION.log
-	return the result code of the executed comman in TTTT_result
-
-
-#######################################
-		fixPropsVars
- Function fixPropsVars
-	This function fixes all ro-variables and propertie variables
-	Property and variables setting is a two step action:
-	Unset help variables if no reference is printed
-	make vars STEPS PREPS FINS read-only
-	returns:
-		success (0)
-		error	in exceptional cases
+ Parameters:
+	$1    - the command string
+	$2 .. - optional the parameters of the command
+	$TT_evaluationFile - the file name of the log file default is ./EVALUATION.log
+ Returns:
+	success
+ Exits:
+	if no command string is given or the command is empty
+ Side Effects:
+	TTTT_result - the result code of the executed command
+	The failure condition is set if the command returns failure
 
 
 #######################################
@@ -184,8 +225,14 @@
 		getLineCount
  Function getLineCount
 	Get the number of lines in a file
+ Parameters:
 	$1 the file name
-	output TTTT_lineCount
+ Returns:
+	the status of the ececuted commands
+ Exits:
+ if the function was called with invalid parameters
+ Side Effects:
+	TTTT_lineCount - the number of lines in the file
 
 
 #######################################
@@ -213,20 +260,26 @@
 		isArray
  Function isArray
 	checks whether an variable exists and is an indexed array
-	$1 var name to be checked
-	returns
-		success(0)   if the variable exists and is an indexed array
-		error(1)     otherwise
+ Parameters:
+	$1 - var name to be checked
+ Returns
+	success(0) - if the variable exists and is an indexed array
+	error(1)   -  otherwise
+ Exits:
+	if called without argument
 
 
 #######################################
 		isAssociativeArray
  Function isAssociativeArray
 	checks whether an variable exists and is an associative array
-	$1 var name to be checked
-	returns
-		success(0)   if the variable exists and is an indexed array
-		error(1)     otherwise
+ Parameters:
+	$1 - var name to be checked
+ Returns
+	success(0) - if the variable exists and is an indexed array
+	error(1)   - otherwise
+ Exits:
+	if called without argument
 
 
 #######################################
@@ -241,50 +294,66 @@
 		isExisting
  Function isExisting
 	check if variable exists
-	$1 var name to be checked
-	returns
+ Parameters:
+	$1 - variable name to be checked
+ Returns:
 		success(0)    if the variable exists
 		error(1)      otherwise
+ Exits
+	if called without argument
 
 
 #######################################
 		isExistingAndFalse
  Function isExistingAndFalse
 	check if variable exists and has an empty value
-	$1 var name to be checked
-	returns
-		success(0)    exists and has an empty value
-		error(1)      otherwise
+ Parameters:
+	$1 - var name to be checked
+ Returns
+	success(0) - exists and has an empty value
+	error(1)   - otherwise
+ Exits
+	if called without argument
 
 
 #######################################
 		isExistingAndTrue
  Function isExistingAndTrue
 	check if variable exists and has a non empty value
-	$1 var name to be checked
-	returns
-		success(0)    exists and has a non empty value
-		error(1)      otherwise
+ Parameters:
+	$1 - var name to be checked
+ Returns
+	success(0) - the variable exists and has a non empty value
+	error(1)   - otherwise
+ Exits
+	if called without argument
 
 
 #######################################
 		isFalse
  Function isFalse
 	check if a variable has an empty value
-	$1 var name to be checked
-	returns
-		success(0)    if the variable exists and has a empty value
-		error(1)      if the variable exists and has an non empty value
-	exits if variable not exists
+ Parameters:
+	$1 - var name to be checked
+ Returns
+	success(0)  - if the variable exists and has a empty value
+	error(1)    - if the variable exists and has an non empty value
+ Exits:
+	if variable not exists
+	if called without argument
 
 
 #######################################
 		isFunction
  Function isFunction
 	checks whether an given name is defined as function
-	$1 name to be checked
-		success(0)   if the function exists
-		error(1)     otherwise
+ Parameters:
+	$1 - name to be checked
+ Returns:
+	success(0)  - if the function exists
+	error(1)    - otherwise
+ Exits:
+	if called without argument
 
 
 #######################################
@@ -310,10 +379,13 @@
 		isNotExisting
  Function isNotExisting
 	check if variable not exists
-	$1 var name to be checked
-	returns
-		success(0)    if the variable not exists
-		error(1)      otherwise
+ Parameters:
+	$1 - variable name to be checked
+ Returns:
+	success(0) - if the variable not exists
+	error(1)   -   otherwise
+ Exits
+	if called without argument
 
 
 #######################################
@@ -338,11 +410,14 @@
 		isTrue
  Function isTrue
 	check if a variable has a non empty value
-	$1 var name to be checked
-	returns
-		success(0)    variable exists and has a non empty value
-		error(1)      variable exists and has a empty value
-	exits if variable not exists
+ Parameters:
+	$1 - var name to be checked
+ Returns
+	success(0) - variable exists and has a non empty value
+	error(1)   - variable exists and has a empty value
+ Exits:
+	if variable not exists
+	if called without argument
 
 
 #######################################
@@ -421,9 +496,10 @@
 		morphFile
  morphes a file
 	Lines like:
-	^[[:space:]]*//<varid1:varid2..> are effective if the argument $3 equal one of the varid1, or varid2..
-	^[[:space:]]*//<!varid1:varid2..> are not effective if the argument $3 equal one of the varid1, or varid2..
-	Effective means that the pattern //<varid1:varid2..> or //<!varid1:varid2..> is removed
+	^[[:space:]]*//<varid1 varid2..> are effective if the argument $3 equal one of the varid1, or varid2..
+	^[[:space:]]*//<!varid1 varid2..> are not effective if the argument $3 equal one of the varid1, or varid2..
+	and patterns like <#$varname#> are replaced with the expansion of $varname
+	Effective means that the pattern //<varid1 varid2..> or //<!varid1 varid2..> is removed
 	$1 - input file
 	$2 - output file
 	$3 - the variant identifier
@@ -561,9 +637,29 @@
 #######################################
 		setFailure
  Function setFailure
-	set a use defined failure condition
-	to be used in failed test cases
-	$1 the failure text
+	set the user defined failure condition in a test case script
+	to be used in failed test case steps only
+ Parameters:
+	$1 - the user defined failure text
+ Returns:
+	success
+ Exits:
+	if called from a test suite script
+	if 
+
+
+#######################################
+		setSkip
+ Function setSkip
+	set the skip condition TTPRN_skip in initialization phase of case or suite
+	use the supplied value or unspecified
+ Params:
+	$1 - optional the reason to skip this value must not be empty
+ Returns:
+	success
+ Exits:
+	if called in another phase than initializing
+	if called with empty argument
 
 
 #######################################
@@ -571,21 +667,15 @@
  Function setVar
 	Set framework variable or property at runtime
 	The name of the variable must startg with TT_, TTRO_, TTPR_ or TTPRN_
+ Parameters:
 	$1 - the name of the variable to set
 	$2 - the value
-	returns success (0):
-		if the variable could be set or if an property value is ignored
-	exits:
-		if variable is not of type TT_, TTRO_, TTPR_ or TTPRN_
-		or if the variable could not be set (e.g a readonly variable was already set
-		ignored property values do not generate an error
-
-
-#######################################
-		skip
- Function skip
-	if this function is called during initialization
-	the case or suite is skipped
+ Returns
+	success (0) - if the variable could be set or if an property value is ignored
+ Exits:
+	if variable is not of type TT_, TTRO_, TTPR_ or TTPRN_
+	or if the variable could not be set (e.g a readonly variable was already set
+	ignored property values do not generate an error
 
 
 #######################################
@@ -609,8 +699,13 @@
 #######################################
 		waitForFileToAppear
  Function waitForFileToAppear
-	Wait for a file to appear
-	$1	the file name to check
-	$2	the interval optional default is 3 sec.
+	Wait until a file appears
+ Parameters:
+	$1 - the file name to check
+	$2 - optional the check interval default is 3 sec.
+ Returns:
+	success if the file was found
+ Exits:
+ if the function was called with invalid parameters
 
 

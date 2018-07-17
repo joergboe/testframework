@@ -1,7 +1,15 @@
 #######################################
 		cancelJob
  Function cancelJob
-	$TTTT_jobno the job number
+	if TTTT_jobno is not empty, cancel the job
+ Parameters:
+	$TTTT_jobno - the job number
+	$TTPRN_streamsDomainId - domain id
+	$TTPRN_streamsInstanceId - instance id
+ Returns:
+	the result code of the executed command
+ Side Effect:
+	TTTT_jobno is empty
 
 
 #######################################
@@ -13,17 +21,25 @@
 #######################################
 		cancelJobVariable
  Function cancelJobVariable
-	$1 domain id
-	$2 instance id
-	$3 jobno
+ Parameters:
+	$1 - domain id
+	$2 - instance id
+	$3 - jobno
+ Returns:
+	the result code of the executed command
 
 
 #######################################
 		checkJobNo
  Function checkJobNo
-	Checks whether the variable TTTT_jobno has a valid job number (>-1)
-	Set the error condition if the check fails
-	retunrs success otherwise
+	Checks whether the variable TTTT_jobno has a valid job number (is not empty)
+	and set the error condition if the check fails
+ Parameters:
+	TTTT_jobno - the job number to check
+ Returns:
+	success
+ Side Effects:
+	set failure variable if chck has failed
 
 
 #######################################
@@ -51,6 +67,7 @@
 	$1 zk string
 	$2 domain id
 	$3 instance id
+	return_code: success
 
 
 #######################################
@@ -101,45 +118,54 @@
 		jobHealthy
  Function jobHealthy
 	checks whether a job is healthy
-	TTPRN_streamsDomainId   domain id
-	TTPRN_streamsInstanceId instance id
-	TTTT_jobno              job number
-	returns:
-		TTTT_state  the state of the job
-		TTTT_healthy the health information of the job
-		success (0) if job is healthy
-		error       if job is not healthy or is not running
+	This function has the same function as function jobHealthyVariable except parameters
+ Parameters:
+	TTPRN_streamsDomainId   - domain id
+	TTPRN_streamsInstanceId - instance id
+	TTTT_jobno              - job number
+ Returns:
+	see jobHealthyVariable
+ Exits:
+	see jobHealthyVariable
+ Side Effects:
+	see jobHealthyVariable
 
 
 #######################################
 		jobHealthyAndIntercept
  Function jobHealthyAndIntercept
 	checks whether a job is healthy and return code is always 0
+	This function has the same function as function jobHealthy except return and side effects
 	provides return code of in variable TTTT_result
-	TTPRN_streamsDomainId   domain id
-	TTPRN_streamsInstanceId instance id
-	TTTT_jobno              job number
-	returns:
-		TTTT_result         0 if job is healthy
-		TTTT_result         error  if job is not healthy
-		TTTT_state  the state of the job
-		TTTT_healthy the health information of the job
-		success (0)
+ Parameters:
+	see jobHealthy
+ Returns:
+	success
+ Exits:
+	see jobHealthyVariable
+ Side Effects:
+	see jobHealthyVariable
+	TTTT_result - success if job is healthy and running
+	              error  if job is not healthy or not running or command has failed
 
 
 #######################################
 		jobHealthyVariable
  Function jobHealthyVariable
 	checks whether a job is healthy
-	parameters
-		$1 domain id
-		$2 instance id
-		$3 jobno
-	returns:
-		TTTT_state  the state of the job
-		TTTT_healthy the health information of the job
-		success (0) if job is healthy
-		error       if job is not healthy or is not running
+ Parameters:
+	$1 - domain id
+	$2 - instance id
+	$3 - jobno
+ Returns:
+	success (0) if job is healthy and running
+	error       if job is not healthy or is not running or the command (streamtool lsjob failed
+ Exits:
+	if the command is called with wrong parameters
+	if the streamtool lsjob return wrong information
+ Side Effects:
+	TTTT_state - the state of the job
+	TTTT_healthy the health information of the job
 
 
 #######################################
@@ -244,24 +270,94 @@
 #######################################
 		submitJob
  Function submitJob
-	submits a job and provides the joboutput file
+	create data directory if data directory variable is non empty
+	and submit the job
+	submits a job and provides the jobnumber file
+ Parameters:
+	$1 ...$n - optionally more config and submission time parameters
+	$TTPRN_streamsDomainId   - domain id
+	$TTPRN_streamsInstanceId - instance id
+	$TT_sabFile              - sab file
+	$TT_jobFile              - output jobnumber file name
+	$TT_traceLevel           - trace level
+	TT_dataDir - the data directory variable
+ Returns:
+	the return code of the executed command
+ Exits:
+	if the job was started and the jobnumber file does not exists
+ Side Effects:
+	TTTT_jobno - jobnumber if job was started or empty
 
 
 #######################################
 		submitJobAndIntercept
  Function submitJobAndIntercept
-	submits a job and provides the joboutput file
-	provide stdout and stderror in file for evaluation
-	provides return code of in variable TTTT_result
-	returns jobnumber in global variable TTTT_jobno
+	create data directory if data directory variable is non empty
+	and submit the job and write the result code into TTTT_result
+	submits a job and provides the jobnumber file
+ Parameters:
+	$1 ...$n - optionally more config and submission time parameters
+	$TTPRN_streamsDomainId   - domain id
+	$TTPRN_streamsInstanceId - instance id
+	$TT_sabFile              - sab file
+	$TT_jobFile              - output jobnumber file name
+	$TT_traceLevel           - trace level
+	TT_dataDir - the data directory variable
+ Returns:
+	success
+ Exits:
+	if the job was started and the jobnumber file does not exists
+ Side Effects:
+	TTTT_result - the result code of the executed command
+	TTTT_jobno - jobnumber if job was started or empty
 
 
 #######################################
-		submitJobAndLog
- Function submitJobAndLog
-	submits a job and provides the joboutput file
-	provide stdout and stderror in file for evaluation
-	returns jobnumber in global variable TTTT_jobno
+		submitJobInterceptAndSuccess
+ Function submitJobInterceptAndSuccess
+	create data directory if data directory variable is non empty
+	and submit the job and expect a successful submission
+	submits a job and provides the jobnumber file
+ Parameters:
+	$1 ...$n - optionally more config and submission time parameters
+	$TTPRN_streamsDomainId   - domain id
+	$TTPRN_streamsInstanceId - instance id
+	$TT_sabFile              - sab file
+	$TT_jobFile              - output jobnumber file name
+	$TT_traceLevel           - trace level
+	TT_dataDir - the data directory variable
+ Returns:
+	success
+ Exits:
+	if the job was started and the jobnumber file does not exists
+ Side Effects:
+	TTTT_result - the result code of the executed command
+	TTTT_jobno - jobnumber if job was started or empty
+	the failure condition is set if the job submission fails
+
+
+#######################################
+		submitJobLogAndIntercept
+ Function submitJobLogAndIntercept
+	create data directory if data directory variable is non empty
+	and submit the job and and write the result code into TTTT_result
+	submits a job and provides the jobnumber file and the console output of the command in evaluation file
+ Parameters:
+	$1 ...$n - optionally more config and submission time parameters
+	$TTPRN_streamsDomainId   - domain id
+	$TTPRN_streamsInstanceId - instance id
+	$TT_sabFile              - sab file
+	$TT_jobFile              - output jobnumber file name
+	$TT_traceLevel           - trace level
+	TT_dataDir - the data directory variable
+	$TT_evaluationFile - the file name of the evaluation file
+ Returns:
+	success
+ Exits:
+	if the job was started and the jobnumber file does not exists
+ Side Effects:
+	TTTT_result - the result code of the executed command
+	TTTT_jobno - jobnumber if job was started or empty
 
 
 #######################################
@@ -269,26 +365,42 @@
  Function submitJobOld
 	$1 sab files
 	$2 output file name
+	return_code: the returncode of the called function
 
 
 #######################################
 		submitJobVariable
  Function submitJobVariable
-	$1 domain id
-	$2 instance id
-	$3 sab files
-	$4 output file name
-	$5 trace level
-	returns jobnumber in global variable TTTT_jobno
+	create data directory if data directory variable is non empty
+	and submit the job
+ Parameters:
+	$1     - domain id
+	$2     - instance id
+	$3     - sab file
+	$4     - output jobnumber file name
+	$5     - trace level
+	$6 ... - optionally more command line parameters (submission time and config params)
+	TT_dataDir - the data directory variable
+ Returns:
+	the return code of the executed command
+ Exits:
+	if the command is called with wrong parameters
+	if the job was started and the jobnumber file does not exists
+ Side Effects:
+	TTTT_jobno - jobnumber if job was started or empty
 
 
 #######################################
 		waitForFin
  Function waitForFin
 	waits until the final file appears
+	see also function waitForFileToAppear
+ Parameters:
 	$TT_waitForFileName - the name of the file to wait for
-	$TT_waitForFileInterval - the interval
-	returns success if the file was found
+	$TT_waitForFileInterval - the interval for that check
+ Returns
+	success if the file was found
+	failure otherwise
 
 
 #######################################

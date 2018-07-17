@@ -61,8 +61,8 @@ A summary is printed after test case execution.
 These files have in general two sections: The preamble and a script code section. Both sections may be empty.
 
 The preamble defines variables which are necessary before execution of appropriate artifacts starts.
-A preamble statement starts with the character sequence '#--' and the variable definition must follow
-immediately. (No spaces allowd).
+A preamble statement starts with the character sequence '#--'. A preamble line may be continued after a single
+\ before nl. The continuation line must start also with sequence '#--'
 
 The script code section is a bash script. In the script section, you can define required code for the initialization
 and the custom functions for the test preparation, for the test step execution and the test finalization. 
@@ -136,9 +136,10 @@ Or you may define a colon separated list of Test Tools files in variable TTRO_to
 ## Test File Preamble
 The definition of the variables and properties must have the form:
 #--name=value
-No spaces are allowed between name '=' and value. The assignement requires the same quoting as a reqular assignement.
-The whole assignment must fit into one line.
-The preamble defines the variants of the test artifacts and in case of a test case, the timeout values for the test case.
+No spaces are allowed between name '=' and value. The assignement requires the same quoting as a reqular bash assignement.
+The assignment can use a continuation line if the line ends with an escaped newline character (backlslash before newline)
+The continuation line must also start with #--
+The preamble may define the variants of the test artifact and in case of a test case, the timeout value for the test case.
 
 ## Test Collection, Test Case and Test Suite variants
 The variants of cases, suites and collections are defined in the preamble of the 'TestCase.sh' or the 'TestSuite.sh' file.
@@ -147,8 +148,10 @@ The appropriate file must have either no variant variable, a variantCount variab
 The variantCount must be in the form:
 #--variantCount=number
 
-The variantList must be a space separated list of identifiers or numbers or a mixture of identifiers and numbers:
+The variantList must be a space separated list of identifiers:
 #--variantList='space separated list of variant identifiers'
+An identifier must be composed from following characters : 0-9a-zA-Z-_
+No other characters are allowd in variant list identifiers.
 
 ## Test Case timeouts
 Each test case can define an individual timeout variable. When the timeout is reached for an test case, 
@@ -278,7 +281,6 @@ Varaible names starting with TTTT_ are reserved for testframework usage. These v
                          
 - TTTT_categoryArray   - The indexed array with the categories of the current Case/Suite
 - TTTT_runCategoryPatternArray - The indexed array with the run-category patterns of the current test run
-- TTTT_skipthis        - Signal to skip this artifact
 - TTTT_failureOccurred - The failure condition in test case execution
 - TTTT_result          - Used in some functions to return a result code
 
@@ -347,9 +349,11 @@ A test case is skipped if the property TTPRN_skip is defined ant true. This prop
 
 Alternatively the existence of an file SKIP in the Test Case/Suite directory inhibits the execution of all variants of the Case/Suite.
 
-The function 'setCategory' defines the categories of a Test Case or Test Suite. If the function 'setCategory' is not called during
-Case or Suite initialization, the artifact has the default category 'default'. If the function 'setCategory' is called with an empty 
-parameter list, all catagories are cleaned. The categories are checked before the Case- or Suite- preparation is executed.
+The function 'setCategory' defines the categories of a Test Case or Test Suite.
+If the function 'setCategory' is not called during Case initialization the Case has the default category 'default'.
+If the function 'setCategory' is not called during Suite initialization the Suite has no category.
+If the function 'setCategory' is called with an empty parameter list, all catagories are cleaned.
+The categories are checked before the Case- or Suite- preparation is executed.
 The run-categories of the a test run can be defined with command line parameter -c|--category VALUE. The run-categories 
 are considered to be patterns.
 If one of the run-category pattern matches any of the categories of the artifact, the Case/Suite is executed. Otherwise it is skipped.
