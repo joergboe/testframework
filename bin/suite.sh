@@ -704,7 +704,7 @@ while [[ -z $allJobsGone ]]; do
 		tmp2=$(cut -d ' ' -f2 <<< $tmp)
 		if [[ $tmp1 =~ \[(.*)\]\+ ]]; then
 			tmp5="${BASH_REMATCH[1]}"
-			#echo " jobspec=%$tmp5 pid=$tmp4 state=$tmp2"
+			echo " jobspec=%$tmp5 pid=$tmp4 state=$tmp2"
 			checkDuplicateJobspec "$tmp5"
 		else
 			echo
