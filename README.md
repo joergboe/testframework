@@ -149,3 +149,7 @@ Version 3.0.0:
 - Add elapsed time and add result to special report
 - New replacement in New function morphFile:
 	patterns like <#$varname#> are replaced with the expansion of $varname
+
+Version 3.0.1:
+- Add version number to final summary
+- Correction for more then 9 arguments
