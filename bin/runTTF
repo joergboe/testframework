@@ -697,6 +697,7 @@ echo
 	getElapsedTime "$collectionStartTime"
 	printf "***** Elapsed time : %s\n" "$TTTT_elapsedTime"
 	printf "***** Datestring : %s\n" "$TTTT_datestring"
+	printf "***** runTTF version : %s\n" "$TTRO_version"
 	printf "*******************************************************************************************************\n"
 } > "$TTRO_workDir/SUMMARY.txt"
 
