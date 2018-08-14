@@ -490,7 +490,7 @@ function addSuiteEntry {
 	if [[ $# -ne 12 ]]; then printErrorAndExit "wrong no of arguments $#" $errRt; fi
 	case $3 in
 		0 )
-		if [[ ( $8 -gt 0 ) || ( $9 -gt 0 ) || ( $12 -gt 0 ) ]]; then
+		if [[ ( $8 -gt 0 ) || ( $9 -gt 0 ) || ( ${12} -gt 0 ) ]]; then
 			echo -n "<li style=\"color: red\"><a href=\"$5/suite.html\">$2</a> result code: $3" >> "$1"
 		else
 			echo -n "<li><a href=\"$5/suite.html\">$2</a> result code: $3" >> "$1"
