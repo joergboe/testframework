@@ -30,16 +30,16 @@ function testPreparation {
 function testStep {
 	case "$TTRO_variantCase" in
 		varNotExists)
-			echoExecuteAndIntercept 'error' 'isArray' 'var';;
+			echoExecuteInterceptAndError 'isArray' 'var';;
 		varIsVariable)
-			echoExecuteAndIntercept 'error' 'isArray' 'var';;
+			echoExecuteInterceptAndError 'isArray' 'var';;
 		varIsFunction)
-			echoExecuteAndIntercept 'error' 'isArray' 'var';;
+			echoExecuteInterceptAndError 'isArray' 'var';;
 		varIsArray)
-			echoExecuteAndIntercept 'success' 'isArray' 'var';;
+			echoExecuteInterceptAndSuccess 'isArray' 'var';;
 		varIsMap)
-			echoExecuteAndIntercept 'error' 'isArray' 'var';;
+			echoExecuteInterceptAndError 'isArray' 'var';;
 		varIsArrayRo)
-			echoExecuteAndIntercept 'success' 'isArray' 'var';;
+			echoExecuteInterceptAndSuccess 'isArray' 'var';;
 	esac
 }

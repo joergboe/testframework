@@ -11,25 +11,22 @@ case $TTRO_variantCase in
 					'-h|--help                : display this help'
 					'--man                    : display man page'
 					'--ref VALUE              : display function reference. If value is the empty value, the reference of the internal functions is displayed.'
-					'                           If value assigns a Test Tools module the reference of the module is displayed.'
-					'-w|--workdir  VALUE      : The working directory. Here are all work files and results are stored. Default is*'
+					'-w|--workdir  VALUE      : The working directory. Here are all work files and results are stored. Default is ./runTTFWorkdir .'
 					'-f|--flat                : Use flat working directory - does not include the date/time string into the workdir path'
 					'--noprompt               : Do not prompt berfore an existing working directory is removed.'
 					'-i|--directory VALUE     : The input directory - the test collection directory. There is no default. This option must be entered.'
 					'-p|--properties VALUE    : This specifies the file with the global property values. Default is file TestProperties.sh in input directory.'
+					'                           This option can be given more than one time. '
 					'-t|--tools VALUE         : Includes (source) files with test tool scripts. This option can be given more than one time.'
-					'-n|--no-checks           : The script omits the checkes for the streams environment and does not attempt to start domain/instance. Saves time'
-					'-s|--skip-ignore         : If this option is given the ignore attribute of the cases are ignored'
-					'-j|--threads VALUE       : The number of parallel test executions. \(you have * \(virtual\) cores this is default\)'
-					'*If the value is set to 1 no parallel execution is performed'
-					'-l|--link                : Content found in data directoy are linked to workspace not copied \(Set TYPRN_link=true\)'
-					'--no-start               : Supress the execution of the start sequence \(Set TYPRN_noStart\)'
-					'--no-stop                : Supress the execution of tear stop sequencd \(Set TYPRN_noStop\)'
-					'-D value                 : Set the specified TY_-, TYRO_-, TYPR_- or TYPRN_- variable value \(Use one of varname=value\)'
-					'-v|--verbose             : Be verbose to stdout'
-					'-V|--version             : Print the version string'
-					'-d|--debug               : Print debug information. Debug implies verbose.'
-					'--bashhelp               : Print some hints for the use of bash')
+					'-c|--category VALUE      : Enter the category pattern for this test run. The pattern must not contain white spaces. '
+					'                           Quote the value or escape special characters. This option can be given more than one time.'
+					'--skip-ignore            : If this option is given the skip and category attributes of the cases and suite are ignored'
+					'-s|--sequential          : Sequential test execution. No parallel test execution is performed.'
+					'-j|--threads VALUE       : The number of parallel threads used. (you have 8 (virtual) cores this is default)'
+					'-l|--link                : Content found in data directoy are linked to workspace not copied (Set TYPRN_link=true)'
+					'--no-start               : Supress the execution of the start sequence (Set TYPRN_noStart)'
+					'--no-stop                : Supress the execution of tear stop sequencd (Set TYPRN_noStop)'
+					'--no-browser             : Do not start browser after test execution.')
 		;;
 	man)
 		patternList=('The runTTF script is a framework for the control of test case execution.*'
@@ -71,7 +68,7 @@ function executeCase {
 
 function myEvaluate {
 	if ! linewisePatternMatchArray './STDERROUT1.log' "true"; then
-		failureOccurred='true'
+		setFailure "Output evaluation failed"
 	fi
 	return 0
 }

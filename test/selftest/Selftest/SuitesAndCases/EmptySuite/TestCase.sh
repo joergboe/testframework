@@ -10,10 +10,8 @@ function getOptions {
 }
 
 function myEvaluate {
-	if ! linewisePatternMatch './STDERROUT1.log' 'true'\
-	                          '*\*\*\*\*\* cases  executed=0 skipped=0 failures=0 errors=0'\
-	                          '*\*\*\*\*\* suites executed=1 skipped=0 errors=0'; then
-		failureOccurred='true'
-	fi
+	linewisePatternMatchInterceptAndSuccess './STDERROUT1.log' 'true'\
+	                          '*\*\*\*\*\* cases  executed=0 failures=0 errors=0 skipped=0'\
+	                          '*\*\*\*\*\* suites executed=1 errors=0 skipped=0'
 	return 0
 }

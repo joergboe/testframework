@@ -50,8 +50,7 @@ function runRunTTF {
 		if [[ $result -eq 0 ]]; then
 			return 0
 		else
-			printError "result is $result. Expected is $TT_expectResult"
-			failureOccurred='true'
+			setFailure "result is $result. Expected is $TT_expectResult"
 		fi
 	elif [[ $TT_expectResult == 'X' ]]; then
 		if [[ $result -ne 0 ]]; then
@@ -64,8 +63,7 @@ function runRunTTF {
 		if [[ $TT_expectResult -eq $result ]]; then
 			return 0
 		else
-			printError "result is $result. Expected is $TT_expectResult"
-			failureOccurred='true'
+			setFailure "result is $result. Expected is $TT_expectResult"
 		fi
 	fi
 }
@@ -82,13 +80,11 @@ TTRO_help_checkResults='
 #	TT_casesFailed    - number of cases failed
 #	TT_casesError     - number of cases errors'
 function checkResults {
-	if ! linewisePatternMatch \
+	linewisePatternMatchInterceptAndSuccess \
 			'./STDERROUT1.log'\
 			'true'\
-			"*\*\*\*\*\* suites executed=$TT_suitesExecuted skipped=$TT_suitesSkipped errors=$TT_suitesError"\
-			"*\*\*\*\*\* cases  executed=$TT_casesExecuted skipped=$TT_casesSkipped failures=$TT_casesFailed errors=$TT_casesError"; then
-		failureOccurred='true'
-	fi
+			"*\*\*\*\*\* suites executed=$TT_suitesExecuted errors=$TT_suitesError skipped=$TT_suitesSkipped"\
+			"*\*\*\*\*\* cases  executed=$TT_casesExecuted failures=$TT_casesFailed errors=$TT_casesError skipped=$TT_casesSkipped"
 	return 0
 }
 export -f checkResults

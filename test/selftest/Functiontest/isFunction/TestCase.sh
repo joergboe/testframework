@@ -32,17 +32,17 @@ function testPreparation {
 function testStep {
 	case "$TTRO_variantCase" in
 		varNotExists)
-			echoExecuteAndIntercept 'error' 'isFunction' 'var';;
+			echoExecuteInterceptAndError 'isFunction' 'var';;
 		varIsVariable)
-			echoExecuteAndIntercept 'error' 'isFunction' 'var';;
+			echoExecuteInterceptAndError 'isFunction' 'var';;
 		varIsFunction)
-			echoExecuteAndIntercept 'success' 'isFunction' 'var';;
+			echoExecuteInterceptAndSuccess 'isFunction' 'var';;
 		varIsArray)
-			echoExecuteAndIntercept 'error' 'isFunction' 'var';;
+			echoExecuteInterceptAndError 'isFunction' 'var';;
 		varIsMap)
-			echoExecuteAndIntercept 'error' 'isFunction' 'var';;
+			echoExecuteInterceptAndError 'isFunction' 'var';;
 		varIsFunctionRo)
-			echoExecuteAndIntercept 'success' 'isFunction' 'var';;
+			echoExecuteInterceptAndSuccess 'isFunction' 'var';;
 		*)
 			printErrorAndExit "Wrong variant '$TTRO_variantCase'" $errRt
 	esac

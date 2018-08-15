@@ -16,10 +16,10 @@ function testPreparation {
 function testStep {
 	case "$TTRO_variantCase" in
 		varNotExists)
-			echoExecuteAndIntercept 'error' 'isExistingAndTrue' 'var';;
+			echoExecuteInterceptAndError 'isExistingAndTrue' 'var';;
 		varFalse)
-			echoExecuteAndIntercept 'error' 'isExistingAndTrue' 'var';;
+			echoExecuteInterceptAndError 'isExistingAndTrue' 'var';;
 		varTrue)
-			echoExecuteAndIntercept 'success' 'isExistingAndTrue' 'var';;
+			echoExecuteInterceptAndSuccess 'isExistingAndTrue' 'var';;
 	esac
 }
