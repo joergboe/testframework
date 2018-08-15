@@ -59,15 +59,14 @@ function usage {
 	0     : Test Success
 	1     : fatal error ( failed command etc. )
 	${errTestFail}    : at least one test fails ( \${errTestFail} )
-	${errSkip}    : Test Case or Test Suite was skipped ( \${errSkip} internal used only )
 	${errTestError}    : at least one test error ( \${errTestError} )
-	${errVersion}    : Streams version is not supported ( \${errVersion} )
 	${errSuiteError}    : Error during suite execution ( \${errSuiteError} )
 	${errInvocation}    : Invocation error ( \${errInvocation} )
 	${errScript}    : Script error ( \${errScript} )
 	${errRt}    : Runntime error ( \${errRt} )
-	${errEnv}    : Invalid environment ( \${errEnv} )
 	${errSigint}   : SIGINT received ( \${errSigint} )
+	${errEnv}    : Invalid environment ( \${errEnv} )
+	${errSkip}    : Test Case or Test Suite was skipped ( \${errSkip} internal used only )
 	EOF
 }
 
