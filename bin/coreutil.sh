@@ -436,26 +436,32 @@ readonly -f createSuiteIndex
 # $7 Elapsed time
 function addCaseEntry {
 	local reason=''
+	local part1=''
+	local nl=$'\n'
+	if [[ -n $3 ]]; then
+		part1="$2:$3 took $7"
+	else
+		part1="$2 took $7"
+	fi
+	
 	if [[ -e "$6/REASON" ]]; then
 		reason=$(<"$6/REASON")
 	fi
 	case $4 in
 		SUCCESS ) 
-			echo "<li>$2:$3 $4  Time : $7<br>workdir <a href=\"$6\">$6</a></li>" >> "$1";;
+			echo "<li>$2:$3 $4  Time : $7<br>workdir <a href=\"$6\">$6</a></li>" >> "$1"
+			tresultList+=("$part1");;
 		ERROR )
-			echo "<li style=\"color: red\">$2:$3 $4  Time : $7<br>workdir <a href=\"$6\">$6</a></li>" >> "$1";;
+			echo "<li style=\"color: red\">$2:$3 $4  Time : $7<br>workdir <a href=\"$6\">$6</a></li>" >> "$1"
+			tresultList+=("$part1${nl}ERROR${nl}");;
 		FAILURE )
-			echo "<li style=\"color: red\">$2:$3 $4 : $reason  Time : $7<br>workdir <a href=\"$6\">$6</a></li>" >> "$1";;
+			echo "<li style=\"color: red\">$2:$3 $4 : $reason  Time : $7<br>workdir <a href=\"$6\">$6</a></li>" >> "$1"
+			tresultList+=("$part1${nl}FAILURE${nl}${reason}${nl}");;
 		SKIP )
 			echo "<li style=\"color: blue\">$2:$3 $4 : $reason  Time : $7<br>workdir <a href=\"$6\">$6</a></li>" >> "$1";;
 		*) 
 			printErrorAndExit "Wrong result string $4" $errRt
 	esac
-	if [[ -n $3 ]]; then
-		tresultList+=("$2:$3 $4 Elapsed time: $7")
-	else
-		tresultList+=("$2 $4 Elapsed time: $7")
-	fi
 }
 readonly -f addCaseEntry
 
