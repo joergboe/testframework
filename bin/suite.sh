@@ -842,8 +842,8 @@ printInfo "$executedTestFinSteps Test Suite Finalisation steps executed"
 
 #-------------------------------------------------------
 #put results to results file for information purose only 
-echo -e "CASE_EXECUTE=$jobIndex\nCASE_SKIP=$variantSkiped\nCASE_FAILURE=$variantFailures\nCASE_ERROR=$variantErrors\nCASE_SUCCESS=$variantSuccess" > "${TTRO_workDirSuite}/RESULT"
-echo -e "SUITE_EXECUTE=$suiteVariants\nSUITE_SKIP=$suiteSkip\nSUITE_ERROR=$suiteErrors" >> "${TTRO_workDirSuite}/RESULT"
+echo -e "CASE_EXECUTE=$jobIndex\nCASE_FAILURE=$variantFailures\nCASE_ERROR=$variantErrors\nCASE_SKIP=$variantSkiped\nCASE_SUCCESS=$variantSuccess" > "${TTRO_workDirSuite}/RESULT"
+echo -e "SUITE_EXECUTE=$suiteVariants\nSUITE_ERROR=$suiteErrors\nSUITE_SKIP=$suiteSkip" >> "${TTRO_workDirSuite}/RESULT"
 
 #-------------------------------------------------------
 #Final verbose suite result printout
@@ -877,7 +877,7 @@ if [[ $interruptReceived -gt 0 ]]; then
 	suiteResult=$errSigint
 fi
 
-printf "**** Suite: $TTRO_suite Variant: '$TTRO_variantSuite' cases=%i skipped=%i failures=%i errors=%i *****\n" $jobIndex $variantSkiped $variantFailures $variantErrors
+printf "**** Suite: $TTRO_suite Variant: '$TTRO_variantSuite' cases=%i failures=%i errors=%i skipped=%i *****\n" $jobIndex $variantFailures $variantErrors $variantSkiped
 printInfo "**** Elapsed time $TTTT_elapsedTime *****"
 echo "$TTTT_elapsedTime" > "${TTRO_workDirSuite}/ELAPSED"
 

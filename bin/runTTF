@@ -671,9 +671,6 @@ for x in CASE_EXECUTE CASE_SKIP CASE_FAILURE CASE_ERROR CASE_SUCCESS SUITE_EXECU
 		printErrorAndExit "No result file ${tmp} exists" $errRt
 	fi
 done
-#put results to results file for information purose only 
-#echo -e "VARIANT=$VARIANTCount\nSUCCESS=$SUCCESSCount\nSKIP=$SKIPCount\nFAILURE=$FAILURECount\nERROR=$ERRORCount" > "${TTRO_workDir}/RESULT"
-#echo -e "SUITE_VARIANT=$SUITE_VARIANTCount SUITE_ERROR=$SUITE_ERRORCount"
 
 #Print suite errors and collection
 if [[ $SUITE_ERRORCount -gt 0 ]]; then
@@ -689,8 +686,8 @@ fi
 echo
 {
 	printf "*******************************************************************************************************\n"
-	printf "***** suites executed=%i skipped=%i errors=%i\n" $SUITE_EXECUTECount $SUITE_SKIPCount $SUITE_ERRORCount
-	printf "***** cases  executed=%i skipped=%i failures=%i errors=%i\n" $CASE_EXECUTECount $CASE_SKIPCount $CASE_FAILURECount $CASE_ERRORCount
+	printf "***** suites executed=%i errors=%i skipped=%i\n" $SUITE_EXECUTECount $SUITE_ERRORCount $SUITE_SKIPCount
+	printf "***** cases  executed=%i failures=%i errors=%i skipped=%i\n" $CASE_EXECUTECount $CASE_FAILURECount $CASE_ERRORCount $CASE_SKIPCount
 	printf "***** categories of this run: %s\n" "$cats"
 	printf "***** used workdir: %s\n" "$TTRO_workDir"
 	printf "***** Index in %s\n" "$indexfilename"

@@ -384,8 +384,8 @@ function createGlobalIndex {
 		<h2>Test Case execution Summary</h2>      
 		<p>
 		<hr>
-		***** suites executed=$SUITE_EXECUTECount skipped=$SUITE_SKIPCount errors=$SUITE_ERRORCount<br>
-		***** cases  executed=$CASE_EXECUTECount skipped=$CASE_SKIPCount failures=$CASE_FAILURECount errors=$CASE_ERRORCount<br>
+		***** suites executed=$SUITE_EXECUTECount errors=$SUITE_ERRORCount skipped=$SUITE_SKIPCount<br>
+		***** cases  executed=$CASE_EXECUTECount failures=$CASE_FAILURECount errors=$CASE_ERRORCount skipped=$CASE_SKIPCount<br>
 		***** categories of this run: ${cats}<br>
 		***** used workdir: <a href="$TTRO_workDir">$TTRO_workDir</a><br>
 		<hr>
@@ -504,7 +504,7 @@ function addSuiteEntry {
 			echo -n "<li style=\"color: red\"><a href=\"$5/suite.html\">$2</a> result code: $3  work dir: <a href=\"$5\">$5</a>" >> "$1"
 	esac
 	if [[ $3 != $errSkip ]]; then
-		echo "      <br><b>Cases</b> executed=$6 skipped=$7 failures=$8 errors=$9 <b>Suites</b> executed=${10} skipped=${11} errors=${12}</li>" >> "$1"
+		echo "      <br><b>Cases</b> executed=$6 failures=$8 errors=$9 skipped=$7<b>Suites</b> executed=${10} errors=${12} skipped=${11}</li>" >> "$1"
 	else
 		echo "      <br> ... </li>" >> "$1"
 	fi
