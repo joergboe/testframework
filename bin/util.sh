@@ -20,7 +20,7 @@ TTRO_help_setFailure='
 function setFailure {
 	if isExisting 'TTRO_variantCase'; then # this is a case
 		if [[ $TTTT_executionState != 'execution' ]]; then
-			printWarning "$FUNCNAME called no phase $TTTT_executionState. Use this function only in phase 'execution'"
+			printWarning "$FUNCNAME called in phase $TTTT_executionState. Use this function only in phase 'execution'"
 		fi
 		if [[ ( $# -gt 0 ) && ( -n $1 ) ]]; then
 			TTTT_failureOccurred="$1"

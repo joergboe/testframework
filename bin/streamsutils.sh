@@ -820,7 +820,7 @@ function waitForFinAndHealth {
 	done
 	printInfo "jobno=$TTTT_jobno becomes healthy State=$TTTT_state Healthy=$TTTT_healthy"
 	while ! [[ -e "$TT_waitForFileName" ]]; do
-		printInfo "Wait for file to appear $1"
+		printInfo "Wait for file to appear $TT_waitForFileName"
 		sleep "$TT_waitForFileInterval"
 		if ! jobHealthy; then
 			setFailure "The jobno=$TTTT_jobno becomes unhealty State=$TTTT_state Healthy=$TTTT_healthy"
