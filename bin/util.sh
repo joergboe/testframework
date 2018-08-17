@@ -19,8 +19,8 @@ TTRO_help_setFailure='
 #	if '
 function setFailure {
 	if isExisting 'TTRO_variantCase'; then # this is a case
-		if [[ $TTTT_state != 'execution' ]]; then
-			printWarning "$FUNCNAME called no phase $TTTT_state. Use this function only in phase 'execution'"
+		if [[ $TTTT_executionState != 'execution' ]]; then
+			printWarning "$FUNCNAME called no phase $TTTT_executionState. Use this function only in phase 'execution'"
 		fi
 		if [[ ( $# -gt 0 ) && ( -n $1 ) ]]; then
 			TTTT_failureOccurred="$1"
@@ -40,8 +40,8 @@ TTRO_help_setCategory='
 #	set the use defined categories of a test case or suite
 #	$1 ... the category identifieres of this atrifact'
 function setCategory {
-	if [[ $TTTT_state != 'initializing' ]]; then
-		printErrorAndExit "$FUNCNAME must be called in state 'initializing' state now: $TTTT_state" $errRt
+	if [[ $TTTT_executionState != 'initializing' ]]; then
+		printErrorAndExit "$FUNCNAME must be called in state 'initializing' state now: $TTTT_executionState" $errRt
 	fi
 	TTTT_categoryArray=()
 	local i=0
@@ -65,8 +65,8 @@ TTRO_help_setSkip='
 #	if called in another phase than initializing
 #	if called with empty argument'
 function setSkip {
-	if [[ $TTTT_state != 'initializing' ]]; then
-		printErrorAndExit "$FUNCNAME must be called in state 'initializing' state now: $TTTT_state" $errRt
+	if [[ $TTTT_executionState != 'initializing' ]]; then
+		printErrorAndExit "$FUNCNAME must be called in state 'initializing' state now: $TTTT_executionState" $errRt
 	fi
 	if [[ $# -gt 0 ]]; then
 		if [[ -z $1 ]]; then
