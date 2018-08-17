@@ -8,7 +8,6 @@ More docs can be found here:
 * [Reference for utility scripts](utils.txt)
 * [Reference for streams utility scripts](streamsutils.txt)
 
-
 ## Test Cases, Test Suites and Test Collections
 A test case is comprised of a directory with the main test case file with name: 'TestCase.sh' and other necessary artifacts
 which are necessary for the test execution.
@@ -112,7 +111,8 @@ non empty value the preparation and the finalization of the appropriate artifact
 This file may contain global property and variable definitions. This file should no contain script code. This file is intended 
 to store stuff which may change when the test collection is executed in different environments. The default name of this 
 file is 'TestProperties.sh' and it is expected in the Test collection directory. An alternative file name may be assigned with 
-command line parameter --properties or the environment TT_properties is evaluated. The properties file is a bash script.
+command line parameter --properties or the environment TTRO_propertyFiles is evaluated. The command line option overwrites environment and 
+the default. The properties file is a bash script.
 
 
 ## Test Tools
@@ -162,6 +162,17 @@ If there is no individual timeout and no property TTPR_timeout, the test case ti
 If there is no property TTPR_additionalTime, the vaue 45 is used.
 
 
+## Reserved Varable Name Ranges
+Variables used for the framework have special prefixes.
+
+- TTTT_ : Varaible names starting with TTTT_ are reserved for testframework usage. These variables are not exported. Do not use those 
+names in test case/suite script usercode.
+- TTXX_ : Global variables for internal usage. Do not use those names in test case/suite script usercode. (No automatic export)
+- TT_   : Global r/w variable
+- TTRO_ : Global r/o variable
+- TTPR_ : Global property (empty value defines this property)
+- TTPRN_: Global property (empty value may be overwritten)
+
 ## Test Framework Variables and Properties
 Variables with the prefix TT_, TTRO_, TTPR_ or TTPRN_ are treated as global definitions and they are exported from 
 Test Collection to Test Suite and from Test Suite to Test Case.
@@ -199,6 +210,7 @@ Some properties are designed that the existence of the property indicates the tr
 
 
 ## Accepted Environment
+- TTRO_propertyFiles - A space separated list with property files which are sourced before the test collection execution starts.
 
 ## Debug and Verbose
 The testframe may print verbose information and debug information or both. The verbosity may be enabled with command line options.
@@ -210,10 +222,6 @@ Additionally the verbosity can be controlled with existence of the properties:
 
 NOTE: The check if an existing variable is empty or not is much faster then the check against existance of an variable. Therefore 
 we use here the empty value an consider it as unset property.
-
-
-## Reserved Ranges
-Varaible names starting with TTTT_ are reserved for testframework usage. These variables are not exported. Do not use those names in test case/suite scripts.
 
 ## Variables Used
 - TTPRN_skip            - Skip-Switch: if this varaible not empty, the execution of the actual Test Case variant or Test Suite variant is skipped.
@@ -239,11 +247,11 @@ Varaible names starting with TTTT_ are reserved for testframework usage. These v
 - FINS                  - The space separated list or an array of test finalization commands.
                          
 - TTPR_timeout          - The default test case timeout in seconds. default is 120 sec. This variable must be defined in the 
-                          description section of test case file or in the Test Suite or Test Collection. A definition 
+                          description section of test case file or anywhere in the Test Suite or Test Property file. A definition 
                           in the script section of a Test Case has no effect.
 - TTPR_additionalTime    - The extra wait time after the test case time out. If the test case does not end after this 
                           time a SIGKILL is issued and the test case is stopped. The default is 45 sec. This variable 
-                          must be defined in the description section of test case file or in the Test Suite or Test Collection. 
+                          must be defined in the description section of test case file or anywhere in the Test Suite or Test Property file. 
                           A definition in the script section of a Test Case has no effect.
 
 
