@@ -1,7 +1,3 @@
-streamsutilsInitialization: TTPR_streamsZkConnect=
-streamsutilsInitialization: TTPRN_streamsDomainId=StreamsDomain
-streamsutilsInitialization: TTPRN_streamsInstanceId=StreamsInstance
-11:48:51 004071369 INFO: Make toolkit in /home/joergboe/git/testframework/bin/../streamsx.testframe
 #######################################
 		cancelJob
  Function cancelJob
