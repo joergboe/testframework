@@ -153,3 +153,9 @@ Version 3.0.0:
 Version 3.0.1:
 - Add version number to final summary
 - Correction for more then 9 arguments
+
+Version 3.1.0:
+- Use environment variable TTRO_propertyFiles to control Property files
+- Adapt ..._summary file to junit output format
+- Correct doc for return values
+- Print result summary in order: executed, failed, errors, skipped
