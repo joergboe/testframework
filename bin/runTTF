@@ -81,7 +81,7 @@ source "${TTRO_scriptDir}/coreutil.sh"
 #The export check - checks whethere there are already vaiables exported with TT prefix
 declare exportCheckFailed=""
 for x in "${!TTRO_@}"; do
-	if [[ $x != TTRO_scriptDir && $x != TTRO_version && $x != TTRO_help* ]]; then
+	if [[ $x != TTRO_scriptDir && $x != TTRO_version && $x != TTRO_propertyFiles && $x != TTRO_help* ]]; then
 		exportCheckFailed="true"
 		printWarning "In environment there are TT scoped identifier: ${x}"
 	fi
@@ -345,7 +345,19 @@ else
 fi
 
 #-------------------------------------
-#properties file / tools file: if no path element is given use the input dir as prefix
+# add entries from TTRO_propertyFiles to propertyFiles list if there are no command line options given
+if [[ ${#propertyFiles[@]} -eq 0 ]]; then
+	if isExisting 'TTRO_propertyFiles'; then
+		for x in $TTRO_propertyFiles; do
+			if [[ ${x:0:1} != "/" ]]; then
+				printErrorAndExit "TTRO_propertyFiles element '$x' must have an absolute path" $errEnv
+			else
+				propertyFiles+=("$x")
+			fi
+		done
+	fi
+fi
+#properties file / tools file: if no path element is given use the current dir as prefix
 for ((i=0; i<${#propertyFiles[@]}; i++)); do
 	tmp="${propertyFiles[$i]}"
 	if [[ ${tmp:0:1} != "/" ]]; then
@@ -607,14 +619,14 @@ cd "$TTRO_workDir"
 if [[ ${#propertyFiles[@]} -gt 0 ]]; then
 	for ((i=0; i<${#propertyFiles[@]}; i++)); do
 		x="${propertyFiles[$i]}"
-		isVerbose && printVerbose "Include global properties $x"
+		printInfo "Include global properties $x"
 		source "${x}"
 	done
 elif [[ -e "$TTRO_inputDir/$TEST_PROPERTIES" ]]; then
-	isVerbose && printVerbose "Include global properties $TTRO_inputDir/$TEST_PROPERTIES"
+	printInfo "Include global properties $TTRO_inputDir/$TEST_PROPERTIES"
 	source "$TTRO_inputDir/$TEST_PROPERTIES"
 else
-	isVerbose && printVerbose "No global properies file to evaluate"
+	printInfo "No global properies file to evaluate"
 fi
 fixPropsVars # fix global properties and vars
 writeProtectExportedFunctions
@@ -625,7 +637,7 @@ declare -x TTXX_tools=''
 if [[ ${#toolsFiles[@]} -gt 0 ]]; then
 	for ((i=0; i<${#toolsFiles[@]}; i++)); do
 		x="${toolsFiles[$i]}"
-		isVerbose && printVerbose "Source global tools file: $x"
+		printInfo "Source global tools file: $x"
 		if [[ -r $x ]]; then
 			import "$x"
 		else

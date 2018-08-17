@@ -16,7 +16,6 @@ case $TTRO_variantCase in
 					'--noprompt               : Do not prompt berfore an existing working directory is removed.'
 					'-i|--directory VALUE     : The input directory - the test collection directory. There is no default. This option must be entered.'
 					'-p|--properties VALUE    : This specifies the file with the global property values. Default is file TestProperties.sh in input directory.'
-					'                           This option can be given more than one time. '
 					'-t|--tools VALUE         : Includes (source) files with test tool scripts. This option can be given more than one time.'
 					'-c|--category VALUE      : Enter the category pattern for this test run. The pattern must not contain white spaces. '
 					'                           Quote the value or escape special characters. This option can be given more than one time.'
@@ -25,7 +24,7 @@ case $TTRO_variantCase in
 					'-j|--threads VALUE       : The number of parallel threads used. (you have 8 (virtual) cores this is default)'
 					'-l|--link                : Content found in data directoy are linked to workspace not copied (Set TYPRN_link=true)'
 					'--no-start               : Supress the execution of the start sequence (Set TYPRN_noStart)'
-					'--no-stop                : Supress the execution of tear stop sequencd (Set TYPRN_noStop)'
+					'--no-stop                : Supress the execution of the stop sequencd (Set TYPRN_noStop)'
 					'--no-browser             : Do not start browser after test execution.')
 		;;
 	man)

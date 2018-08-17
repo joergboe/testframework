@@ -21,7 +21,7 @@ function usage {
 	--noprompt               : Do not prompt berfore an existing working directory is removed.
 	-i|--directory VALUE     : The input directory - the test collection directory. There is no default. This option must be entered.
 	-p|--properties VALUE    : This specifies the file with the global property values. Default is file $TEST_PROPERTIES in input directory.
-	                           This option can be given more than one time. 
+	                           This option can be given more than one time. This overwrites the environment \$TTRO_propertyFiles 
 	-t|--tools VALUE         : Includes (source) files with test tool scripts. This option can be given more than one time.
 	-c|--category VALUE      : Enter the category pattern for this test run. The pattern must not contain white spaces. 
 	                           Quote the value or escape special characters. This option can be given more than one time.
@@ -32,7 +32,7 @@ function usage {
 	                           If parallel job execution is disabled, each job takes all treads
 	-l|--link                : Content found in data directoy are linked to workspace not copied (Set TTPRN_link=true)
 	--no-start               : Supress the execution of the start sequence (Set TTPRN_noStart)
-	--no-stop                : Supress the execution of tear stop sequencd (Set TTPRN_noStop)
+	--no-stop                : Supress the execution of the stop sequencd (Set TTPRN_noStop)
 	--no-browser             : Do not start browser after test execution.
 	                           If this parameter is not set, the programm opens the web browser with a summary
 	                           of the test execution. The default browser command stored in environment BROWSER is used. If variable BROWSER is empty,
