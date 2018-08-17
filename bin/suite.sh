@@ -24,7 +24,7 @@ declare caseExecutionLoopRunning=''
 #start time
 declare -r suiteStartTime=$(date -u +%s)
 #state
-declare TTTT_state='initializing'
+declare TTTT_executionState='initializing'
 
 # Function handle SIGINT
 function handleSigint {
@@ -313,7 +313,7 @@ export >> "${TTRO_workDirSuite}/${TEST_ENVIRONMET_LOG}"
 
 #------------------------------------------------
 #execute test suite preparation
-TTTT_state='preparation'
+TTTT_executionState='preparation'
 declare -i executedTestPrepSteps=0
 for name_xyza in 'TTRO_prepsSuite' 'PREPS'; do
 	if isExisting "$name_xyza"; then
@@ -360,7 +360,7 @@ printInfo "$executedTestPrepSteps Test Suite Preparation steps executed"
 
 #-------------------------------------------------
 #test case execution
-TTTT_state='execution'
+TTTT_executionState='execution'
 unset x
 if [[ $TTRO_noParallelCases -eq 1 ]]; then
 	declare -ri maxParralelJobs=1
@@ -794,7 +794,7 @@ done
 unset sindex_xyza
 
 #test suite finalization
-TTTT_state='finalization'
+TTTT_executionState='finalization'
 declare -i executedTestFinSteps=0
 if isFunction 'testFinalization'; then
 	if isExisting 'FINS' || isExisting 'TTRO_finSuite'; then
