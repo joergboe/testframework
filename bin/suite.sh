@@ -386,7 +386,6 @@ declare -a timeout=()
 declare -a endTime=()
 declare -a killed=()
 declare -a tcaseWorkDir=()
-declare -a tresultList=()
 declare availableTpidIndex=""
 declare allJobsGone=""
 declare -i jobIndex=0 #index of job next to start
@@ -411,6 +410,11 @@ for ((i=0; i<maxParralelJobs; i++)); do
 	killed[$i]=""
 	tcaseWorkDir[$i]=""
 done
+
+#print special summary
+TTTT_tempSummayName="${TTRO_workDirSuite}/part1.tmp"
+rm -f "$TTTT_tempSummayName"
+touch "$TTTT_tempSummayName"
 
 declare casePath caseName caseVariant
 #the loop until all jobs are gone
@@ -576,28 +580,28 @@ while [[ -z $allJobsGone ]]; do
 									echo "$tmpCaseAndVariant" >> "${TTRO_workDirSuite}/CASE_SUCCESS"
 									variantSuccess=$((variantSuccess+1))
 									#successList+=("$tmpCaseAndVariant")
-									addCaseEntry "$indexfilename" "$tmpCase" "$tmpVariant" 'SUCCESS' '1' "${tcaseWorkDir[$i]}" "$caseElapsedTime"
+									addCaseEntry "$indexfilename" "$tmpCase" "$tmpVariant" 'SUCCESS' '1' "${tcaseWorkDir[$i]}" "$caseElapsedTime" "$TTTT_tempSummayName"
 								;;
 								SKIP )
 									{ if read -r; then :; fi; } < "${tcaseWorkDir[$i]}/REASON" #read one line from reason
 									echo "$tmpCaseAndVariant: $REPLY" >> "${TTRO_workDirSuite}/CASE_SKIP"
 									variantSkiped=$((variantSkiped+1))
 									#skipList+=("$tmpCaseAndVariant")
-									addCaseEntry "$indexfilename" "$tmpCase" "$tmpVariant" 'SKIP' '1' "${tcaseWorkDir[$i]}" "$caseElapsedTime"
+									addCaseEntry "$indexfilename" "$tmpCase" "$tmpVariant" 'SKIP' '1' "${tcaseWorkDir[$i]}" "$caseElapsedTime" "$TTTT_tempSummayName"
 								;;
 								FAILURE )
 									{ if read -r; then :; fi; } < "${tcaseWorkDir[$i]}/REASON" #read one line from reason
 									echo "$tmpCaseAndVariant: $REPLY" >> "${TTRO_workDirSuite}/CASE_FAILURE"
 									variantFailures=$((variantFailures+1))
 									#failureList+=("$tmpCaseAndVariant")
-									addCaseEntry "$indexfilename" "$tmpCase" "$tmpVariant" 'FAILURE' '1' "${tcaseWorkDir[$i]}" "$caseElapsedTime"
+									addCaseEntry "$indexfilename" "$tmpCase" "$tmpVariant" 'FAILURE' '1' "${tcaseWorkDir[$i]}" "$caseElapsedTime" "$TTTT_tempSummayName"
 									[[ ( -n $TTRO_xtraPrint ) && ( "$TTRO_noParallelCases" -ne 1 ) ]] && cat "${tcaseWorkDir[$i]}/${TEST_LOG}"
 								;;
 								ERROR )
 									echo "$tmpCaseAndVariant" >> "${TTRO_workDirSuite}/CASE_ERROR"
 									variantErrors=$((variantErrors+1))
 									#errorList+=("$tmpCaseAndVariant")
-									addCaseEntry "$indexfilename" "$tmpCase" "$tmpVariant" 'ERROR' '1' "${tcaseWorkDir[$i]}" "$caseElapsedTime"
+									addCaseEntry "$indexfilename" "$tmpCase" "$tmpVariant" 'ERROR' '1' "${tcaseWorkDir[$i]}" "$caseElapsedTime" "$TTTT_tempSummayName"
 									[[ ( -n $TTRO_xtraPrint ) && ( "$TTRO_noParallelCases" -ne 1 ) ]] && cat "${tcaseWorkDir[$i]}/${TEST_LOG}"
 								;;
 								* )
@@ -605,7 +609,7 @@ while [[ -z $allJobsGone ]]; do
 									echo "$tmpCaseAndVariant" >> "${TTRO_workDirSuite}/CASE_ERROR"
 									variantErrors=$((variantErrors+1))
 									#errorList+=("$tmpCaseAndVariant")
-									addCaseEntry "$indexfilename" "$tmpCase" "$tmpVariant" 'ERROR' '1' "${tcaseWorkDir[$i]}" "$caseElapsedTime"
+									addCaseEntry "$indexfilename" "$tmpCase" "$tmpVariant" 'ERROR' '1' "${tcaseWorkDir[$i]}" "$caseElapsedTime" "$TTTT_tempSummayName"
 									tmp2="ERROR"
 									[[ ( -n $TTRO_xtraPrint ) && ( "$TTRO_noParallelCases" -ne 1 ) ]] && cat "${tcaseWorkDir[$i]}/${TEST_LOG}"
 								;;
@@ -615,7 +619,7 @@ while [[ -z $allJobsGone ]]; do
 							echo "$tmpCaseAndVariant" >> "${TTRO_workDirSuite}/CASE_ERROR"
 							variantErrors=$((variantErrors+1))
 							#errorList+=("$tmpCaseAndVariant")
-							addCaseEntry "$indexfilename" "$tmpCase" "$tmpVariant" 'ERROR' '1' "${tcaseWorkDir[$i]}" "$caseElapsedTime"
+							addCaseEntry "$indexfilename" "$tmpCase" "$tmpVariant" 'ERROR' '1' "${tcaseWorkDir[$i]}" "$caseElapsedTime" "$TTTT_tempSummayName"
 							tmp2="ERROR"
 							[[ ( -n $TTRO_xtraPrint ) && ( "$TTRO_noParallelCases" -ne 1 ) ]] && cat "${tcaseWorkDir[$i]}/${TEST_LOG}"
 						fi
@@ -882,22 +886,19 @@ printInfo "**** Elapsed time $TTTT_elapsedTime *****"
 echo "$TTTT_elapsedTime" > "${TTRO_workDirSuite}/ELAPSED"
 
 #---------------------------------------------------------------------------------
-#print secial summary
-if isExisting 'TTPR_summary'; then
-	if [[ -n $TTPR_summary ]]; then
-		sname="${TTRO_suite}"
-		#if [[ -z $sname ]]; then sname='Dummy'; fi
-		if [[ -n ${TTRO_variantSuite} ]]; then sname="${sname}_${TTRO_variantSuite}"; fi
-		reportfile="${TTRO_workDirSuite}/${sname}_summary.txt"
-		#echo "Enter test report into $reportfile"
-		echo "Testsuite: ${sname}" > "$reportfile"
-		echo "Tests run: $jobIndex, Failures: $variantFailures, Errors: $variantErrors, Skipped: $variantSkiped, Time elapsed: ${TTTT_elapsedTime} sec" >> "$reportfile"
-		echo "" >> "$reportfile"
-		for ((x=0;x<${#tresultList[@]};x++)); do
-			echo "Testcase: ${tresultList[$x]}" >> "$reportfile"
-		done
-	fi
+#print special summary
+if [[ -n $TTXX_summary ]]; then
+	sname="${TTRO_suite}"
+	#if [[ -z $sname ]]; then sname='Dummy'; fi
+	if [[ -n ${TTRO_variantSuite} ]]; then sname="${sname}_${TTRO_variantSuite}"; fi
+	reportfile0="${TTRO_workDirSuite}/${sname}_part0.tmp"
+	reportfile="${TTRO_workDirSuite}/${sname}_summary.txt"
+	echo "Testsuite: ${sname}" > "$reportfile0"
+	echo -e "Tests run: $jobIndex, Failures: $variantFailures, Errors: $variantErrors, Skipped: $variantSkiped, Time elapsed: ${TTTT_elapsedTime}\n" >> "$reportfile0"
+	cat "$reportfile0" "$TTTT_tempSummayName" > "$reportfile"
+	rm -f "$reportfile0"
 fi
+rm -f "$TTTT_tempSummayName"
 
 builtin echo -n "$suiteResult" > "${TTRO_workDirSuite}/DONE"
 

@@ -42,7 +42,7 @@ function usage {
 	-v|--verbose             : Be verbose to stdout
 	-V|--version             : Print the version string
 	-d|--debug               : Print debug information. Debug implies verbose.
-	--summary                : Print special test suite summary
+	--summary                : Print special junit like test suite summary 
 	--xtraprint              : Echo std out to terminal in case of test failue
 	--bashhelp               : Print some hints for the use of bash
 	

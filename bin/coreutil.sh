@@ -426,7 +426,7 @@ function createSuiteIndex {
 readonly -f createSuiteIndex
 
 #
-# Add Case entry to suite index
+# Add Case entry to suite index and to summary file
 # $1 File name
 # $2 Case name
 # $3 Case variant
@@ -434,14 +434,15 @@ readonly -f createSuiteIndex
 # $5 Case input dir
 # $6 Case work dir
 # $7 Elapsed time
+# $8 Summary file name
 function addCaseEntry {
 	local reason=''
 	local part1=''
 	local nl=$'\n'
 	if [[ -n $3 ]]; then
-		part1="$2:$3 took $7"
+		part1="Testcase: $2:$3 took $7"
 	else
-		part1="$2 took $7"
+		part1="Testcase: $2 took $7"
 	fi
 	
 	if [[ -e "$6/REASON" ]]; then
@@ -450,13 +451,19 @@ function addCaseEntry {
 	case $4 in
 		SUCCESS ) 
 			echo "<li>$2:$3 $4  Time : $7<br>workdir <a href=\"$6\">$6</a></li>" >> "$1"
-			tresultList+=("$part1");;
+			if [[ -n $TTXX_summary  ]]; then
+				echo "$part1" >> "$8"
+			fi;;
 		ERROR )
 			echo "<li style=\"color: red\">$2:$3 $4  Time : $7<br>workdir <a href=\"$6\">$6</a></li>" >> "$1"
-			tresultList+=("$part1${nl}ERROR${nl}");;
+			if [[ -n $TTXX_summary  ]]; then
+				echo -e "$part1\nERROR\n" >> "$8"
+			fi;;
 		FAILURE )
 			echo "<li style=\"color: red\">$2:$3 $4 : $reason  Time : $7<br>workdir <a href=\"$6\">$6</a></li>" >> "$1"
-			tresultList+=("$part1${nl}FAILURE${nl}${reason}${nl}");;
+			if [[ -n $TTXX_summary  ]]; then
+				echo -e "$part1\nFAILURE\n${reason}\n" >> "$8"
+			fi;;
 		SKIP )
 			echo "<li style=\"color: blue\">$2:$3 $4 : $reason  Time : $7<br>workdir <a href=\"$6\">$6</a></li>" >> "$1";;
 		*) 

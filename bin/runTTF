@@ -306,7 +306,9 @@ setVar 'TTPRN_verbose' "$verbose"
 setVar 'TTPRN_verboseDisable' ''
 setVar 'TTPRN_clean' "$clean"
 if [[ -n $summary ]]; then
-	setVar 'TTPR_summary' 'true'
+	declare -xr TTXX_summary='true'
+else
+	declare -xr TTXX_summary=''
 fi
 if [[ -n $xtraprint ]]; then
 	setVar 'TTRO_xtraPrint' 'true'
