@@ -159,3 +159,6 @@ Version 3.1.0:
 - Adapt ..._summary file to junit output format
 - Correct doc for return values
 - Print result summary in order: executed, failed, errors, skipped
+
+Version 3.1.2:
+- Correct TTTT_state variable
