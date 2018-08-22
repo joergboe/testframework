@@ -512,7 +512,8 @@ while [[ -z $allJobsGone ]]; do
 						isDebug && printDebug "Job is Gone jobid is re-used $jobid"
 					else
 						#if ps --pid "$pid" &> /dev/null; then
-						if tmp=$(LC_ALL=en_US jobs "%$jobid" 2>/dev/null); then
+						#if tmp=$(LC_ALL=en_US jobs "%$jobid" 2>/dev/null); then ... this does not work in rhel 6 (bash 4.1.2)
+						if tmp=$(export LC_ALL='en_US.UTF-8'; jobs "%$jobid" 2>/dev/null); then
 							#echo "***** $tmp"
 							tmp1=$(cut -d ' ' -f1 <<< $tmp)
 							tmp2=$(cut -d ' ' -f2 <<< $tmp)
@@ -703,7 +704,7 @@ while [[ -z $allJobsGone ]]; do
 		tmp=$(export LC_ALL='en_US.UTF-8'; jobs %+)
 		echo "$tmp" > "$cworkdir/JOBS"
 		echo "Full Job list" >> "$cworkdir/JOBS"
-		LC_ALL=en_US jobs -l >> "$cworkdir/JOBS"
+		LC_ALL='en_US.UTF-8' jobs -l >> "$cworkdir/JOBS"
 		isDebug && printDebug "jobspec:$tmp"
 		tmp1=$(cut -d ' ' -f1 <<< $tmp)
 		tmp2=$(cut -d ' ' -f2 <<< $tmp)
