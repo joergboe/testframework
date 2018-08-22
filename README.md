@@ -162,3 +162,7 @@ Version 3.1.0:
 
 Version 3.1.2:
 - Correct TTTT_state variable
+
+Version 3.1.3:
+- Workaround for lang setting in jobs command for bash 4.1.2
+- 

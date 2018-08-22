@@ -699,7 +699,8 @@ while [[ -z $allJobsGone ]]; do
 			$cmd "$casePath" "$cworkdir" "$caseVariant" "$cpreamblError" &> "${cworkdir}/${TEST_LOG}" &
 			tmp4=$!
 		fi
-		tmp=$(LC_ALL=en_US jobs %+)
+		#tmp=$(LC_ALL=en_US jobs %+)  ... this does not work in rhel 6 (bash 4.1.2)
+		tmp=$(export LC_ALL='en_US.UTF-8'; jobs %+)
 		echo "$tmp" > "$cworkdir/JOBS"
 		echo "Full Job list" >> "$cworkdir/JOBS"
 		LC_ALL=en_US jobs -l >> "$cworkdir/JOBS"
