@@ -465,7 +465,11 @@ function addCaseEntry {
 				echo -e "$part1\nFAILURE\n${reason}\n" >> "$8"
 			fi;;
 		SKIP )
-			echo "<li style=\"color: blue\">$2:$3 $4 : $reason  Time : $7<br>workdir <a href=\"$6\">$6</a></li>" >> "$1";;
+			echo "<li style=\"color: blue\">$2:$3 $4 : $reason  Time : $7<br>workdir <a href=\"$6\">$6</a></li>" >> "$1"
+			if [[ -n $TTXX_summary  ]]; then
+				echo -e "$part1\nSKIPPED\n${reason}\n" >> "$8"
+			fi;;
+
 		*) 
 			printErrorAndExit "Wrong result string $4" $errRt
 	esac
@@ -517,7 +521,7 @@ function addSuiteEntry {
 			echo -n "<li style=\"color: red\"><a href=\"$5/suite.html\">$2</a> result code: $3  work dir: <a href=\"$5\">$5</a>" >> "$1"
 	esac
 	if [[ $3 != $errSkip ]]; then
-		echo "      <br><b>Cases</b> executed=$6 failures=$8 errors=$9 skipped=$7<b>Suites</b> executed=${10} errors=${12} skipped=${11}</li>" >> "$1"
+		echo "      <br><b>Cases</b> executed=$6 failures=$8 errors=$9 skipped=$7<b> Suites</b> executed=${10} errors=${12} skipped=${11}</li>" >> "$1"
 	else
 		echo "      <br> ... </li>" >> "$1"
 	fi
