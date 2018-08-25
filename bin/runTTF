@@ -490,7 +490,6 @@ declare -i noSuitesToExecute=0
 declare usedCaseIndexList=''
 #if the command line has no case list, all found cases are executed
 #otherwise all matching cases found are executed
-#if there is a case list on the command line, the skip attributes of test cases and suites are ignored
 if [[ ${#cases[@]} -eq 0 ]]; then
 	#the command line specified no cases -> all found cases are executed
 	#and skip attributes are honoured
@@ -499,7 +498,6 @@ if [[ ${#cases[@]} -eq 0 ]]; then
 	else
 		setVar 'TTPRN_skipIgnore' ''
 	fi
-	takeAllCases="true"
 	for ((i=0; i<${#executeSuite[@]}; i++)); do
 		executeSuite[$i]='true'
 	done
@@ -507,9 +505,6 @@ if [[ ${#cases[@]} -eq 0 ]]; then
 		executeCase[$i]='true'
 	done
 else
-	#the command line specifies a cases list
-	setVar 'TTPRN_skipIgnore' "true"
-	takeAllCases=""
 	declare caseToExecuteParent=''
 	checkCaseMatch '0' '0' '' ''
 	#if [[ -n $caseToExecuteParent ]]; then

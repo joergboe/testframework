@@ -44,7 +44,7 @@ function manpage () {
 	=========================
 	The test framework starts with the analysis of the input directory (directory list) (option -i|--directory).
 	
-	If no list with case wildcards is given as command line parameter, all found test suites and test cases which are not marked with a 'skipped'
+	If no list with case wildcards is given as command line parameter, all found test suites and test cases which are not marked as 'skipped'
 	property are executed. In this case all suites (also empty suites) are executed.
 	
 	If a cases list is given from the command line, all test cases with match the cases list are executed (pattern match). 
@@ -242,7 +242,7 @@ function manpage () {
 	## Variables Used
 	=================
 	- TTPRN_skip            - Skip-Switch: if this varaible not empty, the execution of the actual Test Case variant or Test Suite variant is skipped.
-	                          This variable is set by function skip
+	                          This variable is set by function setSkip
 	- TTPRN_skipIgnore      - if this varaible not empty, the skip variable is ignored.
 	
 	- STEPS                 - The space separated list or an array of test step commands with local meaning. If one command returns an failure (return code != 0), 
@@ -369,10 +369,10 @@ function manpage () {
 	
 	## Skip Test Cases - Category Control
 	=====================================
-	A test case or a test suite is skipped if the function skip is called during initialization phase of the artifact. 
-	This function sets the property TTPRN_skip to true.
+	A test case or a test suite is skipped if the function setSkip is called during initialization phase of the artifact. 
+	This function sets the property TTPRN_skip with the supplied non-empty reason string.
 	
-	A test case is skipped if the property TTPRN_skip is defined ant true. This property may be set :
+	A test case is skipped if the property TTPRN_skip is defined and not empty. This property may be set :
 	- In the initialization or preparation phase of an test suite variant - this disables all cases of this suite variant
 	- In the initialization phase of an test case (variant) - this disables only one case variant
 

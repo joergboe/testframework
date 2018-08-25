@@ -47,13 +47,11 @@ function usage {
 	--bashhelp               : Print some hints for the use of bash
 	
 	
-	case                     : The list of the testcases to execute. Each pattern must be composed in the form Suite::Case.
-	                           For cases without Suite context use the form ::Case. Quoting * and ? characters.
-	                           The matching cases are unconditionally executed. The skip attributes are ignored irrespective of the 
+	case                     : The list of the testcases to execute. Each pattern must be composed in the form Suite::Case. Where Suite and Case 
+	                           are a patterns (like file glob). For cases without Suite context use the form ::Case. Quote * and ? characters.
+	                           The skip attributes are evaluated. If you want to execute the matching cases unconditionally, use also the 
 	                           --skip-ignore parameter.
-	                           Where Suite and case are a pattern (like file glob)
-	                           If the case list is omitted, all test suites/cases found in input directory are executed and the --skip-ignore
-	                           parameter is evaluated.
+	                           If the case list is omitted, all test suites/cases found in input directory are executed.
 	
 	Return Status:
 	0     : Test Success
