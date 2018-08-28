@@ -82,21 +82,21 @@ source "${TTRO_scriptDir}/coreutil.sh"
 declare exportCheckFailed=""
 for x in "${!TTRO_@}"; do
 	if [[ $x != TTRO_scriptDir && $x != TTRO_version && $x != TTRO_propertyFiles && $x != TTRO_help* ]]; then
-		exportCheckFailed="true"
+		exportCheckFailed='true'
 		printWarning "In environment there are TT scoped identifier: ${x}"
 	fi
 done
 for x in "${!TTPRN_@}"; do
-	exportCheckFailed="true"
+	exportCheckFailed='true'
 	printWarning "In environment there are TT scoped identifier: ${x}"
 done
 for x in "${!TTPR_@}"; do
-	exportCheckFailed="true"
+	exportCheckFailed='true'
 	printWarning "In environment there are TT scoped identifier: ${x}"
 done
 for x in "${!TT_@}"; do
 	if [[ $x != TT_evaluationFile ]]; then
-		exportCheckFailed="true"
+		exportCheckFailed='true'
 		printWarning "In environment there are TT scoped identifier: ${x}"
  	fi
 done
@@ -207,7 +207,7 @@ while [[ $# -ge 1 ]]; do
 				if [[ $1 == ${ex} ]]; then
 					if [[ -n ${!option} ]]; then duplicateOption "${1}"; fi
 					eval "${option}=true"
-					optionFound="true"
+					optionFound='true'
 					break 2
 				fi
 			done
@@ -223,7 +223,7 @@ while [[ $# -ge 1 ]]; do
 						else
 							eval "${option}=$2"
 						fi
-						optionFound="true"
+						optionFound='true'
 						shift
 						break 2
 					fi
@@ -237,7 +237,7 @@ while [[ $# -ge 1 ]]; do
 		fi
 	;;
 	* )
-		parametersection="true"
+		parametersection='true'
 		if [[ $1 == *::?* ]]; then
 			n=${#cases[*]}
 			cases[$n]="$1"
@@ -260,7 +260,7 @@ unset -v exportCheckFailed
 #-----------------------------------------------
 declare -x TTRO_reference=""
 if [[ -n $reference ]]; then
-	TTRO_reference="true"
+	TTRO_reference='true'
 fi
 readonly TTRO_reference
 if [[ -n $TTRO_reference ]]; then
@@ -304,7 +304,6 @@ setVar 'TTPRN_debug' "$debug"
 setVar 'TTPRN_debugDisable' ''
 setVar 'TTPRN_verbose' "$verbose"
 setVar 'TTPRN_verboseDisable' ''
-setVar 'TTPRN_clean' "$clean"
 if [[ -n $summary ]]; then
 	declare -xr TTXX_summary='true'
 else
@@ -399,27 +398,24 @@ fi
 for ((i=0; i<${#varNamesToSet[@]}; i++)); do
 	declare "${varNamesToSet[$i]}"="${varValuesToSet[$i]}"
 done
-if [[ $noStart == "true" ]]; then
-	setVar TTPRN_noStart "true"
-	setVar TTPRN_noPreps "true"
-	setVar TTPRN_noPrepsSuite "true"
-else
-	setVar TTPRN_noStart ''
-	setVar TTPRN_noPreps ''
-	setVar TTPRN_noPrepsSuite ''
+if [[ $clean == 'true' ]]; then
+	setVar 'TTPR_clean' 'true'
 fi
-if [[ $noStop == "true" ]]; then
-	setVar TTPRN_noStop "true"
-	setVar TTPRN_noFins "true"
-	setVar TTPRN_noFinsSuite "true"
-else
-	setVar TTPRN_noStop ''
-	setVar TTPRN_noFins ''
-	setVar TTPRN_noFinsSuite ''
+if [[ $noStart == 'true' ]]; then
+	setVar TTPR_noStart 'true'
+	setVar TTPR_noPrepsSuite 'true'
+fi
+if [[ $noStop == 'true' ]]; then
+	setVar TTPR_noStop 'true'
+	setVar TTPR_noFinsSuite 'true'
 fi
 setVar TTRO_noPrompt "$noprompt"
 setVar TTPRN_skip ''
-setVar TTPRN_skipIgnore ''
+if [[ -n ${skipIgnore} ]]; then
+	setVar 'TTPRN_skipIgnore' 'true'
+else
+	setVar 'TTPRN_skipIgnore' ''
+fi
 fixPropsVars
 
 #--------------------------------
@@ -491,13 +487,7 @@ declare usedCaseIndexList=''
 #if the command line has no case list, all found cases are executed
 #otherwise all matching cases found are executed
 if [[ ${#cases[@]} -eq 0 ]]; then
-	#the command line specified no cases -> all found cases are executed
-	#and skip attributes are honoured
-	if [[ -n ${skipIgnore} ]]; then
-		setVar 'TTPRN_skipIgnore' 'true'
-	else
-		setVar 'TTPRN_skipIgnore' ''
-	fi
+	#the command line specified no cases -> all found cases are executed and skip attributes are honoured
 	for ((i=0; i<${#executeSuite[@]}; i++)); do
 		executeSuite[$i]='true'
 	done

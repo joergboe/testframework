@@ -31,19 +31,19 @@ function usage {
 	                           If parallel job execution is enabled, this number is taken as number of parallel jobs and each job takes one thread.
 	                           If parallel job execution is disabled, each job takes all treads
 	-l|--link                : Content found in data directoy are linked to workspace not copied (Set TTPRN_link=true)
-	--no-start               : Supress the execution of the start sequence (Set TTPRN_noStart)
-	--no-stop                : Supress the execution of the stop sequencd (Set TTPRN_noStop)
 	--no-browser             : Do not start browser after test execution.
 	                           If this parameter is not set, the programm opens the web browser with a summary
 	                           of the test execution. The default browser command stored in environment BROWSER is used. If variable BROWSER is empty,
 	                           no browser is started at all. If environment BROWSER is missing command 'firefox' is used.
-	--clean                  : Clean start ant stop. Forces a clean start and cleans all at end. (Set TTPRN_clean)
+	--clean                  : Clean start ant stop. Forces a clean start and cleans all at end. (Set TTPR_clean true)
 	-D value                 : Set the specified TT_-, TTRO_-, TTPR_- or TTPRN_- variable value (Use one of varname=value)
 	-v|--verbose             : Be verbose to stdout
 	-V|--version             : Print the version string
 	-d|--debug               : Print debug information. Debug implies verbose.
-	--summary                : Print special junit like test suite summary 
+	--summary                : Print special junit like test suite summary
 	--xtraprint              : Echo std out to terminal in case of test failue
+	--no-start               : Supress the execution of the start sequence (Set TTPR_noStart, TTPR_noPrepsSuite to true)
+	--no-stop                : Supress the execution of the stop sequencd (Set TTPR_noStop, TTPR_noFinsSuite to true)
 	--bashhelp               : Print some hints for the use of bash
 	
 	

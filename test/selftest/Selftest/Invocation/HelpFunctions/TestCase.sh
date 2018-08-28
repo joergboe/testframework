@@ -21,11 +21,17 @@ case $TTRO_variantCase in
 					'                           Quote the value or escape special characters. This option can be given more than one time.'
 					'--skip-ignore            : If this option is given the skip and category attributes of the cases and suite are ignored'
 					'-s|--sequential          : Sequential test execution. No parallel test execution is performed.'
-					'-j|--threads VALUE       : The number of parallel threads used. (you have 8 (virtual) cores this is default)'
-					'-l|--link                : Content found in data directoy are linked to workspace not copied (Set TYPRN_link=true)'
-					'--no-start               : Supress the execution of the start sequence (Set TYPRN_noStart)'
-					'--no-stop                : Supress the execution of the stop sequencd (Set TYPRN_noStop)'
-					'--no-browser             : Do not start browser after test execution.')
+					'-j|--threads VALUE       : The number of parallel threads used.*'
+					'--clean                  : Clean start ant stop. Forces a clean start and cleans all at end. (Set TYPR_clean true)'
+					'-D value                 : Set the specified TY_-, TYRO_-, TYPR_- or TYPRN_- variable value (Use one of varname=value)'
+					'-v|--verbose             : Be verbose to stdout'
+					'-V|--version             : Print the version string'
+					'-d|--debug               : Print debug information. Debug implies verbose.'
+					'--summary                : Print special junit like test suite summary'
+					'--xtraprint              : Echo std out to terminal in case of test failue'
+					'--no-start               : Supress the execution of the start sequence (Set TYPR_noStart, TYPR_noPrepsSuite to true)'
+					'--no-stop                : Supress the execution of the stop sequencd (Set TYPR_noStop, TYPR_noFinsSuite to true)')
+
 		;;
 	man)
 		patternList=('The runTTF script is a framework for the control of test case execution.*'

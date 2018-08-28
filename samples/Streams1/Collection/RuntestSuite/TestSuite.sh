@@ -1,3 +1,3 @@
 #Put here the test preparation steps whith noticable runtime effects
-PREPS='cleanUpInstAndDomain mkDomain startDomain mkInst startInst'
-FINS='cleanUpInstAndDomain'
+PREPS='cleanUpInstAndDomainAtStart mkDomain startDomain mkInst startInst'
+FINS='cleanUpInstAndDomainAtStop'

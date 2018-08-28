@@ -325,7 +325,7 @@ for name_xyza in 'TTRO_prepsSuite' 'PREPS'; do
 			eval "l_xyza=\${#$name_xyza[@]}"
 			for (( i_xyza=0; i_xyza<l_xyza; i_xyza++)); do
 				eval "step_xyza=\${$name_xyza[$i_xyza]}"
-				if isExistingAndTrue 'TTPRN_noPrepsSuite'; then
+				if isExistingAndTrue 'TTPR_noPrepsSuite'; then
 					printInfo "Suppress Suite Preparation: $step_xyza"
 				else
 					printInfo "Execute Suite Preparation: $step_xyza"
@@ -336,7 +336,7 @@ for name_xyza in 'TTRO_prepsSuite' 'PREPS'; do
 		else
 			isDebug && printDebug "$name_xyza=${!name_xyza}"
 			for x_xyza in ${!name_xyza}; do
-				if isExistingAndTrue 'TTPRN_noPrepsSuite'; then
+				if isExistingAndTrue 'TTPR_noPrepsSuite'; then
 					printInfo "Suppress Suite Preparation: $x_xyza"
 				else
 					printInfo "Execute Suite Preparation: $x_xyza"
@@ -348,7 +348,7 @@ for name_xyza in 'TTRO_prepsSuite' 'PREPS'; do
 	fi
 done
 if isFunction 'testPreparation'; then
-	if isExistingAndTrue 'TTPRN_noPrepsSuite'; then
+	if isExistingAndTrue 'TTPR_noPrepsSuite'; then
 		printInfo "Suppress Suite Preparation: testPreparation"
 	else
 		printInfo "Execute Suite Preparation: testPreparation"
@@ -813,7 +813,7 @@ for name_xyza in 'TTRO_finSuite' 'FINS'; do
 			eval "l_xyza=\${#$name_xyza[@]}"
 			for (( i_xyza=0; i_xyza<l_xyza; i_xyza++)); do
 				eval "step=\${$name_xyza[$i_xyza]}"
-				if isExistingAndTrue 'TTPRN_noFinsSuite'; then
+				if isExistingAndTrue 'TTPR_noFinsSuite'; then
 					printInfo "Suppress Suite Finalization: $step"
 				else
 					printInfo "Execute Suite Finalization: $step"
@@ -824,7 +824,7 @@ for name_xyza in 'TTRO_finSuite' 'FINS'; do
 		else
 			isDebug && printDebug "$name_xyza=${!name_xyza}"
 			for x_xyza in ${!name_xyza}; do
-				if isExistingAndTrue 'TTPRN_noFinsSuite'; then
+				if isExistingAndTrue 'TTPR_noFinsSuite'; then
 					printInfo "Suppress Suite Finalization: $x_xyza"
 				else
 					printInfo "Execute Suite Finalization: $x_xyza"
@@ -836,7 +836,7 @@ for name_xyza in 'TTRO_finSuite' 'FINS'; do
 	fi
 done
 if isFunction 'testFinalization'; then
-	if isExistingAndTrue 'TTPRN_noFinsSuite'; then
+	if isExistingAndTrue 'TTPR_noFinsSuite'; then
 		printInfo "Suppress Suite Finalization: testFinalization"
 	else
 		printInfo "Execute Suite Finalization: testFinalization"

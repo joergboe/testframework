@@ -186,7 +186,8 @@ export -f splCompileInterceptAndError
 
 TTRO_help_mkDomain='
 # Function mkDomain
-#	Make domain from global properties'
+#	Make domain from global properties
+#	If variable  TTPR_noStart or TTTT_noStreamsStart is true, do nothing'
 function mkDomain {
 	mkDomainVariable "$TTPR_streamsZkConnect" "$TTPRN_streamsDomainId" "$TTPRN_swsPort" "$TTPRN_jmxPort" "$TTPR_checkpointRepository" "$TTPR_fileStoragePath"
 
@@ -196,6 +197,7 @@ export -f mkDomain
 TTRO_help_mkDomainVariable='
 # Function mkDomainVariable
 #	Make domain with variable parameters
+#	If variable  TTPR_noStart or TTTT_noStreamsStart is true, do nothing
 #	$1 zk connect string or "" for embeddedzk
 #	$2 domainname
 #	$3 sws port
@@ -204,7 +206,7 @@ TTRO_help_mkDomainVariable='
 #	$6 fileStoragePath'
 function mkDomainVariable {
 	isDebug && printDebug "$FUNCNAME $*"
-	if [[ -n $TTPRN_noStart ]]; then
+	if isExistingAndTrue 'TTPR_noStart' || isExistingAndTrue 'TTTT_noStreamsStart'; then
 		printInfo "$FUNCNAME : function supressed"
 		return 0
 	fi
@@ -236,7 +238,8 @@ export -f mkDomainVariable
 
 TTRO_help_startDomain='
 # Function startDomain
-#	Start domain from global properties'
+#	Start domain from global properties
+#	If variable  TTPR_noStart or TTTT_noStreamsStart is true, do nothing'
 function startDomain {
 	startDomainVariable "$TTPRN_streamsDomainId"
 }
@@ -245,10 +248,11 @@ export -f startDomain
 TTRO_help_startDomainVariable='
 # Function startDomainVariable
 #	Make domain with variable parameters
+#	If variable  TTPR_noStart or TTTT_noStreamsStart is true, do nothing
 #	$1 domainname'
 function startDomainVariable {
 	isDebug && printDebug "$FUNCNAME $*"
-	if [[ -n $TTPRN_noStart ]]; then
+	if isExistingAndTrue 'TTPR_noStart' || isExistingAndTrue 'TTTT_noStreamsStart'; then
 		printInfo "$FUNCNAME : function supressed"
 		return 0
 	fi
@@ -261,7 +265,8 @@ export -f startDomainVariable
 
 TTRO_help_mkInst='
 # Function mkInst
-#	Make instance from global properties'
+#	Make instance from global properties
+#	If variable  TTPR_noStart or TTTT_noStreamsStart is true, do nothing'
 function mkInst {
 	mkInstVariable "$TTPRN_streamsInstanceId" "$TTPR_numresources"
 }
@@ -270,11 +275,12 @@ export -f mkInst
 TTRO_help_mkInstVariable='
 # Function mkInstVariable
 #	Make instance with variable parameters
+#	If variable  TTPR_noStart or TTTT_noStreamsStart is true, do nothing
 #	$1 instance name
 #	$2 numresources'
 function mkInstVariable {
 	isDebug && printDebug "$FUNCNAME $*"
-	if [[ -n $TTPRN_noStart ]]; then
+	if isExistingAndTrue 'TTPR_noStart' || isExistingAndTrue 'TTTT_noStreamsStart'; then
 		printInfo "$FUNCNAME : function supressed"
 		return 0
 	fi
@@ -287,7 +293,8 @@ export -f mkInstVariable
 
 TTRO_help_startInst='
 # Function startInst
-#	Start instance from global properties'
+#	Start instance from global properties
+#	If variable  TTPR_noStart or TTTT_noStreamsStart is true, do nothing'
 function startInst {
 	startInstVariable "$TTPRN_streamsInstanceId"
 }
@@ -296,10 +303,11 @@ export -f startInst
 TTRO_help_startInstVariable='
 # Function startInstVariable
 #	Start instance with variable parameters
+#	If variable  TTPR_noStart or TTTT_noStreamsStart is true, do nothing
 #	$1 domainname'
 function startInstVariable {
 	isDebug && printDebug "$FUNCNAME $*"
-	if [[ -n $TTPRN_noStart ]]; then
+	if isExistingAndTrue 'TTPR_noStart' || isExistingAndTrue 'TTTT_noStreamsStart'; then
 		printInfo "$FUNCNAME : function supressed"
 		return 0
 	fi
@@ -310,38 +318,23 @@ function startInstVariable {
 }
 export -f startInstVariable
 
-TTRO_help_cleanUpInstAndDomainAtStart='
-# Function cleanUpInstAndDomainAtStart deprecated
-#	stop and clean instance and domain'
-function cleanUpInstAndDomainAtStart {
-	cleanUpInstAndDomainVariableOld "start" "$TTPR_streamsZkConnect" "$TTPRN_streamsDomainId" "$TTPRN_streamsInstanceId"
-}
-export -f cleanUpInstAndDomainAtStart
-
-TTRO_help_cleanUpInstAndDomainAtStop='
-# Function cleanUpInstAndDomainAtStop deprecated
-#	stop and clean instance and domain'
-function cleanUpInstAndDomainAtStop {
-	cleanUpInstAndDomainVariableOld "stop" "$TTPR_streamsZkConnect" "$TTPRN_streamsDomainId" "$TTPRN_streamsInstanceId"
-}
-export -f cleanUpInstAndDomainAtStop
-
 TTRO_help_cleanUpInstAndDomainVariableOld='
-# Function cleanUpInstAndDomainVariableOld deprecated
+# Function cleanUpInstAndDomainVariableOld deprecated, use cleanUpInstAndDomain
 #	stop and clean instance and domain from variable params
-#	$1 start or stop determines the if TTPRN_noStart or TTPRN_noStop is evaluated
+#	$1 start or stop determines the if TTPR_noStart or TTPR_noStop is evaluated
 #	$2 zk string
 #	$3 domain id
 #	$4 instance id'
 function cleanUpInstAndDomainVariableOld {
+	printWarning "$FUNCNAME is deprecated use cleanUpInstAndDomain instead"
 	isDebug && printDebug "$FUNCNAME $*"
 	if [[ $1 == start ]]; then
-		if [[ -n $TTPRN_noStart ]]; then
+		if isExistingAndTrue 'TTPR_noStart'; then
 			printInfo "$FUNCNAME : at start function supressed"
 			return 0
 		fi
 	elif [[ $1 == stop ]]; then
-		if [[ -n $TTPRN_noStop ]]; then
+		if isExistingAndTrue 'TTPR_noStop'; then
 			printInfo "$FUNCNAME : at stop function supressed"
 			return 0
 		fi
@@ -378,6 +371,89 @@ function cleanUpInstAndDomainVariableOld {
 }
 export -f cleanUpInstAndDomainVariableOld
 
+TTRO_help_cleanUpInstAndDomainAtStart='
+# Function cleanUpInstAndDomainAtStart
+#	stop and clean instance and domain at script start
+#	Function is not executed if TTPR_noStart is true
+#	If variable TTPR_clean is true
+#	    a clean up is forced, the instance and domain is stopped and removed
+#	If variable TTPR_clean is not true
+#	    no clean up is done if the instace is running
+#	    otherwise instance and domain is cleaned up'
+function cleanUpInstAndDomainAtStart {
+	cleanUpInstAndDomainAtStartVariable "$TTPR_streamsZkConnect" "$TTPRN_streamsDomainId" "$TTPRN_streamsInstanceId"
+}
+export -f cleanUpInstAndDomainAtStart
+
+TTRO_help_cleanUpInstAndDomainAtStartVariable='
+# Function cleanUpInstAndDomainAtStartVariable
+#	like cleanUpInstAndDomainAtStart but with parameters
+#	$1 zk string
+#	$2 domain id
+#	$3 instance id
+#	return_code: success'
+function cleanUpInstAndDomainAtStartVariable {
+	[[ $# -ne 3 ]] && printErrorAndExit "Wrong number of arguments in $FUNCNAME # $#" $errRt
+	if isExistingAndTrue 'TTPR_noStart'; then
+		printInfo "$FUNCNAME : function supressed"
+		return 0
+	fi
+	local runCleanup=''
+	if isExistingAndTrue 'TTPR_clean'; then
+		runCleanup='true'
+	else
+		if response=$(export LC_ALL='en_US.UTF-8'; $TTPRN_st lsinst --started --domain-id "$2" "$3"); then
+			if [[ $response =~ $3 ]]; then
+				printInfo "$FUNCNAME : Instance $3 of domain $2 is running -> start over"
+				TTTT_noStreamsStart='true'
+			else
+				runCleanup='true'
+			fi
+		else
+			runCleanup='true'
+		fi
+	fi 
+	if [[ -n $runCleanup ]]; then
+		cleanUpInstAndDomainVariable "$1" "$2" "$3"
+	fi
+	return 0
+}
+export -f cleanUpInstAndDomainAtStartVariable
+
+TTRO_help_cleanUpInstAndDomainAtStop='
+# Function cleanUpInstAndDomainAtStop
+#	stop and clean instance and domain at script stop
+#	Function is not executed if TTPR_noStop is true
+#	If variable TTPR_clean is true
+#	    a clean up is forced, the instance and domain is stopped and removed
+#	otherwise
+#	    no clean up is done'
+function cleanUpInstAndDomainAtStop {
+	cleanUpInstAndDomainAtStopVariable "$TTPR_streamsZkConnect" "$TTPRN_streamsDomainId" "$TTPRN_streamsInstanceId"
+	return 0
+}
+export -f cleanUpInstAndDomainAtStop
+
+TTRO_help_cleanUpInstAndDomainAtStopVariable='
+# Function cleanUpInstAndDomainAtStopVariable
+#	like cleanUpInstAndDomainAtStop but with parameters
+#	$1 zk string
+#	$2 domain id
+#	$3 instance id
+#	return_code: success'
+function cleanUpInstAndDomainAtStopVariable {
+	[[ $# -ne 3 ]] && printErrorAndExit "Wrong number of arguments in $FUNCNAME # $#" $errRt
+	if isExistingAndTrue 'TTPR_noStop'; then
+		printInfo "$FUNCNAME : function supressed"
+		return 0
+	fi
+	if isExistingAndTrue 'TTPR_clean'; then 
+		cleanUpInstAndDomainVariable "$1" "$2" "$3"
+	fi
+	return 0
+}
+export -f cleanUpInstAndDomainAtStopVariable
+
 TTRO_help_cleanUpInstAndDomain='
 # Function cleanUpInstAndDomain
 #	stop instance and domain if running and clean instance and domain'
@@ -395,36 +471,36 @@ TTRO_help_cleanUpInstAndDomainVariable='
 #	return_code: success'
 function cleanUpInstAndDomainVariable {
 	isDebug && printDebug "$FUNCNAME $*"
+	[[ $# -ne 3 ]] && printErrorAndExit "Wrong number of arguments in $FUNCNAME # $#" $errRt
 	local response
-	if [[ -n $TTPRN_clean ]]; then
-		if response=$(echoAndExecute $TTPRN_st lsdomain "$2"); then # domain exists
-			if [[ $response =~ $2\ Started ]]; then # domain is running
-				#Running domain found check instance
-				if echoAndExecute $TTPRN_st lsinst --domain-id "$2" "$3"; then
-					if echoAndExecute $TTPRN_st lsinst --started --domain-id "$2" "$3"; then
-						#TODO: check whether the retun code is fine here
+	if response=$(export LC_ALL='en_US.UTF-8'; $TTPRN_st lsdomain "$2"); then # domain exists
+		printInfo "$FUNCNAME : Domain $2 exists"
+		if [[ $response =~ $2\ Started ]]; then # domain is running
+			printInfo "$FUNCNAME : Domain $2 is running"
+			if $TTPRN_st lsinst --domain-id "$2" "$3"; then
+				printInfo "$FUNCNAME : Instance $3 exists"
+				if response=$(export LC_ALL='en_US.UTF-8'; $TTPRN_st lsinst --started --domain-id "$2" "$3"); then
+					printInfo "$FUNCNAME : Instance $3 exists"
+					if [[ $response =~ $3 ]]; then
+						printInfo "$FUNCNAME : Instance $3 is running -> stop it"
 						echoAndExecute $TTPRN_st stopinst --force --domain-id "$2" --instance-id "$3"
 					else
-						isVerbose && printVerbose "$FUNCNAME : no running instance $3 found in domain $2"
+						printInfo "$FUNCNAME : no running instance $3 found in domain $2"
 					fi
-					echoAndExecute $TTPRN_st rminst --noprompt --domain-id "$2" --instance-id "$3"
 				else
-					isVerbose && printVerbose "$FUNCNAME : no instance $3 found in domain $2"
+					printInfo "$FUNCNAME : no running instance $3 found in domain $2"
 				fi
-				#End Running domain found check instance
-				echoAndExecute $TTPRN_st stopdomain --force --domain-id "$2"
+				echoAndExecute $TTPRN_st rminst --noprompt --domain-id "$2" --instance-id "$3"
 			else
-				isVerbose && printVerbose "$FUNCNAME : no running domain $2 found"
+				printInfo "$FUNCNAME : no instance $3 found in domain $2"
 			fi
-			echoAndExecute $TTPRN_st rmdomain --noprompt --domain-id "$2"
+			echoAndExecute $TTPRN_st stopdomain --force --domain-id "$2"
 		else
-			isVerbose && printVerbose "$FUNCNAME : no domain $2 found"
+			printInfo "$FUNCNAME : no running domain $2 found"
 		fi
+		echoAndExecute $TTPRN_st rmdomain --noprompt --domain-id "$2"
 	else
-		if echoAndExecute $TTPRN_st lsinst --started --domain-id "$2" "$3"; then
-			printInfo "Instance $3 of domain $2 is running -> start over"
-			setVar 'TTPRN_noStart' 'true'
-		fi
+		printInfo "$FUNCNAME : no domain $2 found"
 	fi
 	return 0
 }
