@@ -165,4 +165,10 @@ Version 3.1.2:
 
 Version 3.1.3:
 - Workaround for lang setting in jobs command for bash 4.1.2
-- 
+
+Version 3.2.0:
+- New command line option --load-reduce
+- Use variables TTPR_noStartxxx, TTPR_noStopxxx instead of TTPRN_ variables
+- New functions cleanUpInstAndDomainAtStop and cleanUpInstAndDomainAtStart
+- Evaluate skip attributes if a cases list is given as command line parameter
+- Add skipped cases in special summary file
