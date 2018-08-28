@@ -117,6 +117,7 @@ declare -r -A singleOptions=(
 	['xtraprint']='--xtraprint'
 	['sequential']='-s --sequential'
 	['clean']='--clean'
+	['loadReduce']='--load-reduce'
 )
 declare -r -A valueOptions=(
 	['workdir']='-w --workdir'
@@ -293,7 +294,11 @@ fi
 #---------------------------------------------------------
 #set the number of threads to noCpus if not set otherwise
 if [[ -z $threads ]]; then
-	threads=$noCpus
+	if [[ -n $loadReduce ]]; then
+		threads=$((noCpus/2))
+	else
+		threads=$noCpus
+	fi
 fi
 
 #---------------------------------------------------------
