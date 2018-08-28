@@ -50,14 +50,45 @@
 
 #######################################
 		cleanUpInstAndDomainAtStart
- Function cleanUpInstAndDomainAtStart deprecated
-	stop and clean instance and domain
+ Function cleanUpInstAndDomainAtStart
+	stop and clean instance and domain at script start
+	Function is not executed if TTPR_noStart is true
+	If variable TTPR_clean is true
+	    a clean up is forced, the instance and domain is stopped and removed
+	If variable TTPR_clean is not true
+	    no clean up is done if the instace is running
+	    otherwise instance and domain is cleaned up
+
+
+#######################################
+		cleanUpInstAndDomainAtStartVariable
+ Function cleanUpInstAndDomainAtStartVariable
+	like cleanUpInstAndDomainAtStart but with parameters
+	$1 zk string
+	$2 domain id
+	$3 instance id
+	return_code: success
 
 
 #######################################
 		cleanUpInstAndDomainAtStop
- Function cleanUpInstAndDomainAtStop deprecated
-	stop and clean instance and domain
+ Function cleanUpInstAndDomainAtStop
+	stop and clean instance and domain at script stop
+	Function is not executed if TTPR_noStop is true
+	If variable TTPR_clean is true
+	    a clean up is forced, the instance and domain is stopped and removed
+	otherwise
+	    no clean up is done
+
+
+#######################################
+		cleanUpInstAndDomainAtStopVariable
+ Function cleanUpInstAndDomainAtStopVariable
+	like cleanUpInstAndDomainAtStop but with parameters
+	$1 zk string
+	$2 domain id
+	$3 instance id
+	return_code: success
 
 
 #######################################
@@ -72,9 +103,9 @@
 
 #######################################
 		cleanUpInstAndDomainVariableOld
- Function cleanUpInstAndDomainVariableOld deprecated
+ Function cleanUpInstAndDomainVariableOld deprecated, use cleanUpInstAndDomain
 	stop and clean instance and domain from variable params
-	$1 start or stop determines the if TTPRN_noStart or TTPRN_noStop is evaluated
+	$1 start or stop determines the if TTPR_noStart or TTPR_noStop is evaluated
 	$2 zk string
 	$3 domain id
 	$4 instance id
@@ -172,12 +203,14 @@
 		mkDomain
  Function mkDomain
 	Make domain from global properties
+	If variable  TTPR_noStart or TTTT_noStreamsStart is true, do nothing
 
 
 #######################################
 		mkDomainVariable
  Function mkDomainVariable
 	Make domain with variable parameters
+	If variable  TTPR_noStart or TTTT_noStreamsStart is true, do nothing
 	$1 zk connect string or "" for embeddedzk
 	$2 domainname
 	$3 sws port
@@ -190,12 +223,14 @@
 		mkInst
  Function mkInst
 	Make instance from global properties
+	If variable  TTPR_noStart or TTTT_noStreamsStart is true, do nothing
 
 
 #######################################
 		mkInstVariable
  Function mkInstVariable
 	Make instance with variable parameters
+	If variable  TTPR_noStart or TTTT_noStreamsStart is true, do nothing
 	$1 instance name
 	$2 numresources
 
@@ -245,12 +280,14 @@
 		startDomain
  Function startDomain
 	Start domain from global properties
+	If variable  TTPR_noStart or TTTT_noStreamsStart is true, do nothing
 
 
 #######################################
 		startDomainVariable
  Function startDomainVariable
 	Make domain with variable parameters
+	If variable  TTPR_noStart or TTTT_noStreamsStart is true, do nothing
 	$1 domainname
 
 
@@ -258,12 +295,14 @@
 		startInst
  Function startInst
 	Start instance from global properties
+	If variable  TTPR_noStart or TTTT_noStreamsStart is true, do nothing
 
 
 #######################################
 		startInstVariable
  Function startInstVariable
 	Start instance with variable parameters
+	If variable  TTPR_noStart or TTTT_noStreamsStart is true, do nothing
 	$1 domainname
 
 

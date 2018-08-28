@@ -41,7 +41,7 @@ parameter sets.
 ## Execution Environment
 The test framework starts with the analysis of the input directory (directory list) (option -i|--directory).
 
-If no list with case wildcards is given as command line parameter, all found test suites and test cases which are not marked with a 'skipped'
+If no list with case wildcards is given as command line parameter, all found test suites and test cases which are not marked as 'skipped'
 property are executed. In this case all suites (also empty suites) are executed.
 
 If a cases list is given from the command line, all test cases with match the cases list are executed (pattern match). 
@@ -103,7 +103,7 @@ The variables TTRO_finsSuite and TTRO_finsCase have global meaning. They may be 
 during the the execution of the appropriate artifact. The variable FINS and the function testFinalization have local meaning and are
 defined in the appropriate script file.
 
-If the variables TTPRN_noPrepsSuite TTPRN_noPrepsCase TTPRN_noFinsSuite TTPRN_noFinsCase are set to a 
+If the variables TTPR_noPrepsSuite TTPR_noPrepsCase TTPR_noFinsSuite TTPR_noFinsCase are set to a 
 non empty value the preparation and the finalization of the appropriate artifact is supressed.
 
 
@@ -225,7 +225,7 @@ we use here the empty value an consider it as unset property.
 
 ## Variables Used
 - TTPRN_skip            - Skip-Switch: if this varaible not empty, the execution of the actual Test Case variant or Test Suite variant is skipped.
-                          This variable is set by function skip
+                          This variable is set by function setSkip
 - TTPRN_skipIgnore      - if this varaible not empty, the skip variable is ignored.
 
 - STEPS                 - The space separated list or an array of test step commands with local meaning. If one command returns an failure (return code != 0), 
@@ -274,23 +274,21 @@ we use here the empty value an consider it as unset property.
 - TTRO_noParallelCases - The max number of parallel executed cases. If set to 1 all cases are executed back-to-back
 - TTRO_treads          - The number of threads to be used during test case execution. Is set to 1 if parallel test case
                          execution is enabled. Is set to $TTRO_noCpus if back-to-back test case execution is enabled.
+- TTPR_clean           - 
 - TTRO_reference       - The reference will be printed
-- TTPRN_noStart        - This property is provided with value "true" if the --no-start command line option is used. It is empty otherwise
-- TTPRN_noStop         - This  property is provided with value "true" if the --no-stop command line option is used. It is empty otherwise
+- TTPR_noStart         - This property is provided with value "true" if the --no-start command line option is used. It is empty otherwise
+- TTPR_noStop          - This  property is provided with value "true" if the --no-stop command line option is used. It is empty otherwise
 - TTPRN_link           - This  property is provided with value "true" if the --link command line option is used. It is empty otherwise
-- TTPRN_noPrepsSuite   - This property is provided with value "true" if the --no-start command line option is used. It is empty otherwise
-                         If the property is true no Test Suite preparation is called
-- TTPRN_noPrepsCase    - This property is not provided.
-                         If the property is true no Test Case preparation is called
-- TTPRN_noFinsSuite    - This property is provided with value "true" if the --no-stop command line option is used. It is empty otherwise
-                         If the property is true no Test Suite finalization is called
-- TTPRN_noFinsCase     - This property is not provided.
-                         If the property is true no Test Case finalization is called
+- TTPR_noPrepsSuite    - This property is provided with value "true" if the --no-start command line option is used. If the property is true no Test Suite preparation is called
+- TTPR_noPrepsCase     - This property is not provided. If the property is true no Test Case preparation is called
+- TTPR_noFinsSuite     - This property is provided with value "true" if the --no-stop command line option is used. If the property is true no Test Suite finalization is called
+- TTPR_noFinsCase      - This property is not provided. If the property is true no Test Case finalization is called
                          
 - TTTT_categoryArray   - The indexed array with the categories of the current Case/Suite
 - TTTT_runCategoryPatternArray - The indexed array with the run-category patterns of the current test run
 - TTTT_failureOccurred - The failure condition in test case execution
 - TTTT_result          - Used in some functions to return a result code
+- TTTT_xxxx            - More variables used in utils
 
 
 ## Special Script Execution options
@@ -348,10 +346,10 @@ To signal the success of a test case just leave the function with success 'retur
 The test frame environment atempts to execute the test finalization functions in case of error and in case of failure.
 
 ## Skip Test Cases - Category Control
-A test case or a test suite is skipped if the function skip is called during initialization phase of the artifact. 
-This function sets the property TTPRN_skip to true.
+A test case or a test suite is skipped if the function setSkip is called during initialization phase of the artifact. 
+This function sets the property TTPRN_skip with the supplied non-empty reason string.
 
-A test case is skipped if the property TTPRN_skip is defined ant true. This property may be set :
+A test case is skipped if the property TTPRN_skip is defined and not empty. This property may be set :
 - In the initialization or preparation phase of an test suite variant - this disables all cases of this suite variant
 - In the initialization phase of an test case (variant) - this disables only one case variant
 
