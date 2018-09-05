@@ -696,6 +696,7 @@ export -f cancelJobOld
 TTRO_help_cancelJob='
 # Function cancelJob
 #	if TTTT_jobno is not empty, cancel the job
+#	emits a warning if TTTT_jobno is empty and the execution pase is not finalization
 # Parameters:
 #	$TTTT_jobno - the job number
 #	$TTPRN_streamsDomainId - domain id
@@ -709,7 +710,9 @@ function cancelJob {
 		cancelJobVariable "$TTPRN_streamsDomainId" "$TTPRN_streamsInstanceId" "$TTTT_jobno"
 		TTTT_jobno=''
 	else
-		printWarning "Variable TTTT_jobno is empty. No job to stop"
+		if [[ $TTTT_executionState != 'finalization' ]]; then
+			printWarning "Variable TTTT_jobno is empty. No job to stop"
+		fi
 	fi
 }
 export -f cancelJob

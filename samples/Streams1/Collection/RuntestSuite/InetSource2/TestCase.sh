@@ -1,16 +1,16 @@
 # Submission test for Streams
-#--variantList='submitJob submitJobWithParam submitJobAndIntercept submitJobInterceptAndSuccess submitJobLogAndIntercept'
+#--variantList='submitJob submitJobWithParam submitJobAndIntercept submitJobInterceptAndSuccess submitJobLogAndIntercept doubleJobCancel'
 PREPS='copyOnly splCompile'
-STEPS='mySubmit checkJobNo waitForFin myEvaluate'
+STEPS='mySubmit checkJobNo waitForFin myCancelJob myEvaluate'
 FINS='cancelJob'
 
-function myEvaluate {
+myEvaluate() {
 	if ! linewisePatternMatch "$TT_dataDir/Tuples" '' '*http://httpbin.org/get*'; then
 		setFailure 'No match found'
 	fi
 }
 
-function mySubmit {
+mySubmit() {
 	case $TTRO_variantCase in
 	submitJob)
 		submitJob
@@ -31,9 +31,22 @@ function mySubmit {
 		echo "-------- TTTT_jobno=$TTTT_jobno"
 		echo "-------- TTTT_result=$TTTT_result"
 		echo "--------"
-		cat "$TT_evaluationFile"
-		echo "--------"
-		echo "-------- one surplus job cancel"
-		cancelJob;;
+		cat "$TT_evaluationFile";;
+	doubleJobCancel)
+		submitJobLogAndIntercept
+		echo "-------- TTTT_jobno=$TTTT_jobno"
+		echo "-------- TTTT_result=$TTTT_result"
+		cat "$TT_evaluationFile";;
 	esac
+}
+
+myCancelJob() {
+	if [[ $TTRO_variantCase == 'doubleJobCancel' ]]; then
+		cancelJob
+		echo "-------- TTTT_jobno=$TTTT_jobno"
+		echo "--------- and one more cancel job"
+		cancelJob
+	else
+		cancelJob
+	fi
 }
