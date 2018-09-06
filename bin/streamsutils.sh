@@ -113,10 +113,16 @@ TTRO_help_splCompile='
 #	Compile spl application expect successful result
 #	No treatment in case of compiler error'
 function splCompile {
-	if [[ -z $TT_dataDir ]]; then
-		echoAndExecute ${TTPRN_splc} "$TTPR_splcFlags" -M $TT_mainComposite -t "$TT_toolkitPath:$TTRO_testframeToolkitDir" -j $TTRO_treads
+	local tkdir=
+	if isExistingAndTrue 'TT_toolkitPath'; then
+		tkdir="$TT_toolkitPath:$TTRO_testframeToolkitDir"
 	else
-		echoAndExecute ${TTPRN_splc} "$TTPR_splcFlags" -M $TT_mainComposite -t "$TT_toolkitPath:$TTRO_testframeToolkitDir" --data-directory "$TT_dataDir" -j $TTRO_treads
+		tkdir="$TTRO_testframeToolkitDir"
+	fi
+	if [[ -z $TT_dataDir ]]; then
+		echoAndExecute ${TTPRN_splc} "$TTPR_splcFlags" -M $TT_mainComposite -t "$tkdir" -j $TTRO_treads
+	else
+		echoAndExecute ${TTPRN_splc} "$TTPR_splcFlags" -M $TT_mainComposite -t "$tkdir" --data-directory "$TT_dataDir" -j $TTRO_treads
 	fi
 }
 export -f splCompile
@@ -710,6 +716,7 @@ function cancelJob {
 		cancelJobVariable "$TTPRN_streamsDomainId" "$TTPRN_streamsInstanceId" "$TTTT_jobno"
 		TTTT_jobno=''
 	else
+		isDebug && printDebug "\$TTTT_executionState=$TTTT_executionState"
 		if [[ $TTTT_executionState != 'finalization' ]]; then
 			printWarning "Variable TTTT_jobno is empty. No job to stop"
 		fi
