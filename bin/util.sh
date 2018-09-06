@@ -16,13 +16,16 @@ TTRO_help_setFailure='
 #	success
 # Exits:
 #	if called from a test suite script
-#	if '
+#	if called with empty argument $1'
 function setFailure {
 	if isExisting 'TTRO_variantCase'; then # this is a case
 		if [[ $TTTT_executionState != 'execution' ]]; then
 			printWarning "$FUNCNAME called in phase $TTTT_executionState. Use this function only in phase 'execution'"
 		fi
-		if [[ ( $# -gt 0 ) && ( -n $1 ) ]]; then
+		if [[ $# -gt 0 ]]; then
+			if [[ -z $1 ]]; then
+				printErrorAndExit "$FUNCNAME must not be called with empty argument \$1" $errRt
+			fi
 			TTTT_failureOccurred="$1"
 		else
 			TTTT_failureOccurred='unspecified'
@@ -63,7 +66,7 @@ TTRO_help_setSkip='
 #	success
 # Exits:
 #	if called in another phase than initializing
-#	if called with empty argument'
+#	if called with empty argument $1'
 function setSkip {
 	if [[ $TTTT_executionState != 'initializing' ]]; then
 		printErrorAndExit "$FUNCNAME must be called in state 'initializing' state now: $TTTT_executionState" $errRt
