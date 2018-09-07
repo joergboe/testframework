@@ -1692,7 +1692,7 @@ TTRO_help_checkAllFilesExist='
 # Side Effects_
 #	The failure condition is set one file is missing'
 checkAllFilesExist() {
-	if [[ $# -ne 2 ]]; then printErrorAndExit "$FUNCNAME : wrong number of params $*" $errRt; fi
+	if [[ $# -ne 2 ]]; then printErrorAndExit "$FUNCNAME : wrong number of params $#" $errRt; fi
 	local x
 	for x in $2; do
 		if [[ -e "$1/$x" ]]; then
@@ -1706,6 +1706,34 @@ checkAllFilesExist() {
 }
 readonly -f checkAllFilesExist
 
+TTRO_help_checkAllFilesEqual='
+# Function checks whether all files are equal
+#	and sets the failure condition if one file is missing or differs
+#	parameters
+#		$1 the prefix #1 (directory) for all files
+#		$2 the prefix #2 (directory) for all files
+#		$3 the space separated list of files to check
+# Exits:
+#	if no called with wrong number of arguments
+# Side Effects_
+#	The failure condition is set one file is missing or differs'
+checkAllFilesEqual() {
+	if [[ $# -ne 3 ]]; then printErrorAndExit "$FUNCNAME : wrong number of params $#" $errRt; fi
+	local x f1 f2
+	for x in $3; do
+		f1="$1/$x"
+		f2="$2/$x"
+		if diff "$f1" "$f2"; then
+			printInfo "$FUNCNAME : Files equal $f1 $f2"
+		else
+			setFailure "$FUNCNAME : Files not equal $f1 $f2"
+			break
+		fi
+	done
+	return 0
+}
+readonly -f checkAllFilesEqual
+
 TTRO_help_checkLineCount='
 # Function checks whether the line count in a file equals a specific number
 #	and sets the failure condition if the count differs
@@ -1717,7 +1745,7 @@ TTRO_help_checkLineCount='
 # Side Effects_
 #	The failure condition is set if the line count is not the expected or the file does not exists'
 checkLineCount() {
-	if [[ $# -ne 2 ]]; then printErrorAndExit "$FUNCNAME : wrong number of params $*" $errRt; fi
+	if [[ $# -ne 2 ]]; then printErrorAndExit "$FUNCNAME : wrong number of params $#" $errRt; fi
 	if [[ -f $1 ]]; then
 		local x=$(wc -l "$1" | cut -f 1 -d ' ')
 		if [[ $x -eq $2 ]]; then
