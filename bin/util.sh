@@ -1671,7 +1671,7 @@ TTRO_help_getElapsedTime='
 #	return
 #		TTTT_elapsedTime'
 function getElapsedTime {
-	if [[ $# -ne 1 ]]; then printErrorAndExit "$FUNCNAME wrong no of arguments $#" $errRt; fi
+	if [[ $# -ne 1 ]]; then printErrorAndExit "$FUNCNAME : wrong no of arguments $#" $errRt; fi
 	local now=$(date -u +%s)
 	local diff=$((now-$1))
 	timeFromSeconds "$diff"
@@ -1679,5 +1679,58 @@ function getElapsedTime {
 	return 0
 }
 readonly -f getElapsedTime
+
+
+TTRO_help_checkAllFilesExist='
+# Function checks whether all files exists
+#	and sets the failure condition if one file is missing
+#	parameters
+#		$1 the prefix for all files
+#		$2 the space separated list of files to check
+# Exits:
+#	if no called with wrong number of arguments
+# Side Effects_
+#	The failure condition is set one file is missing'
+checkAllFilesExist() {
+	if [[ $# -ne 2 ]]; then printErrorAndExit "$FUNCNAME : wrong number of params $*" $errRt; fi
+	local x
+	for x in $2; do
+		if [[ -e "$1/$x" ]]; then
+			printInfo "$FUNCNAME : Found file $1/$x"
+		else
+			setFailure "$FUNCNAME : File not found $1/$x"
+			break
+		fi
+	done
+	return 0
+}
+readonly -f checkAllFilesExist
+
+TTRO_help_checkLineCount='
+# Function checks whether the line count in a file equals a specific number
+#	and sets the failure condition if the count differs
+#	parameters
+#		$1 the file name
+#		$2 the expected line count
+# Exits:
+#	if no called with wrong number of arguments
+# Side Effects_
+#	The failure condition is set if the line count is not the expected or the file does not exists'
+checkLineCount() {
+	if [[ $# -ne 2 ]]; then printErrorAndExit "$FUNCNAME : wrong number of params $*" $errRt; fi
+	if [[ -f $1 ]]; then
+		local x=$(wc -l "$1" | cut -f 1 -d ' ')
+		if [[ $x -eq $2 ]]; then
+			printInfo "$FUNCNAME : Expected line count in file $1 is correct $2"
+		else
+			setFailure "$FUNCNAME : Expected line count in file $1 is $2 ; but line count is $x"
+		fi
+	else
+		setFailure "$FUNCNAME : File not found $1 or is no regular file"
+	fi
+	return 0
+}
+readonly -f checkLineCount
+
 #Guard for the last statement - make returncode always 0
 :
