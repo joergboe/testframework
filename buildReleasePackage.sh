@@ -7,6 +7,14 @@ source bin/version.sh
 declare -r releasedir='releases'
 declare -r docdir='doc'
 
+#environment check
+if ! declare -p STREAMS_INSTALL > /dev/null; then
+	echo "Missing environment: STREAMS_INSTALL must be set" >&2
+	exit 1
+fi
+declare -r mt="${STREAMS_INSTALL}/bin/spl-make-toolkit"
+declare -r md="${STREAMS_INSTALL}/bin/spl-make-doc"
+
 echo
 echo "Build release package version v$TTRO_version"
 echo
@@ -30,7 +38,18 @@ if [[ $commitstatus ]]; then
 	fi
 fi
 
+#toolkit
+$mt -c -i streamsx.testframe
+$mt -i streamsx.testframe
+rm -rf streamsx.testframe/doc
+rm -rf "$docdir"
+
 mkdir -p "$docdir"
+#doc in release bundle
+$md -i streamsx.testframe --include-all --doc-title "Test Toolkit streamsx.testframe" --author joergboe --warn-no-comments
+#doc for gh pages
+$md -i streamsx.testframe --include-all --doc-title "Test Toolkit streamsx.testframe" --author joergboe --warn-no-comments --output-directory "$docdir/spldoc.tmp"
+
 cd bin
 ./runTTF --man | grep -v '===' > "../$docdir/manpage.md.tmp"
 ./runTTF --ref '' > ../doc/utils.txt.tmp0
