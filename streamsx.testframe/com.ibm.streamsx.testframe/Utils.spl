@@ -1,44 +1,94 @@
 namespace com.ibm.streamsx.testframe;
 
+/**
+ * The Operator *FileSink1* is a special file sink for test purposes.
+ * The default function is:
+ * * store all input tuples as one text line in file with name *Tuples*
+ * * store all window punctuation markers as default tuple line in a file with name *WindowMarker*
+ * * store all final punctuation markers as default tuple line in a file with name *FinalMarker*
+ * 
+ * Every entry in the output file starts with the sequence number and a type specifier (t, w, f) like:
+ * 	seq_=0,typ_="t"
+ * 
+ * **Note:** Make sure that the target directory is clean before this operators is started. Otherwise the content is appended to
+ * existing files if parameter *append* is true (this is the default)
+ * 
+ * @input	Inp					The input stream to store in file. This stream must not have attributes *fname_, seq_ and typ_*
+ * 
+ * @param	fnameTuples			The file name for the file that stores the tuples. If this parameter is empty, no file for tuples is generated. Default: *Tuples*
+ * @param	fnameWindowMarker	The file name for the window punctuation markers. If this parameter is empty, no file for window punctuation markers is generated. Default: *WindowMarker*
+ * @param	fnameFinalMarker	The file name for the final punctuation markers. If this parameter is empty, no file for final punctuation markers is generated. Default: *FinalMarker*
+ * @param	addSeqToFnameTuple	If this parameter is true, each tuple is stored in a separate file with a unique filename. Default: *false*
+ * @param	addSeqToFnameWindow	If this parameter is true, each window punctuation marker is stored in a separate file with a unique filename. Default: *false*
+ * @param	addSeqToFnameFinal	If this parameter is true, each final punctuation marker is stored in a separate file with a unique filename. Default: *false*
+ * @param	append				If this parameter is true, and the target file already exists, the content is appended, otherwise the file is overwritten. Default: *true*
+ */
 public composite FileSink1 (input Inp) {
 	param
-		expression<rstring> $filenameTuples: "Tuples";
-		expression<rstring> $filenameWidowMarker: "WindowMarker";
-		expression<rstring> $filenameFinalMarker: "FinalMarker";
-		expression<boolean> $singleTupleFiles: true;
+		expression<rstring> $fnameTuples:         "Tuples";
+		expression<rstring> $fnameWindowMarker:   "WindowMarker";
+		expression<rstring> $fnameFinalMarker:    "FinalMarker";
+		expression<boolean> $addSeqToFnameTuple:  false;
+		expression<boolean> $addSeqToFnameWindow: false;
+		expression<boolean> $addSeqToFnameFinal:  false;
+		expression<boolean> $append:              true;
 	graph
-		stream<I, tuple<rstring fname>> FileContent as O = Custom(Inp as I) {
+		stream<tuple<rstring fname_, int64 seq_, rstring typ_>, I> FileContent as O = Custom(Inp as I) {
 			logic
 				state : {
-					mutable int32 tcount = 0;
+					mutable int64 sequence = 0l;
 				}
 				onTuple I : {
-					mutable O ot = {};
-					assignFrom(ot, I);
-					if ($singleTupleFiles) {
-						ot.fname = $filenameTuples;
-					} else {
-						ot.fname = $filenameTuples + (rstring)tcount;
+					if ($fnameTuples != "") {
+						mutable O ot = {};
+						assignFrom(ot, I);
+						if ($addSeqToFnameTuple) {
+							ot.fname_ = $fnameTuples + (rstring)sequence;
+						} else {
+							ot.fname_ = $fnameTuples;
+						}
+						ot.seq_ = sequence;
+						ot.typ_ = "t";
+						submit(ot, O);
 					}
-					submit(ot, O);
-					tcount = tcount + 1;
+					sequence = sequence + 1l;
 				}
 				onPunct I: {
-					mutable O ot = {};
 					if (currentPunct() == Sys.WindowMarker) {
-						ot.fname = $filenameWidowMarker;
+						if ( $fnameWindowMarker != "" ) {
+							mutable O ot = {};
+							if ($addSeqToFnameWindow) {
+								ot.fname_ = $fnameWindowMarker + (rstring)sequence;
+							} else {
+								ot.fname_ = $fnameWindowMarker;
+							}
+							ot.seq_ = sequence;
+							ot.typ_ = "w";
+							submit(ot, O);
+						}
 					} else {
-						ot.fname = $filenameFinalMarker;
+						if ( $fnameFinalMarker != "" ) {
+							mutable O ot = {};
+							if ($addSeqToFnameFinal) {
+								ot.fname_ = $fnameFinalMarker + (rstring)sequence;
+							} else {
+								ot.fname_ = $fnameFinalMarker;
+							}
+							ot.seq_ = sequence;
+							ot.typ_ = "f";
+							submit(ot, O);
+						}
 					}
-					submit(ot, O);
+					sequence = sequence + 1l;
 				}
 		}
 		
 		() as Sink = FileSink(FileContent as I) {
 			param
 				closeMode: dynamic;
-				file: fname;
+				file: fname_;
 				format: txt;
-				suppress: fname;
+				suppress: fname_;
+				append: $append;
 		}
 }

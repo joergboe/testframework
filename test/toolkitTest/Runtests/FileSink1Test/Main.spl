@@ -1,0 +1,30 @@
+use com.ibm.streamsx.testframe::FileSink1;
+
+composite Main {
+	graph
+		stream<int32 count> TriggerStream = Beacon() {
+			param iterations : 30;
+			output TriggerStream : count = (int32)IterationCount();
+		}
+		
+		stream<int32 count> TestStream = Punctor(TriggerStream as I) {
+			param
+				punctuate : (I.count % 10) == 0;
+				position : before;
+		}
+		
+		() as Sink = FileSink1(TestStream) {
+			//<!default>param
+				//<noTuples noWin>fnameTuples: "";
+				//<noWin>fnameWindowMarker: "";
+				//<noFin>fnameFinalMarker: "";
+				//<allInOne sequenceAllInOne>fnameTuples: "AllTuples";
+				//<allInOne sequenceAllInOne>fnameWindowMarker: "AllTuples";
+				//<allInOne sequenceAllInOne>fnameFinalMarker: "AllTuples";
+				//<allMarkerInOne>fnameWindowMarker: "FinalMarker";
+				//<allMarkerInOne>fnameFinalMarker: "FinalMarker";
+				//<sequence sequenceAllInOne>addSeqToFnameTuple: true;
+				//<sequence sequenceAllInOne>addSeqToFnameWindow: true;
+				//<sequence sequenceAllInOne>addSeqToFnameFinal: true;
+		}
+}
