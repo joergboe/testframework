@@ -172,3 +172,12 @@ Version 3.2.0:
 - New functions cleanUpInstAndDomainAtStop and cleanUpInstAndDomainAtStart
 - Evaluate skip attributes if a cases list is given as command line parameter
 - Add skipped cases in special summary file
+
+Version 3.3.0:
+- Print no warning if cancelJob is used in finalization phase and empty job variable
+- Correction spl compile when TT_toolkitPath is empty or not existent
+- Better function parameter check in utils function setFailure: must not be called with an empty argument
+- New utils functions : checkAllFilesExist and checkLineCount
+- Enhancements in toolkit FileSink1
+- Add spldocs of spl toolkit
+- New streamsutils functions cancelJobAndLogVariable and cancelJobAndLogVariable
