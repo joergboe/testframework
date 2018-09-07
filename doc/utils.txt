@@ -13,6 +13,20 @@
 
 
 #######################################
+		checkAllFilesEqual
+ Function checks whether all files are equal
+	and sets the failure condition if one file is missing or differs
+	parameters
+		$1 the prefix #1 (directory) for all files
+		$2 the prefix #2 (directory) for all files
+		$3 the space separated list of files to check
+ Exits:
+	if no called with wrong number of arguments
+ Side Effects_
+	The failure condition is set one file is missing or differs
+
+
+#######################################
 		checkAllFilesExist
  Function checks whether all files exists
 	and sets the failure condition if one file is missing
