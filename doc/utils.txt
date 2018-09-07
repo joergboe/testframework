@@ -13,6 +13,32 @@
 
 
 #######################################
+		checkAllFilesExist
+ Function checks whether all files exists
+	and sets the failure condition if one file is missing
+	parameters
+		$1 the prefix for all files
+		$2 the space separated list of files to check
+ Exits:
+	if no called with wrong number of arguments
+ Side Effects_
+	The failure condition is set one file is missing
+
+
+#######################################
+		checkLineCount
+ Function checks whether the line count in a file equals a specific number
+	and sets the failure condition if the count differs
+	parameters
+		$1 the file name
+		$2 the expected line count
+ Exits:
+	if no called with wrong number of arguments
+ Side Effects_
+	The failure condition is set if the line count is not the expected or the file does not exists
+
+
+#######################################
 		copyAndMorph
  Function copyAndMorph
 	Copy and change all files from input directory into workdir
@@ -645,7 +671,7 @@
 	success
  Exits:
 	if called from a test suite script
-	if 
+	if called with empty argument $1
 
 
 #######################################
@@ -659,7 +685,7 @@
 	success
  Exits:
 	if called in another phase than initializing
-	if called with empty argument
+	if called with empty argument $1
 
 
 #######################################

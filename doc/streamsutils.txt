@@ -2,14 +2,49 @@
 		cancelJob
  Function cancelJob
 	if TTTT_jobno is not empty, cancel the job
+	emits a warning if TTTT_jobno is empty and the execution pase is not finalization
  Parameters:
 	$TTTT_jobno - the job number
 	$TTPRN_streamsDomainId - domain id
 	$TTPRN_streamsInstanceId - instance id
  Returns:
-	the result code of the executed command
+	success
+ Exits:
+	if the cancel command fails, e. g. when the command is called with a wrong job number
  Side Effect:
 	TTTT_jobno is empty
+
+
+#######################################
+		cancelJobAndLog
+ Function cancelJobAndLog
+	cancel job and provide log files in current directory
+	if TTTT_jobno is not empty, cancel the job
+	emits a warning if TTTT_jobno is empty and the execution pase is not finalization
+ Parameters:
+	$TTTT_jobno - the job number
+	$TTPRN_streamsDomainId - domain id
+	$TTPRN_streamsInstanceId - instance id
+ Returns:
+	success
+ Exits:
+	if anythig goes wrong, e. g. when the command is called with a wrong job number
+ Side Effect:
+	TTTT_jobno is empty
+
+
+#######################################
+		cancelJobAndLogVariable
+ Function cancelJobAndLogVariable
+	cancel job and provide log files in current directory
+ Parameters:
+	$1 - domain id
+	$2 - instance id
+	$3 - jobno
+ Returns:
+	the result code of the executed tar command
+ Exits:
+	if anything goes wrong, e. g. when the command is called with a wrong job number
 
 
 #######################################

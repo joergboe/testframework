@@ -1,0 +1,218 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xml:lang="en-us" lang="en-us">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+<meta name="copyright" content="(C) Copyright 2005"/>
+<meta name="DC.rights.owner" content="(C) Copyright 2005"/>
+<meta name="DC.Type" content="reference"/>
+<meta name="DC.Title" content="SPL File Utils.spl"/>
+<meta name="DC.Format" content="XHTML"/>
+<meta name="DC.Identifier" content="spldoc_compilationunit"/>
+<link rel="stylesheet" type="text/css" href="../../html/commonltr.css"/>
+<link rel="stylesheet" type="text/css" href="../../html/spldoc.css"/>
+<title>SPL File Utils.spl</title>
+</head>
+<body id="spldoc_compilationunit">
+
+
+<h1 class="title topictitle1">SPL File <tt class="ph tt">Utils.spl</tt></h1>
+
+<div class="body refbody">
+<div class="section">
+<p class="p">
+<a class="xref" href="../toolkits/toolkits.html">Test Toolkit streamsx.testframe</a> &gt; <a class="xref" href="tk$streamsx.testframe.html">streamsx.testframe 1.0.0</a> &gt; <a class="xref" href="ns$com.ibm.streamsx.testframe.html">com.ibm.streamsx.testframe</a> &gt; Utils.spl</p>
+
+</div>
+
+<div class="section"><h2 class="title sectiontitle splhead-1">Content</h2>
+  
+  <dl class="dl">
+    <dt class="dt dlterm"/>
+<dd class="dd"/>
+
+    
+      <dt class="dt dlterm splhead-2">Operators</dt>
+
+      <dd class="dd">
+<ul class="sl simple">
+<li class="sli"><strong class="ph b"><a class="xref" href="spl$com.ibm.streamsx.testframe$Utils.html#spldoc_compilationunit__composite_operator__FileSink1">FileSink1</a></strong>: The Operator <em class="ph i">FileSink1</em> is a special file sink for test purposes.
+</li>
+
+</ul>
+
+      </dd>
+
+    
+  </dl>
+
+</div>
+
+<div class="section"><h2 class="title sectiontitle splhead-1">Composites</h2>
+  
+</div>
+
+<div class="section" id="spldoc_compilationunit__composite_operator__FileSink1"><h2 class="title sectiontitle splpart">composite FileSink1(input Inp)</h2>
+  
+</div>
+
+<div class="section splgraph">
+  <embed class="image" src="../../image/tk$streamsx.testframe/op$com.ibm.streamsx.testframe$FileSink1.svg" width="248" height="109"/>
+</div>
+
+<div class="section">
+
+<div class="p">The Operator <em class="ph i">FileSink1</em> is a special file sink for test purposes. The default function is:
+<ul class="ul">
+<li class="li"> store all input tuples as one text line in file with name <em class="ph i">Tuples</em></li>
+
+<li class="li"> store all window punctuation markers as default tuple line in a file with name <em class="ph i">WindowMarker</em></li>
+
+<li class="li"> store all final punctuation markers as default tuple line in a file with name <em class="ph i">FinalMarker</em></li>
+
+</ul>
+
+</div>
+
+<div class="p">Every entry in the output file starts with the sequence number and a type specifier (t, w, f) like:
+<pre class="pre codeblock">
+seq_=0,typ_="t"
+</pre>
+
+
+</div>
+
+<p class="p"><strong class="ph b">Note:</strong> Make sure that the target directory is clean before this operators is started. Otherwise the content is appended to existing files if parameter <em class="ph i">append</em> is true (this is the default)
+</p>
+
+</div>
+
+<div class="section"><h2 class="title sectiontitle">Parameters</h2>
+
+<ul class="sl simple">
+<li class="sli"><strong class="ph b">fnameTuples</strong>: The file name for the file that stores the tuples. If this parameter is empty, no file for tuples is generated. Default: <em class="ph i">Tuples</em>
+</li>
+
+<li class="sli"><strong class="ph b">fnameWindowMarker</strong>: The file name for the window punctuation markers. If this parameter is empty, no file for window punctuation markers is generated. Default: <em class="ph i">WindowMarker</em>
+</li>
+
+<li class="sli"><strong class="ph b">fnameFinalMarker</strong>: The file name for the final punctuation markers. If this parameter is empty, no file for final punctuation markers is generated. Default: <em class="ph i">FinalMarker</em>
+</li>
+
+<li class="sli"><strong class="ph b">addSeqToFnameTuple</strong>: If this parameter is true, each tuple is stored in a separate file with a unique filename. Default: <em class="ph i">false</em>
+</li>
+
+<li class="sli"><strong class="ph b">addSeqToFnameWindow</strong>: If this parameter is true, each window punctuation marker is stored in a separate file with a unique filename. Default: <em class="ph i">false</em>
+</li>
+
+<li class="sli"><strong class="ph b">addSeqToFnameFinal</strong>: If this parameter is true, each final punctuation marker is stored in a separate file with a unique filename. Default: <em class="ph i">false</em>
+</li>
+
+<li class="sli"><strong class="ph b">append</strong>: If this parameter is true, and the target file already exists, the content is appended, otherwise the file is overwritten. Default: <em class="ph i">true</em>
+</li>
+
+</ul>
+
+</div>
+
+<div class="section"><h2 class="title sectiontitle">Input Ports</h2>
+
+<ul class="sl simple">
+<li class="sli"><strong class="ph b">Inp</strong>: The input stream to store in file. This stream must not have attributes <em class="ph i">fname_, seq_ and typ_</em> 
+</li>
+
+</ul>
+
+</div>
+
+<div class="section">
+</div>
+
+<div class="section"><h2 class="title sectiontitle splhead-2">SPL Source Code</h2>
+  
+</div>
+
+
+<div class="section">
+   <pre class="pre codeblock">
+
+ public composite FileSink1 (input Inp) {
+ 	param
+ 		expression&lt;rstring&gt; $fnameTuples:         "Tuples";
+ 		expression&lt;rstring&gt; $fnameWindowMarker:   "WindowMarker";
+ 		expression&lt;rstring&gt; $fnameFinalMarker:    "FinalMarker";
+ 		expression&lt;boolean&gt; $addSeqToFnameTuple:  false;
+ 		expression&lt;boolean&gt; $addSeqToFnameWindow: false;
+ 		expression&lt;boolean&gt; $addSeqToFnameFinal:  false;
+ 		expression&lt;boolean&gt; $append:              true;
+ 	graph
+ 		stream&lt;tuple&lt;rstring fname_, int64 seq_, rstring typ_&gt;, I&gt; FileContent as O = Custom(Inp as I) {
+ 			logic
+ 				state : {
+ 					mutable int64 sequence = 0l;
+ 				}
+ 				onTuple I : {
+ 					if ($fnameTuples != "") {
+ 						mutable O ot = {};
+ 						assignFrom(ot, I);
+ 						if ($addSeqToFnameTuple) {
+ 							ot.fname_ = $fnameTuples + (rstring)sequence;
+ 						} else {
+ 							ot.fname_ = $fnameTuples;
+ 						}
+ 						ot.seq_ = sequence;
+ 						ot.typ_ = "t";
+ 						submit(ot, O);
+ 					}
+ 					sequence = sequence + 1l;
+ 				}
+ 				onPunct I: {
+ 					if (currentPunct() == Sys.WindowMarker) {
+ 						if ( $fnameWindowMarker != "" ) {
+ 							mutable O ot = {};
+ 							if ($addSeqToFnameWindow) {
+ 								ot.fname_ = $fnameWindowMarker + (rstring)sequence;
+ 							} else {
+ 								ot.fname_ = $fnameWindowMarker;
+ 							}
+ 							ot.seq_ = sequence;
+ 							ot.typ_ = "w";
+ 							submit(ot, O);
+ 						}
+ 					} else {
+ 						if ( $fnameFinalMarker != "" ) {
+ 							mutable O ot = {};
+ 							if ($addSeqToFnameFinal) {
+ 								ot.fname_ = $fnameFinalMarker + (rstring)sequence;
+ 							} else {
+ 								ot.fname_ = $fnameFinalMarker;
+ 							}
+ 							ot.seq_ = sequence;
+ 							ot.typ_ = "f";
+ 							submit(ot, O);
+ 						}
+ 					}
+ 					sequence = sequence + 1l;
+ 				}
+ 		}
+ 		
+ 		() as Sink = FileSink(FileContent as I) {
+ 			param
+ 				closeMode: dynamic;
+ 				file: fname_;
+ 				format: txt;
+ 				suppress: fname_;
+ 				append: $append;
+ 		}
+ }
+
+   </pre>
+
+</div>
+
+</div>
+
+
+</body>
+</html>
