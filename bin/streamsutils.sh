@@ -708,7 +708,9 @@ TTRO_help_cancelJob='
 #	$TTPRN_streamsDomainId - domain id
 #	$TTPRN_streamsInstanceId - instance id
 # Returns:
-#	the result code of the executed command
+#	success
+# Exits:
+#	if the cancel command fails, e. g. when the command is called with a wrong job number
 # Side Effect:
 #	TTTT_jobno is empty'
 function cancelJob {
@@ -724,6 +726,34 @@ function cancelJob {
 }
 export -f cancelJob
 
+TTRO_help_cancelJobAndLog='
+# Function cancelJobAndLog
+#	cancel job and provide log files in current directory
+#	if TTTT_jobno is not empty, cancel the job
+#	emits a warning if TTTT_jobno is empty and the execution pase is not finalization
+# Parameters:
+#	$TTTT_jobno - the job number
+#	$TTPRN_streamsDomainId - domain id
+#	$TTPRN_streamsInstanceId - instance id
+# Returns:
+#	success
+# Exits:
+#	if anythig goes wrong, e. g. when the command is called with a wrong job number
+# Side Effect:
+#	TTTT_jobno is empty'
+function cancelJobAndLog {
+	if isExistingAndTrue 'TTTT_jobno'; then
+		cancelJobAndLogVariable "$TTPRN_streamsDomainId" "$TTPRN_streamsInstanceId" "$TTTT_jobno"
+		TTTT_jobno=''
+	else
+		isDebug && printDebug "\$TTTT_executionState=$TTTT_executionState"
+		if [[ $TTTT_executionState != 'finalization' ]]; then
+			printWarning "Variable TTTT_jobno is empty. No job to stop"
+		fi
+	fi
+}
+export -f cancelJobAndLog
+
 TTRO_help_cancelJobVariable='
 # Function cancelJobVariable
 # Parameters:
@@ -737,6 +767,24 @@ function cancelJobVariable {
 	echoAndExecute $TTPRN_st canceljob --domain-id "$1" --instance-id "$2" "$3"
 }
 export -f cancelJobVariable
+
+TTRO_help_cancelJobAndLogVariable='
+# Function cancelJobAndLogVariable
+#	cancel job and provide log files in current directory
+# Parameters:
+#	$1 - domain id
+#	$2 - instance id
+#	$3 - jobno
+# Returns:
+#	the result code of the executed tar command
+# Exits:
+#	if anything goes wrong, e. g. when the command is called with a wrong job number'
+function cancelJobAndLogVariable {
+	isDebug && printDebug "$FUNCNAME $*"
+	echoAndExecute $TTPRN_st canceljob --collectlogs --domain-id "$1" --instance-id "$2" "$3"
+	tar xzf "StreamsLogsJob${3}.tgz"
+}
+export -f cancelJobAndLogVariable
 
 TTRO_help_checkJobNo='
 # Function checkJobNo
