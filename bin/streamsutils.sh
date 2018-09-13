@@ -111,7 +111,13 @@ export -f copyAndMorphSpl2
 TTRO_help_splCompile='
 # Function splCompile
 #	Compile spl application expect successful result
-#	No treatment in case of compiler error'
+#	No treatment in case of compiler error
+# Parameters:
+#	TTPR_splcFlags   - compiler flags
+#	TT_mainComposite - the bname of the main composite
+#	TT_toolkitPath   - the toolkit path (the testframe toolkit is automatically appended
+#	TTRO_treads      - the number os used cpu threads
+#	$1 --            - further compiler arguments (compile time arguments)'
 function splCompile {
 	local tkdir=
 	if isExistingAndTrue 'TT_toolkitPath'; then
@@ -120,9 +126,9 @@ function splCompile {
 		tkdir="$TTRO_testframeToolkitDir"
 	fi
 	if [[ -z $TT_dataDir ]]; then
-		echoAndExecute ${TTPRN_splc} "$TTPR_splcFlags" -M $TT_mainComposite -t "$tkdir" -j $TTRO_treads
+		echoAndExecute ${TTPRN_splc} "$TTPR_splcFlags" -M $TT_mainComposite -t "$tkdir" -j $TTRO_treads "$@"
 	else
-		echoAndExecute ${TTPRN_splc} "$TTPR_splcFlags" -M $TT_mainComposite -t "$tkdir" --data-directory "$TT_dataDir" -j $TTRO_treads
+		echoAndExecute ${TTPRN_splc} "$TTPR_splcFlags" -M $TT_mainComposite -t "$tkdir" --data-directory "$TT_dataDir" -j $TTRO_treads "$@"
 	fi
 }
 export -f splCompile
@@ -131,9 +137,10 @@ TTRO_help_splCompileAndLog='
 # Function splCompileAndLog
 #	Compile spl application expect successful result
 #	compiler colsole & error output is stored into file
-#	No treatment in case of compiler error'
+#	No treatment in case of compiler error
+# Parameters: see splCompile'
 function splCompileAndLog {
-	splCompile 2>&1 | tee "$TT_evaluationFile"
+	splCompile "$@" 2>&1 | tee "$TT_evaluationFile"
 }
 export -f splCompileAndLog
 
@@ -141,9 +148,10 @@ TTRO_help_splCompileAndIntercept='
 # Function splCompileAndIntercept
 #	Compile spl application and intercept compile errors
 #	compiler console & error output is stored into file TT_evaluationFile
-#	compiler result code is sored in TTTT_result'
+#	compiler result code is sored in TTTT_result
+# Parameters: see splCompile'
 function splCompileAndIntercept {
-	if splCompile 2>&1 | tee "$TT_evaluationFile"; then
+	if splCompile "$@" 2>&1 | tee "$TT_evaluationFile"; then
 		TTTT_result=0
 	else
 		TTTT_result=$?
@@ -157,9 +165,10 @@ TTRO_help_splCompileInterceptAndSuccess='
 #	Compile spl application and intercept compile errors
 #	Expect success. Otherwise failure condition is set
 #	compiler console & error output is stored into file TT_evaluationFile
-#	compiler result code is sored in TTTT_result'
+#	compiler result code is sored in TTTT_result
+# Parameters: see splCompile'
 function splCompileInterceptAndSuccess {
-	if splCompile 2>&1 | tee "$TT_evaluationFile"; then
+	if splCompile "$@" 2>&1 | tee "$TT_evaluationFile"; then
 		TTTT_result=0
 	else
 		TTTT_result=$?
@@ -176,9 +185,10 @@ TTRO_help_splCompileInterceptAndError='
 #	Compile spl application and intercept compile errors
 #	Expect error. Otherwise failure condition is set
 #	compiler console & error output is stored into file TT_evaluationFile
-#	compiler result code is sored in TTTT_result'
+#	compiler result code is sored in TTTT_result
+# Parameters: see splCompile'
 function splCompileInterceptAndError {
-	if splCompile 2>&1 | tee "$TT_evaluationFile"; then
+	if splCompile "$@" 2>&1 | tee "$TT_evaluationFile"; then
 		TTTT_result=0
 	else
 		TTTT_result=$?
