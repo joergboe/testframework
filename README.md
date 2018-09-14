@@ -181,3 +181,6 @@ Version 3.3.0:
 - Enhancements in toolkit FileSink1
 - Add spldocs of spl toolkit
 - New streamsutils functions cancelJobAndLogVariable and cancelJobAndLogVariable
+
+Version 3.3.1:
+- Allow compile time parameters in function splCompile
