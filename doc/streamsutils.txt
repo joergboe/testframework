@@ -275,6 +275,12 @@
  Function splCompile
 	Compile spl application expect successful result
 	No treatment in case of compiler error
+ Parameters:
+	TTPR_splcFlags   - compiler flags
+	TT_mainComposite - the bname of the main composite
+	TT_toolkitPath   - the toolkit path (the testframe toolkit is automatically appended
+	TTRO_treads      - the number os used cpu threads
+	$1 --            - further compiler arguments (compile time arguments)
 
 
 #######################################
@@ -283,6 +289,7 @@
 	Compile spl application and intercept compile errors
 	compiler console & error output is stored into file TT_evaluationFile
 	compiler result code is sored in TTTT_result
+ Parameters: see splCompile
 
 
 #######################################
@@ -291,6 +298,7 @@
 	Compile spl application expect successful result
 	compiler colsole & error output is stored into file
 	No treatment in case of compiler error
+ Parameters: see splCompile
 
 
 #######################################
@@ -300,6 +308,7 @@
 	Expect error. Otherwise failure condition is set
 	compiler console & error output is stored into file TT_evaluationFile
 	compiler result code is sored in TTTT_result
+ Parameters: see splCompile
 
 
 #######################################
@@ -309,6 +318,7 @@
 	Expect success. Otherwise failure condition is set
 	compiler console & error output is stored into file TT_evaluationFile
 	compiler result code is sored in TTTT_result
+ Parameters: see splCompile
 
 
 #######################################
