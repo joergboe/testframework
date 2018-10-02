@@ -255,7 +255,7 @@ function printTestframeEnvironment {
 	local x
 	for x in 'PREPS' 'STEPS' 'FINS'; do
 		if declare -p "$x" &> /dev/null; then
-			echo "${x}='${!x}'"
+			declare -p "$x"
 		fi
 	done
 	for x in "${!TT_@}"; do
