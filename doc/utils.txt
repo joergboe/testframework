@@ -398,9 +398,9 @@
 
 #######################################
 		isInList
- check whether a token is in a space separated list of tokens
-	$1 the token to search. It must not contain whitespaces
-	$2 the space separated list
+ check whether the pattern $1 matches one of the tokens in a space separated list of tokens
+	$1 the pattern to search. It must not contain whitespaces
+	$2 the space separated list of tokens
 	returns true if the token was in the list; false otherwise
 	exits if called with wrong parameters
 
@@ -411,6 +411,15 @@
 	$1 the token to search. It must not contain any of the separator tokens
 	$2 the list
 	$3 the separators
+	returns true if the token was in the list; false otherwise
+	exits if called with wrong parameters
+
+
+#######################################
+		isInPatternList
+ check whether the token $1 matches one of the pattern in a space separated list of patterns
+	$1 the token to search. It must not contain whitespaces
+	$2 the space separated list of patterns
 	returns true if the token was in the list; false otherwise
 	exits if called with wrong parameters
 
