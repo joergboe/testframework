@@ -166,12 +166,16 @@ function manpage () {
 	Each test case can define an individual timeout variable. When the timeout is reached for an test case, 
 	the job is killed with SIGTERM (15). If the job still runs after additional time (TTPR_additionalTime), 
 	the job is killed with SIGKILL (9).
+	
+	The definition of an individual test Case timeout must be in the Test Case File Preamble like:
+	#--timeout=600
+	
 	If there is no individual timeout defined, the default values TTPR_timeout is used.
 	If there is no individual timeout and no property TTPR_timeout, the test case times out after $defaultTimeout seconds.
 	If there is no property TTPR_additionalTime, the vaue $defaultAdditionalTime is used.
 
 
-	## Reserved Varable Name Ranges
+	## Reserved Variable Name Ranges
 	===============================
 	Variables used for the framework have special prefixes.
 	
