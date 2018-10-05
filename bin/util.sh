@@ -888,8 +888,14 @@ function morphFile {
 					varidlist="${varidlist:1}"
 					negate='true'
 				fi
-				if [[ $varidlist =~ ^[0-9a-zA-Z_\ \	-]+$ ]]; then
-					if isInList "$3" "$varidlist"; then
+				#0-9a-zA-Z_\ \	- are for variant ids
+				#*?[]:.!^ are for pattern matching
+				#] must be in the first place without ^
+				#- must be first or last
+				#[*?. are not special
+				echo "'$varidlist'"
+				if [[ $varidlist =~ ^[][0-9a-zA-Z_\ \	*?:.!\^-]+$ ]]; then
+				if isInPatternList "$3" "$varidlist"; then
 						if [[ -z $negate ]]; then
 							templine="${ident}${code}"
 							writeLine='true'
@@ -1437,9 +1443,9 @@ function renameInSubdirs {
 readonly -f renameInSubdirs
 
 TTRO_help_isInList='
-# check whether a token is in a space separated list of tokens
-#	$1 the token to search. It must not contain whitespaces
-#	$2 the space separated list
+# check whether the pattern $1 matches one of the tokens in a space separated list of tokens
+#	$1 the pattern to search. It must not contain whitespaces
+#	$2 the space separated list of tokens
 #	returns true if the token was in the list; false otherwise
 #	exits if called with wrong parameters'
 function isInList {
@@ -1466,6 +1472,40 @@ function isInList {
 	fi
 }
 readonly -f isInList
+
+TTRO_help_isInPatternList='
+# check whether the token $1 matches one of the pattern in a space separated list of patterns
+#	$1 the token to search. It must not contain whitespaces
+#	$2 the space separated list of patterns
+#	returns true if the token was in the list; false otherwise
+#	exits if called with wrong parameters'
+function isInPatternList {
+	if [[ $# -ne 2 ]]; then printErrorAndExit "$FUNCNAME invalid no of params. Number of Params is $#" $errRt; fi
+	isDebug && printDebug "$FUNCNAME $*"
+	if [[ $1 == *[[:space:]]* ]]; then
+		printErrorAndExit "The token \$1 must not be empty and must not have spaces \$1='$1'" $errRt
+	else
+		local x
+		local isFound=''
+		set -f
+		for x in $2; do
+			echo "\$1=$1 \$x=$x"
+			if [[ $1 == $x ]]; then
+				isFound="true"
+				break
+			fi
+		done
+		set +f
+		if [[ -n $isFound ]]; then
+			isDebug && printDebug "$FUNCNAME return 0"
+			return 0
+		else
+			isDebug && printDebug "$FUNCNAME return 1"
+			return 1
+		fi
+	fi
+}
+readonly -f isInPatternList
 
 TTRO_help_isInListSeparator='
 # check whether a token is in a list of tokens with a special separator
