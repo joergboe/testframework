@@ -184,3 +184,7 @@ Version 3.3.0:
 
 Version 3.3.1:
 - Allow compile time parameters in function splCompile
+
+Version 3.4.0:
+- Function copyAndMorph: vartiant identifieres can now be a pattern
+
