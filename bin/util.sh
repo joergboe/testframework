@@ -879,7 +879,6 @@ function morphFile {
 			linenumber=$((linenumber+1))
 			templine=''; writeLine=''; negate=''
 			if ! read -r; then readResult=1; fi
-			#echo "$REPLY"
 			if [[ $REPLY =~ ^([[:space:]]*)//\<([^\>]+)\>(.*) ]]; then
 				ident="${BASH_REMATCH[1]}"
 				varidlist="${BASH_REMATCH[2]}"
@@ -893,7 +892,6 @@ function morphFile {
 				#] must be in the first place without ^
 				#- must be first or last
 				#[*?. are not special
-				echo "'$varidlist'"
 				if [[ $varidlist =~ ^[][0-9a-zA-Z_\ \	*?:.!\^-]+$ ]]; then
 				if isInPatternList "$3" "$varidlist"; then
 						if [[ -z $negate ]]; then
@@ -916,7 +914,6 @@ function morphFile {
 			if [[ -n $writeLine ]]; then
 				outline2=''
 				while [[ $templine =~ \<\#\$([^#\>]+)\#\>(.*) ]]; do
-					#echo "templine=$templine"
 					local match="${BASH_REMATCH[0]}"
 					local lmatch=${#match}
 					local ltempline=${#templine}
@@ -929,7 +926,6 @@ function morphFile {
 					if [[ $varname =~ [[:space:]] ]]; then
 						printErrorAndExit "Invalid variable name: $varname in file: $1 linenumber: $linenumber line: $REPLY" $errRt
 					else
-						#echo "$varname"
 						if trans=$(eval echo -n "\"\$$varname\""); then
 							outline2="${outline2}${trans}"
 						else
@@ -1489,7 +1485,6 @@ function isInPatternList {
 		local isFound=''
 		set -f
 		for x in $2; do
-			echo "\$1=$1 \$x=$x"
 			if [[ $1 == $x ]]; then
 				isFound="true"
 				break
