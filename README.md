@@ -188,3 +188,6 @@ Version 3.3.1:
 Version 3.4.0:
 - Function copyAndMorph: vartiant identifieres can now be a pattern
 
+Version 3.4.1:
+- Remove unnecessary echos
+
