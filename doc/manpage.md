@@ -155,17 +155,17 @@ An identifier must be composed from following characters : 0-9a-zA-Z-_
 No other characters are allowd in variant list identifiers.
 
 ## Test Case timeouts
-Each test case can define an individual timeout variable. When the timeout is reached for an test case, 
+The test case execution is superviced and when the timeout (TTPR_timeout in seconds) is reached, 
 the job is killed with SIGTERM (15). If the job still runs after additional time (TTPR_additionalTime), 
 the job is killed with SIGKILL (9).
 
-The definition of an individual test Case timeout must be in the Test Case File Preamble like:
+The test case timeout can be controlled with property TTPR_timeout. If this property is not set, the value 120 is used.
+The additional time is controlled property TTPR_additionalTime. If this property is not set, the vaue 45 is used.
+
+Each test Case can define an individual test Case timeout. This can be done in the Test Case File Preamble like:
 #--timeout=600
 
-If there is no individual timeout defined, the default values TTPR_timeout is used.
-If there is no individual timeout and no property TTPR_timeout, the test case times out after 120 seconds.
-If there is no property TTPR_additionalTime, the vaue 45 is used.
-
+The individual test case timeout is used if the value is greater than TTPR_timeout or if the value is greater than 120.
 
 ## Reserved Variable Name Ranges
 Variables used for the framework have special prefixes.
