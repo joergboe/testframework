@@ -369,8 +369,15 @@ else
 fi
 declare -i currentParralelJobs=TTRO_noParallelCases
 
-setVar 'TTPR_timeout' "$defaultTimeout"
-setVar 'TTPR_additionalTime' "$defaultAdditionalTime"
+# do not set timer props here to avoid that nested suites have these props set
+declare TTTT_casesTimeout="$defaultTimeout"
+if isExisting 'TTPR_timeout'; then
+	TTTT_casesTimeout="$TTPR_timeout"
+fi
+declare TTTT_casesAdditionalTime="$defaultAdditionalTime"
+if isExisting 'TTPR_additionalTime'; then
+	TTTT_casesAdditionalTime="$TTPR_additionalTime"
+fi
 
 declare -a tjobid=()	#the job id of process group (jobspec)
 declare -a tpid=()		#pid of the case job this is the crucical value of the structure
@@ -475,7 +482,7 @@ while [[ -z $allJobsGone ]]; do
 						killed[$i]="$now"
 					fi
 				else
-					tmp=$((${killed[$i]}+$TTPR_additionalTime))
+					tmp=$((${killed[$i]}+$TTTT_casesAdditionalTime))
 					if [[ $now -gt $tmp ]]; then
 						if [[ -z ${tjobid[$i]} ]]; then
 							tempjobspec="${tpid[$i]}"
@@ -721,8 +728,8 @@ while [[ -z $allJobsGone ]]; do
 		isDebug && printDebug "Enter tjobid[$availableTpidIndex]=${tjobid[$availableTpidIndex]} state=$tmp2 tpid[${availableTpidIndex}]=$tmp4 time=${tmp} state=$tmp2"
 		startTime[$availableTpidIndex]="$tmp"
 		tmp1=${caseTimeout[$jobIndex]}
-		if [[ $tmp1 -lt $TTPR_timeout ]]; then
-			tmp1="$TTPR_timeout"
+		if [[ $tmp1 -lt $TTTT_casesTimeout ]]; then
+			tmp1="$TTTT_casesTimeout"
 		fi
 		isVerbose && printVerbose "Job timeout $tmp1"
 		endTime[$availableTpidIndex]=$((tmp+tmp1))
