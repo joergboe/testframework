@@ -194,4 +194,7 @@ Version 3.4.1:
 Version 3.5.0:
 - Timeout in test case preambl is not used if the value is lesser than the timeout in property TTPR_timeout
 
+Version 3.5.1:
+- Correct timer properties handling for nested suites
+
 
