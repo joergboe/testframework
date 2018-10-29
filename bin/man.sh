@@ -158,8 +158,9 @@ function manpage () {
 	
 	The variantList must be a space separated list of identifiers:
 	#--variantList='space separated list of variant identifiers'
-	An identifier must be composed from following characters : 0-9a-zA-Z-_
-	No other characters are allowd in variant list identifiers.
+	An identifier should be composed from following characters : 0-9a-zA-Z-_
+	Make sure that the variant identifiers can be easily used in pattern matching 
+	expressions. Thus avoid characters: *?[]-:!^
 	
 	## Test Case timeouts
 	=====================
