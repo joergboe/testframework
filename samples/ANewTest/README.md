@@ -11,4 +11,4 @@ test finalization steps and the use of test properties.
 
 So the expected result is:
 
-case variants=15 skipped=3 failures=3 errors=6
+case variants=15 failures=3 errors=6 skipped=3
