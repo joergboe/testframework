@@ -204,11 +204,15 @@ function evalPreambl {
 		while [[ result -eq 0 ]]; do
 			if ! read -r; then result=1; fi
 			if [[ ( result -eq 0 ) || ( ${#REPLY} -gt 0 ) ]]; then #do not eval the last and empty line
-				if [[ $REPLY =~ ^[[:space:]]*\#--[[:space:]]*(.*) ]]; then
-					#echo true "'${BASH_REMATCH[0]}'" "'${BASH_REMATCH[1]}'"
-					preamblLine="${preamblLine}${BASH_REMATCH[1]}"
+				if [[ $REPLY =~ ^[[:space:]]*\#--([[:space:]]*)(.*) ]]; then
+					#echo true "'${BASH_REMATCH[0]}'" "'${BASH_REMATCH[1]}' '${BASH_REMATCH[2]}'"
+					if [[ -z $preamblLine ]]; then #take the spaces only in continuation lines
+						preamblLine="${preamblLine}${BASH_REMATCH[2]}"
+					else
+						preamblLine="${preamblLine}${BASH_REMATCH[1]}${BASH_REMATCH[2]}"
+					fi
 					len=$((${#preamblLine}-1))
-					if [[ ${preamblLine:$len} == '\' ]]; then
+					if [[ ( ${#preamblLine} -gt 0 ) && ( ${preamblLine:$len} == '\' ) ]]; then
 						preamblLine="${preamblLine:0:$len}"
 					else
 						if SplitPreamblAssign "$preamblLine"; then
@@ -232,12 +236,6 @@ function evalPreambl {
 											return 1
 										fi
 										isVerbose && printVerbose "variantList='${variantList}'"
-										for x in $variantList; do
-											if ! [[ $x =~ ^[a-zA-Z0-9_-]*$ ]]; then
-												printError "Invalid variant $x in list in file=$1 line=$lineno '$preamblLine'"
-												return 1
-											fi
-										done
 									;;
 									timeout )
 										if ! eval "timeout=${value}"; then

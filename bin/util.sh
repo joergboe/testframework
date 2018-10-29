@@ -887,25 +887,16 @@ function morphFile {
 					varidlist="${varidlist:1}"
 					negate='true'
 				fi
-				#0-9a-zA-Z_\ \	- are for variant ids
-				#*?[]:.!^ are for pattern matching
-				#] must be in the first place without ^
-				#- must be first or last
-				#[*?. are not special
-				if [[ $varidlist =~ ^[][0-9a-zA-Z_\ \	*?:.!\^-]+$ ]]; then
 				if isInPatternList "$3" "$varidlist"; then
-						if [[ -z $negate ]]; then
-							templine="${ident}${code}"
-							writeLine='true'
-						fi
-					else
-						if [[ -n $negate ]]; then
-							templine="${ident}${code}"
-							writeLine='true'
-						fi
+					if [[ -z $negate ]]; then
+						templine="${ident}${code}"
+						writeLine='true'
 					fi
 				else
-					printErrorAndExit "Invalid variant list in file: $1 linenumber: $linenumber line: $REPLY" $errRt
+					if [[ -n $negate ]]; then
+						templine="${ident}${code}"
+						writeLine='true'
+					fi
 				fi
 			else
 				templine="$REPLY"
