@@ -1541,6 +1541,8 @@ function import {
 		TTXX_tools="$TTXX_tools $tmp"
 		export TTXX_tools
 		source "$tmp"
+		fixPropsVars
+		writeProtectExportedFunctions
 	fi
 }
 readonly -f import

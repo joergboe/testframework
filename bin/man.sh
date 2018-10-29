@@ -136,7 +136,6 @@ function manpage () {
 	import "\$TTRO_scriptDir/streamsutils.sh"\n
 	
 	An alternative way to import a Test Tools module is the command line options --tools, which imports one Tools script.
-	Or you may define a colon separated list of Test Tools files in variable TTRO_tools.
 
 
 	## Test File Preamble

@@ -606,24 +606,28 @@ cd "$TTRO_workDir"
 
 #-----------------------------------------------------------
 #check if properties file exists - read properties and fixup
+declare -x TTXX_tools='' # allow imports in property file
 if [[ ${#propertyFiles[@]} -gt 0 ]]; then
 	for ((i=0; i<${#propertyFiles[@]}; i++)); do
 		x="${propertyFiles[$i]}"
 		printInfo "Include global properties $x"
 		source "${x}"
+		fixPropsVars
+		writeProtectExportedFunctions
 	done
 elif [[ -e "$TTRO_inputDir/$TEST_PROPERTIES" ]]; then
 	printInfo "Include global properties $TTRO_inputDir/$TEST_PROPERTIES"
 	source "$TTRO_inputDir/$TEST_PROPERTIES"
+	fixPropsVars
+	writeProtectExportedFunctions
 else
 	printInfo "No global properies file to evaluate"
+	fixPropsVars
+	writeProtectExportedFunctions
 fi
-fixPropsVars # fix global properties and vars
-writeProtectExportedFunctions
 
 #------------------------------------------------
 # source tools
-declare -x TTXX_tools=''
 if [[ ${#toolsFiles[@]} -gt 0 ]]; then
 	for ((i=0; i<${#toolsFiles[@]}; i++)); do
 		x="${toolsFiles[$i]}"
@@ -637,8 +641,6 @@ if [[ ${#toolsFiles[@]} -gt 0 ]]; then
 else
 	isDebug && printDebug "No additional global test tools files defined"
 fi
-fixPropsVars # fix global properties and var
-writeProtectExportedFunctions
 
 #------------------------------------------------
 # diagnostics
