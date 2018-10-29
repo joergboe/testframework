@@ -197,4 +197,5 @@ Version 3.5.0:
 Version 3.5.1:
 - Correct timer properties handling for nested suites
 
-
+Version 3.5.2:
+- Preamble continuation lines must not remove leading whitespaces
