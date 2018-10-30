@@ -7,7 +7,7 @@ The execution of test case/suite variants and the parallel execution is inherent
 More docs can be found here:
 * [Reference for utility scripts](utils.txt)
 * [Reference for streams utility scripts](streamsutils.txt)
-* [Spldoc for test toolkit streamsx.testframe](spldoc/html/index.html)
+* [Spldoc for test toolkit streamsx.testframe](https://joergboe.github.io/testframework/doc/spldoc/html/index.html)
 
 ## Test Cases, Test Suites and Test Collections
 A test case is comprised of a directory with the main test case file with name: 'TestCase.sh' and other necessary artifacts
