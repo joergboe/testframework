@@ -3,15 +3,17 @@
 #--variantCount=2
 
 #Case definition
-setVar 'TTRO_prepsCase' 'copyAndMorphSpl'
-setVar 'TTRO_stepsCase' 'myCompile myEvaluate'
+PREPS=(
+	'copyAndMorphSpl'
+	'TT_mainComposite=com.ibm.streamsx.inet.sample::GetWeather'
+)
+STEPS='myCompile
+	myEvaluate'
 
 # A customized compiler step expects that the compilation
-# is successfully for the first run
-# and fails in the second run
+# is successfully for the first variant
+# and fails in the all other variants
 function myCompile {
-	TT_mainComposite='com.ibm.streamsx.inet.sample::GetWeather'
-	local rr
 	splCompileAndIntercept
 	echo "######### myCompile result $TTTT_result"
 	if [[ $TTRO_variantCase -eq 0 ]]; then
@@ -30,8 +32,8 @@ function myCompile {
 }
 
 # A customized evaluation
-# does nothing in the firs run
-# evaluates in the second step
+# does nothing in the first variant
+# evaluates in the second variant
 function myEvaluate {
 	if [[ $TTRO_variantCase -eq 0 ]]; then
 		return 0
