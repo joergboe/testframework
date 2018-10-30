@@ -131,7 +131,6 @@ Especially the streamsutils.sh must be imported at the beginning of the main bod
 import "$TTRO_scriptDir/streamsutils.sh"\n
 
 An alternative way to import a Test Tools module is the command line options --tools, which imports one Tools script.
-Or you may define a colon separated list of Test Tools files in variable TTRO_tools.
 
 
 ## Test File Preamble
@@ -151,8 +150,9 @@ The variantCount must be in the form:
 
 The variantList must be a space separated list of identifiers:
 #--variantList='space separated list of variant identifiers'
-An identifier must be composed from following characters : 0-9a-zA-Z-_
-No other characters are allowd in variant list identifiers.
+An identifier should be composed from following characters : 0-9a-zA-Z-_
+Make sure that the variant identifiers can be easily used in pattern matching 
+expressions. Thus avoid characters: *?[]-:!^
 
 ## Test Case timeouts
 The test case execution is superviced and when the timeout (TTPR_timeout in seconds) is reached, 
