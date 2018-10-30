@@ -199,3 +199,4 @@ Version 3.5.1:
 
 Version 3.5.2:
 - Preamble continuation lines must not remove leading whitespaces
+- Allow tool imports in property file
