@@ -24,10 +24,12 @@ Prefer the [[ ]] expression (This is a Compound Command in bash man)
 Word splitting and pathname expansion are not performed on the words between the [[ and ]];
 tilde expansion, parameter and variable expansion,  arithmetic  expansion,  command  substitution, process substitution, and quote removal
 are performed.  Conditional operators such as -f must be unquoted to be recognized as primaries.
-- Unquotes variables
-- Unquoted parenthese
+- Quoting of variables is not required but is accepted
+- Quoting of litarals which contain whitespaces is required
+- But if characters * and ? are quoted, the special meaning is removes (pattern matching)
+- Use unquoted parenthese
 - Pattern matching with == and !=
-- Regular expression mathch with =~
+- Regular expression match with =~
 ....
 Therefore a
 if [[ -n \$STFPRN_VERBOSE && -z \$STFPRN_VERBOSE_DISABLE ]]; then
@@ -72,7 +74,46 @@ Variable Expansion
               
 Words  of  the  form $'string' are treated specially.  The word expands to string, with backslash-escaped characters replaced as specified by the ANSI C standard.
 
-Patternj matching
+Arrays
+======
+
+An expression like:
+name=(value1 value2 value3) 
+defines an indexed array
+
+To append a value to an indexed array use:
+name+=(valuen)
+
+To define a associative array use:
+declare -A name=()
+
+To set a specific element use:
+name[index]=value
+or
+name[key]=value
+
+To get the value of an specific element use:
+\${name[index]}
+or
+\${name[key]}
+
+To get the number of elements in an array use:
+\${#name[@]} or \${#name[*]}
+
+The expression 
+\${#name[index/key]} gives the length of the specified element.
+
+To get all values of an indexed array use:
+\${name[@]} or \${name[*]}
+
+To get all keys of an associative array use:
+\${!name[@]} or \${!name[*]}
+
+If the word is double-quoted, \${name[*]} expands to a single word with the value of 
+each array member separated by the first character of the IFS special variable, and 
+\${name[@]} expands each element of name to a separate word.
+
+Pattern matching
 =================
 In a range e.g. [0-9a-zA-z_]  there must be:
  ] must be in the first place without ^
