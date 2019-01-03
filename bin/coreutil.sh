@@ -63,7 +63,10 @@ function exeSuite {
 	isDebug && printDebug "suite workdir is $sworkdir"
 	if [[ -e $sworkdir ]]; then
 		if [[ $1 -ne 0 ]]; then
-			rm -rf "$sworkdir"
+			printError "Suite workdir already exists! Probably duplicate variant. workdir: $sworkdir"
+			suiteErrors=$(( suiteErrors + 1))
+			builtin echo "$suiteNestingString" >> "${6}/SUITE_ERROR"
+			return 0
 		fi
 	fi
 	if [[ $1 -ne 0 ]]; then
