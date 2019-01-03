@@ -681,11 +681,9 @@ while [[ -z $allJobsGone ]]; do
 		cpreamblError="${casePreambErrors[$jobIndex]}"
 		#make and cleanup case work dir
 		if [[ -e $cworkdir ]]; then
-			printError "Case workdir exists: $cworkdir"
-			rm -rf "$cworkdir"
-		else
-			mkdir -p "$cworkdir"
+			printErrorAndExit "Case workdir exists! Probably duplicate variant. workdir: $cworkdir" $errSuiteError
 		fi
+		mkdir -p "$cworkdir"
 		tmp=1 # count running jobs + 1
 		for ((i=0; i<maxParralelJobs; i++)); do
 			if [[ -n ${tpid[$i]} ]]; then
