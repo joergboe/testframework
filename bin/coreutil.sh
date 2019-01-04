@@ -346,7 +346,7 @@ function checkCats {
 	local lenCat="${#TTTT_categoryArray[*]}"
 	local lenRunPat="${#TTTT_runCategoryPatternArray[*]}"
 	if [[ ( $lenCat -eq 0 ) || ( $lenRunPat -eq 0 ) ]]; then
-		isVerbose && printVerbose "No artifact category set or nor run category pattern set: return true"
+		isVerbose && printVerbose "No artifact category set or no run category pattern set: return true"
 		return 0
 	fi
 	local i=0

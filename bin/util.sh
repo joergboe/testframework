@@ -40,7 +40,13 @@ readonly -f setFailure
 
 TTRO_help_setCategory='
 # Function setCategory
-#	set the use defined categories of a test case or suite
+#	set the assigned categories of a test case or suite
+#	Use this function in initialization phase of case or suite only
+#	If this function is not used, a
+#		suite has no category assigned
+#		a case has the category "default"
+#	If this function is called with no parameters, the list
+#	with the assigned categories becomes the empty list.
 #	$1 ... the category identifieres of this atrifact'
 function setCategory {
 	if [[ $TTTT_executionState != 'initializing' ]]; then
@@ -1787,6 +1793,212 @@ checkLineCount() {
 	return 0
 }
 readonly -f checkLineCount
+
+TTRO_help_findTokenInFiles='
+# Function findTokenInFiles
+#	Find a token in files
+# Parameters:
+#	$1 - if true, the function exits if no files are scanned
+#	$2 - the token to find
+#	$3... the list of files to check
+# Returns:
+#	true - if token found
+#	false - otherwise
+# Exits:
+#	if called with wrong params
+#	a file is not readable
+#	if no files are scanned and $2 was true'
+findTokenInFiles() {
+	if [[ $# -lt 2 ]]; then printErrorAndExit "$FUNCNAME : wrong number of params $#" $errRt; fi
+	if [[ -z $2 ]]; then printErrorAndExit "$FUNCNAME : the token \$2 must not be empty" $errRt; fi
+	local exitOnZeroFiles="$1"; shift
+	local token="$1"; shift
+	local filesChecked=''
+	local myfile
+	local fcount=0;
+	for myfile in "$@"; do
+		if [[ -r $myfile ]]; then
+			fcount=$((fcount+1))
+			filesChecked="$filesChecked $myfile"
+			if grep "$token" "$myfile"; then
+				printInfo "Token: '$token' found in file: $myfile"
+				return 0
+			fi
+		else
+			printErrorAndExit "$FUNCNAME : file: '$myfile' does not exist or is not readable"  $errRt
+		fi
+	done
+	if [[ $fcount -eq 0 ]]; then
+		if [[ $exitOnZeroFiles ]]; then
+			printErrorAndExit "$FUNCNAME : No files to search" $errRt
+		else
+			printWarning "Token '$token' not found in $fcount files. Checked files: $filesChecked"
+		fi
+	else
+		printInfo "Token: '$token' not found in $fcount files. Checked files: $filesChecked"
+	fi
+	return 1
+}
+export -f findTokenInFiles
+
+TTRO_help_findTokenInDirs='
+# Function findTokenInDirs
+#	Find a token in files in a number of directories
+# Parameters:
+#	$1 - if true, the function exits if no files are scanned
+#	$2 - the token to find
+#	$3 - the file wildcard
+#	$4 - the space separated list of directories to check
+# Returns:
+#	true - if token found
+#	false - otherwise
+# Exits:
+#	if called with wrong params
+#	a file is not readable
+if no files are scanned and $3 was true'
+findTokenInDirs() {
+	if [[ $# -lt 3 ]]; then printErrorAndExit "$FUNCNAME : wrong number of params $#" $errRt; fi
+	if [[ -z $2 ]]; then printErrorAndExit "$FUNCNAME : \$2 must not be empty" $errRt; fi
+	if [[ -z $3 ]]; then printErrorAndExit "$FUNCNAME : \$3 must not be empty" $errRt; fi
+	local exitOnZeroFiles="$1";
+	local token="$2";
+	local wildcard="$3"
+	shift 3
+	local fileList=''
+	local mydir
+	local myfile
+	for mydir in "$@"; do
+		if [[ -d ${mydir} ]]; then
+			for myfile in ${mydir}/${wildcard}; do
+				fileList="$fileList $myfile"
+			done
+		else
+			printErrorAndExit "Directory '$mydir' does not exists or is not a direcrtory" $errRt
+		fi
+	done
+	if findTokenInFiles "$exitOnZeroFiles" "$token" $fileList; then
+		return 0
+	else
+		return 1
+	fi
+}
+export -f findTokenInDirs
+
+TTRO_help_checkTokenIsInFiles='
+# Function checkTokenIsInFiles
+#	Check if a token is in one of these files
+# Parameters:
+#	$1 - if true, the function exits if no files are scanned
+#	$2 - the token to find
+#	$3... the list of files to check
+# Returns:
+#	true
+#	Set failure if token was not found
+# Exits:
+#	if called with wrong params
+#	a file is not readable
+#	if no files are scanned and $2 was true'
+checkTokenIsInFiles() {
+	isDebug && printDebug "$FUNCNAME $*"
+	local cond="$1"
+	local tok="$2"
+	shift 2
+	if findTokenInFiles "$cond" "$tok" "$@"; then
+		return 0
+	else
+		setFailure "Token $tok was not in one of these files: $*"
+		return 0
+	fi
+}
+export -f checkTokenIsInFiles
+
+TTRO_help_checkTokenIsNotInFiles='
+# Function checkTokenIsNotInFiles
+#	Check if a token is not in one of these files
+# Parameters:
+#	$1 - if true, the function exits if no files are scanned
+#	$2 - the token to find
+#	$3... the list of files to check
+# Returns:
+#	true
+#	Set failure if token was found in one of the files
+# Exits:
+#	if called with wrong params
+#	a file is not readable
+#	if no files are scanned and $2 was true'
+checkTokenIsNotInFiles() {
+	isDebug && printDebug "$FUNCNAME $*"
+	local cond="$1"
+	local tok="$2"
+	shift 2
+	if findTokenInFiles "$cond" "$tok" "$@"; then
+		setFailure "Token $tok was not in one of these files: $*"
+		return 0
+	else
+		return 0
+	fi
+}
+export -f checkTokenIsNotInFiles
+
+TTRO_help_checkTokenIsInDirs='
+# Function checkTokenIsInDirs
+#	Check if a token is in files in directories
+# Parameters:
+#	$1 - if true, the function exits if no files are scanned
+#	$2 - the token to find
+#	$3 - the file wildcard
+#	$4 - the space separated list of directories to check
+# Returns:
+#	true
+#	Set failure if the token wa not in one of the input directories
+# Exits:
+#	if called with wrong params
+#	a file is not readable
+if no files are scanned and $3 was true'
+checkTokenIsInDirs() {
+	isDebug && printDebug "$FUNCNAME $*"
+	local cond="$1"
+	local tok="$2"
+	local wc="$3"
+	shift 3
+	if findTokenInDirs "$cond" "$tok" "$wc" "$@"; then
+		return 0
+	else
+		setFailure "Token $tok was not in one of these directories: $*"
+		return 0
+	fi
+}
+export -f checkTokenIsInDirs
+
+TTRO_help_checkTokenIsNotInDirs='
+# Function checkTokenIsNotInDirs
+#	Check if a token is not in files in directories
+# Parameters:
+#	$1 - if true, the function exits if no files are scanned
+#	$2 - the token to find
+#	$3 - the file wildcard
+#	$4 - the space separated list of directories to check
+# Returns:
+#	true
+#	Set failure if the token was in on of the files in directories
+# Exits:
+#	if called with wrong params
+#	a file is not readable
+if no files are scanned and $3 was true'
+checkTokenIsNotInDirs() {
+	isDebug && printDebug "$FUNCNAME $*"
+	local cond="$1";
+	local tok="$2";
+	local wc="$3"
+	shift 3
+	if findTokenInDirs "$cond" "$tok" "$wc" "$@"; then
+		setFailure "Token $tok was found in one of these directories: $*"
+		return 0
+	else
+		return 0
+	fi
+}
+export -f checkTokenIsNotInDirs
 
 #Guard for the last statement - make returncode always 0
 :
