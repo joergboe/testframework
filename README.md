@@ -201,3 +201,9 @@ Version 3.5.2:
 - Preamble continuation lines must not remove leading whitespaces
 - Allow tool imports in property file
 - Remove deprecated variables in Streams1 sample
+
+Version 3.6.0:
+- Improved error handling in case of duplicate case variant or suite variant
+- New utils functions findTokenInFiles, findTokenInDirs, checkTokenIsInFiles, checkTokenIsNotInFiles, checkTokenIsInDirs, checkTokenIsNotInDirs
+- New streamsutil functions: getHostList, getHostListVariable, getJobLogDirs, getJobLogDirsVariable, checkLogsNoError
+- Correction streamsutil: all TT_ variables set with function setVar to enable export
