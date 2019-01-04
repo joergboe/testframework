@@ -51,6 +51,7 @@ TT_traceLevel='trace'
 TT_dataDir='data'
 TT_waitForFileName="$TT_dataDir/FinalMarker"
 TT_waitForFileInterval=3
+TT_hostList=''
 
 #make toolkit
 printInfo "Make toolkit in $TTRO_testframeToolkitDir"
@@ -310,29 +311,60 @@ export -f mkInstVariable
 TTRO_help_startInst='
 # Function startInst
 #	Start instance from global properties
-#	If variable  TTPR_noStart or TTTT_noStreamsStart is true, do nothing'
+#	Setup host list TT_hostList
+#	If variable  TTPR_noStart or TTTT_noStreamsStart is true, do not start instance'
 function startInst {
-	startInstVariable "$TTPRN_streamsInstanceId"
+	startInstVariable "$TTPRN_streamsDomainId" "$TTPRN_streamsInstanceId"
 }
 export -f startInst
 
 TTRO_help_startInstVariable='
 # Function startInstVariable
 #	Start instance with variable parameters
-#	If variable  TTPR_noStart or TTTT_noStreamsStart is true, do nothing
-#	$1 domainname'
+#	Setup host list TT_hostList
+#	If variable  TTPR_noStart or TTTT_noStreamsStart is true, do not start instance
+#	$1 domainname
+#	$2 instancname'
 function startInstVariable {
 	isDebug && printDebug "$FUNCNAME $*"
+	[[ $# -ne 2 ]] && printErrorAndExit "Wrong number of arguments in $FUNCNAME # $#" $errRt
 	if isExistingAndTrue 'TTPR_noStart' || isExistingAndTrue 'TTTT_noStreamsStart'; then
-		printInfo "$FUNCNAME : function supressed"
+		printInfo "$FUNCNAME : Startup supressed"
+		getHostListVariable "$1" "$2"
 		return 0
 	fi
 	if ! echoAndExecute $TTPRN_st startinst --instance-id "$1"; then
 		printError "$FUNCNAME : Can not start instance $1"
 		return $errTestFail
 	fi
+	getHostListVariable "$1" "$2"
 }
 export -f startInstVariable
+
+TTRO_help_getHostList='
+# Function getHostList
+#	get the list of hosts in TT_hostList'
+getHostList() {
+	getHostListVariable "$TTPRN_streamsDomainId" "$TTPRN_streamsInstanceId" 
+}
+export -f getHostList
+
+TTRO_help_getHostListVariable='
+# Function getHostListVariable
+#	get the list of hosts in TT_hostList
+# Parameters:
+#	$1 DomainId
+#	$2 InstanceId'
+getHostListVariable() {
+	[[ $# -ne 2 ]] && printErrorAndExit "Wrong number of arguments in $FUNCNAME # $#" $errRt
+	if ! TT_hostList=$($TTPRN_st lshosts --domain-id "$1" --instance-id "$2"); then
+		printError "$FUNCNAME : Can not get host list"
+		TT_hostList=''
+		return $errTestFail
+	fi
+	printInfo "The hosts list: $TT_hostList"
+}
+export -f getHostListVariable
 
 TTRO_help_cleanUpInstAndDomainVariableOld='
 # Function cleanUpInstAndDomainVariableOld deprecated, use cleanUpInstAndDomain
@@ -722,12 +754,14 @@ TTRO_help_cancelJob='
 # Exits:
 #	if the cancel command fails, e. g. when the command is called with a wrong job number
 # Side Effect:
-#	TTTT_jobno is empty'
+#	TTTT_jobno is empty
+#	TTTT_jobnoCanceled is set with the number of the canceled job or empty'
 function cancelJob {
 	if isExistingAndTrue 'TTTT_jobno'; then
 		cancelJobVariable "$TTPRN_streamsDomainId" "$TTPRN_streamsInstanceId" "$TTTT_jobno"
 		TTTT_jobno=''
 	else
+		TTTT_jobnoCanceled=''
 		isDebug && printDebug "\$TTTT_executionState=$TTTT_executionState"
 		if [[ $TTTT_executionState != 'finalization' ]]; then
 			printWarning "Variable TTTT_jobno is empty. No job to stop"
@@ -750,12 +784,14 @@ TTRO_help_cancelJobAndLog='
 # Exits:
 #	if anythig goes wrong, e. g. when the command is called with a wrong job number
 # Side Effect:
-#	TTTT_jobno is empty'
+#	TTTT_jobno is empty
+#	TTTT_jobnoCanceled is set with the number of the canceled job or empty'
 function cancelJobAndLog {
 	if isExistingAndTrue 'TTTT_jobno'; then
 		cancelJobAndLogVariable "$TTPRN_streamsDomainId" "$TTPRN_streamsInstanceId" "$TTTT_jobno"
 		TTTT_jobno=''
 	else
+		TTTT_jobnoCanceled=''
 		isDebug && printDebug "\$TTTT_executionState=$TTTT_executionState"
 		if [[ $TTTT_executionState != 'finalization' ]]; then
 			printWarning "Variable TTTT_jobno is empty. No job to stop"
@@ -771,10 +807,17 @@ TTRO_help_cancelJobVariable='
 #	$2 - instance id
 #	$3 - jobno
 # Returns:
-#	the result code of the executed command'
+#	the result code of the executed command
+# Exits:
+#	if anything goes wrong, e. g. when the command is called with a wrong job number
+# Side Effect:
+#	TTTT_jobnoCanceled is set with the number of the canceled job or empty'
 function cancelJobVariable {
 	isDebug && printDebug "$FUNCNAME $*"
+	[[ $# -ne 3 ]] && printErrorAndExit "$FUNCNAME called with wrong number of params: $#" $errRt
+	TTTT_jobnoCanceled=''
 	echoAndExecute $TTPRN_st canceljob --domain-id "$1" --instance-id "$2" "$3"
+	TTTT_jobnoCanceled="$3"
 }
 export -f cancelJobVariable
 
@@ -788,11 +831,19 @@ TTRO_help_cancelJobAndLogVariable='
 # Returns:
 #	the result code of the executed tar command
 # Exits:
-#	if anything goes wrong, e. g. when the command is called with a wrong job number'
+#	if anything goes wrong, e. g. when the command is called with a wrong job number
+# Side Effect:
+#	TTTT_jobnoCanceled is set with the number of the canceled job or empty
+#	TTTT_jobLogDirs is set
+#	TT_hostList is set'
 function cancelJobAndLogVariable {
 	isDebug && printDebug "$FUNCNAME $*"
+	[[ $# -ne 3 ]] && printErrorAndExit "$FUNCNAME called with wrong number of params: $#" $errRt
+	TTTT_jobnoCanceled=''
 	echoAndExecute $TTPRN_st canceljob --collectlogs --domain-id "$1" --instance-id "$2" "$3"
+	TTTT_jobnoCanceled="$3"
 	tar xzf "StreamsLogsJob${3}.tgz"
+	getJobLogDirs
 }
 export -f cancelJobAndLogVariable
 
@@ -815,6 +866,57 @@ function checkJobNo {
 	return 0
 }
 export -f checkJobNo
+
+TTRO_help_getJobLogDirs='
+# Function getJobLogDirs
+#	get the list of job log dirs in TTTT_jobLogDirs
+# Parameters:
+#	TTTT_jobnoCanceled - the job number of the canceled job
+#	TT_hostList
+# Side Effect:
+#	TTTT_jobLogDirs - contails list with dirs
+#	TT_hostList is set if it was empty'
+getJobLogDirs() {
+	if [[ -z $TT_hostList ]]; then
+		getHostList
+	fi
+	getJobLogDirsVariable "$TT_hostList" "$TTTT_jobnoCanceled" "$TTPRN_streamsInstanceId"
+}
+export -f getJobLogDirs
+
+TTRO_help_getJobLogDirsVariable='
+# Function getJobLogDirsVariable
+#	get the list of job log dirs in TTTT_jobLogDirs
+# Parameters:
+#	$1 - the job number of the canceled job
+#	$2 - the host List
+#	$3 - the instance id
+# Returns:
+#	true
+# Exits:
+#	if anything goes wrong
+# Side Effect:
+#	TTTT_jobLogDirs - contails list with dirs
+#	TT_hostList is set if it was empty'
+getJobLogDirsVariable() {
+	isDebug && printDebug "$FUNCNAME $*"
+	[[ $# -ne 3 ]] && printErrorAndExit "$FUNCNAME called with wrong number of params: $#" $errRt
+	TTTT_jobLogDirs=''
+	if [[ $1 ]]; then
+		local host
+		local second=''
+		for host in $TT_hostList; do
+			if [[ $second ]]; then
+				TTTT_jobLogDirs="$TTTT_jobLogDirs "
+			fi
+			second='true'
+			TTTT_jobLogDirs="${TTTT_jobLogDirs}${host}/instances/${3}/jobs/${1}"
+		done
+	fi
+	printInfo "Job log dirs: $TTTT_jobLogDirs"
+}
+export -f getJobLogDirsVariable
+
 
 TTRO_help_jobHealthyVariable='
 # Function jobHealthyVariable
@@ -977,5 +1079,24 @@ function waitForFinAndHealth {
 	return 0
 }
 export -f waitForFinAndHealth
+
+TTRO_help_checkLogsNoError='
+# Function checkLogsNoError
+#	Check if log files have no error Token ERROR
+# Parameters:
+#	TTTT_jobnoCanceled - if true, the check done
+#	TTTT_jobLogDirs - The list with the log dirs
+# Returns:
+#	true
+#	Set failure if the token was in on of the log files
+# Exits:
+#	if called with wrong params
+#	a file is not readable
+if no files are scanned'
+checkLogsNoError() {
+	isDebug && printDebug "$FUNCNAME $*"
+	checkTokenIsNotInDirs 'true' 'ERROR' '*' $TTTT_jobLogDirs
+}
+export -f checkLogsNoError
 
 :

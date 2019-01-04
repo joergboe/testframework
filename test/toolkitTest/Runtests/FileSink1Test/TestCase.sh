@@ -1,7 +1,7 @@
 # Submission test for Streams
 #--variantList='default noTuples noWin noFin allInOne allMarkerInOne sequence sequenceAllInOne'
 PREPS='copyAndMorphSpl'
-STEPS='splCompile submitJobInterceptAndSuccess checkJobNo myWaitForFin cancelJobAndLog myEvaluate1'
+STEPS='splCompile submitJobInterceptAndSuccess checkJobNo myWaitForFin cancelJobAndLog myEvaluate1 checkLogsNoError'
 FINS='cancelJob'
 
 myWaitForFin() {
