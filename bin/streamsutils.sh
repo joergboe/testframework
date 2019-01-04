@@ -44,14 +44,14 @@ fi
 #setVar 'TTRO_ttt' '55'
 # variables required for functions
 setVar 'TTRO_testframeToolkitDir' "$TTRO_scriptDir/../streamsx.testframe"
-TT_mainComposite='Main'
-TT_sabFile='./output/Main.sab' 
-TT_jobFile='./jobno.log'
-TT_traceLevel='trace'
-TT_dataDir='data'
-TT_waitForFileName="$TT_dataDir/FinalMarker"
-TT_waitForFileInterval=3
-TT_hostList=''
+setVar 'TT_mainComposite' 'Main'
+setVar 'TT_sabFile' './output/Main.sab' 
+setVar 'TT_jobFile' './jobno.log'
+setVar 'TT_traceLevel' 'trace'
+setVar 'TT_dataDir' 'data'
+setVar 'TT_waitForFileName' "$TT_dataDir/FinalMarker"
+setVar 'TT_waitForFileInterval' 3
+setVar 'TT_hostList' ''
 
 #make toolkit
 printInfo "Make toolkit in $TTRO_testframeToolkitDir"
@@ -333,8 +333,8 @@ function startInstVariable {
 		getHostListVariable "$1" "$2"
 		return 0
 	fi
-	if ! echoAndExecute $TTPRN_st startinst --instance-id "$1"; then
-		printError "$FUNCNAME : Can not start instance $1"
+	if ! echoAndExecute $TTPRN_st startinst --domain-id "$1" --instance-id "$2"; then
+		printError "$FUNCNAME : Can not start instance $2 in domain $1"
 		return $errTestFail
 	fi
 	getHostListVariable "$1" "$2"
@@ -357,11 +357,13 @@ TTRO_help_getHostListVariable='
 #	$2 InstanceId'
 getHostListVariable() {
 	[[ $# -ne 2 ]] && printErrorAndExit "Wrong number of arguments in $FUNCNAME # $#" $errRt
-	if ! TT_hostList=$($TTPRN_st lshosts --domain-id "$1" --instance-id "$2"); then
+	local hostlist
+	if ! hostlist=$($TTPRN_st lshosts --domain-id "$1" --instance-id "$2"); then
 		printError "$FUNCNAME : Can not get host list"
-		TT_hostList=''
+		setVar 'TT_hostList' ''
 		return $errTestFail
 	fi
+	setVar 'TT_hostList' "$hostlist"
 	printInfo "The hosts list: $TT_hostList"
 }
 export -f getHostListVariable
@@ -880,7 +882,7 @@ getJobLogDirs() {
 	if [[ -z $TT_hostList ]]; then
 		getHostList
 	fi
-	getJobLogDirsVariable "$TT_hostList" "$TTTT_jobnoCanceled" "$TTPRN_streamsInstanceId"
+	getJobLogDirsVariable "$TTTT_jobnoCanceled" "$TT_hostList" "$TTPRN_streamsInstanceId"
 }
 export -f getJobLogDirs
 
@@ -912,6 +914,9 @@ getJobLogDirsVariable() {
 			second='true'
 			TTTT_jobLogDirs="${TTTT_jobLogDirs}${host}/instances/${3}/jobs/${1}"
 		done
+	else
+		TTTT_jobLogDirs=''
+		printWarning "$FUNCNAME with no job to cancel called"
 	fi
 	printInfo "Job log dirs: $TTTT_jobLogDirs"
 }
