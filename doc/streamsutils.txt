@@ -13,6 +13,7 @@
 	if the cancel command fails, e. g. when the command is called with a wrong job number
  Side Effect:
 	TTTT_jobno is empty
+	TTTT_jobnoCanceled is set with the number of the canceled job or empty
 
 
 #######################################
@@ -31,6 +32,7 @@
 	if anythig goes wrong, e. g. when the command is called with a wrong job number
  Side Effect:
 	TTTT_jobno is empty
+	TTTT_jobnoCanceled is set with the number of the canceled job or empty
 
 
 #######################################
@@ -45,6 +47,10 @@
 	the result code of the executed tar command
  Exits:
 	if anything goes wrong, e. g. when the command is called with a wrong job number
+ Side Effect:
+	TTTT_jobnoCanceled is set with the number of the canceled job or empty
+	TTTT_jobLogDirs is set
+	TT_hostList is set
 
 
 #######################################
@@ -62,6 +68,10 @@
 	$3 - jobno
  Returns:
 	the result code of the executed command
+ Exits:
+	if anything goes wrong, e. g. when the command is called with a wrong job number
+ Side Effect:
+	TTTT_jobnoCanceled is set with the number of the canceled job or empty
 
 
 #######################################
@@ -75,6 +85,38 @@
 	success
  Side Effects:
 	set failure variable if chck has failed
+
+
+#######################################
+		checkLogsNoError
+ Function checkLogsNoError
+	Check if log files have no error Token ERROR
+ Parameters:
+	TTTT_jobnoCanceled - if true, the check done
+	TTTT_jobLogDirs - The list with the log dirs
+ Returns:
+	true
+	Set failure if the token was in on of the log files
+ Exits:
+	if called with wrong params
+	a file is not readable
+	if no files are scanned
+
+
+#######################################
+		checkLogsNoError2
+ Function checkLogsNoError2
+	Check if pe log files and pe stdouterr have no error Token ERROR
+ Parameters:
+	TTTT_jobnoCanceled - if true, the check done
+	TTTT_jobLogDirs - The list with the log dirs
+ Returns:
+	true
+	Set failure if the token was in on of the log files
+ Exits:
+	if called with wrong params
+	a file is not readable
+	if no files are scanned
 
 
 #######################################
@@ -178,6 +220,50 @@
 	Copy all files from input directory to workdir and
 	Transform spl files
 	the variant identifier is $1
+
+
+#######################################
+		getHostList
+ Function getHostList
+	get the list of hosts in TT_hostList
+
+
+#######################################
+		getHostListVariable
+ Function getHostListVariable
+	get the list of hosts in TT_hostList
+ Parameters:
+	$1 DomainId
+	$2 InstanceId
+
+
+#######################################
+		getJobLogDirs
+ Function getJobLogDirs
+	get the list of job log dirs in TTTT_jobLogDirs
+ Parameters:
+	TTTT_jobnoCanceled - the job number of the canceled job
+	TT_hostList
+ Side Effect:
+	TTTT_jobLogDirs - contails list with dirs
+	TT_hostList is set if it was empty
+
+
+#######################################
+		getJobLogDirsVariable
+ Function getJobLogDirsVariable
+	get the list of job log dirs in TTTT_jobLogDirs
+ Parameters:
+	$1 - the job number of the canceled job
+	$2 - the host List
+	$3 - the instance id
+ Returns:
+	true
+ Exits:
+	if anything goes wrong
+ Side Effect:
+	TTTT_jobLogDirs - contails list with dirs
+	TT_hostList is set if it was empty
 
 
 #######################################
@@ -340,15 +426,18 @@
 		startInst
  Function startInst
 	Start instance from global properties
-	If variable  TTPR_noStart or TTTT_noStreamsStart is true, do nothing
+	Setup host list TT_hostList
+	If variable  TTPR_noStart or TTTT_noStreamsStart is true, do not start instance
 
 
 #######################################
 		startInstVariable
  Function startInstVariable
 	Start instance with variable parameters
-	If variable  TTPR_noStart or TTTT_noStreamsStart is true, do nothing
+	Setup host list TT_hostList
+	If variable  TTPR_noStart or TTTT_noStreamsStart is true, do not start instance
 	$1 domainname
+	$2 instancname
 
 
 #######################################

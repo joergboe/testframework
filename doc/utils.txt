@@ -53,6 +53,76 @@
 
 
 #######################################
+		checkTokenIsInDirs
+ Function checkTokenIsInDirs
+	Check if a token is in files in directories
+ Parameters:
+	$1 - if true, the function exits if no files are scanned
+	$2 - the token to find
+	$3 - the file wildcard
+	$4 - the space separated list of directories to check
+ Returns:
+	true
+	Set failure if the token wa not in one of the input directories
+ Exits:
+	if called with wrong params
+	a file is not readable
+if no files are scanned and $3 was true
+
+
+#######################################
+		checkTokenIsInFiles
+ Function checkTokenIsInFiles
+	Check if a token is in one of these files
+ Parameters:
+	$1 - if true, the function exits if no files are scanned
+	$2 - the token to find
+	$3... the list of files to check
+ Returns:
+	true
+	Set failure if token was not found
+ Exits:
+	if called with wrong params
+	a file is not readable
+	if no files are scanned and $2 was true
+
+
+#######################################
+		checkTokenIsNotInDirs
+ Function checkTokenIsNotInDirs
+	Check if a token is not in files in directories
+ Parameters:
+	$1 - if true, the function exits if no files are scanned
+	$2 - the token to find
+	$3 - the file wildcard
+	$4 - the space separated list of directories to check
+ Returns:
+	true
+	Set failure if the token was in on of the files in directories
+ Exits:
+	if called with wrong params
+	a file is not readable
+if no files are scanned and $3 was true
+
+
+#######################################
+		checkTokenIsNotInFiles
+ Function checkTokenIsNotInFiles
+	Check if a token is not in one of these files
+ Parameters:
+	$1 - if true, the function exits if no files are scanned
+	$2 - the token to find
+	$3... the list of files to check
+ Returns:
+	true
+	Set failure if token was found in one of the files
+ Exits:
+	if called with wrong params
+	a file is not readable
+	if no files are scanned and $2 was true
+
+
+#######################################
 		copyAndMorph
  Function copyAndMorph
 	Copy and change all files from input directory into workdir
@@ -250,6 +320,41 @@
  Side Effects:
 	TTTT_result - the result code of the executed command
 	The failure condition is set if the command returns failure
+
+
+#######################################
+		findTokenInDirs
+ Function findTokenInDirs
+	Find a token in files in a number of directories
+ Parameters:
+	$1 - if true, the function exits if no files are scanned
+	$2 - the token to find
+	$3 - the file wildcard
+	$4 - the space separated list of directories to check
+ Returns:
+	true - if token found
+	false - otherwise
+ Exits:
+	if called with wrong params
+	a file is not readable
+if no files are scanned and $3 was true
+
+
+#######################################
+		findTokenInFiles
+ Function findTokenInFiles
+	Find a token in files
+ Parameters:
+	$1 - if true, the function exits if no files are scanned
+	$2 - the token to find
+	$3... the list of files to check
+ Returns:
+	true - if token found
+	false - otherwise
+ Exits:
+	if called with wrong params
+	a file is not readable
+	if no files are scanned and $2 was true
 
 
 #######################################
@@ -679,7 +784,13 @@
 #######################################
 		setCategory
  Function setCategory
-	set the use defined categories of a test case or suite
+	set the assigned categories of a test case or suite
+	Use this function in initialization phase of case or suite only
+	If this function is not used, a
+		suite has no category assigned
+		a case has the category "default"
+	If this function is called with no parameters, the list
+	with the assigned categories becomes the empty list.
 	$1 ... the category identifieres of this atrifact
 
 
