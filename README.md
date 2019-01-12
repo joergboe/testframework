@@ -207,3 +207,6 @@ Version 3.6.0:
 - New utils functions findTokenInFiles, findTokenInDirs, checkTokenIsInFiles, checkTokenIsNotInFiles, checkTokenIsInDirs, checkTokenIsNotInDirs
 - New streamsutil functions: getHostList, getHostListVariable, getJobLogDirs, getJobLogDirsVariable, checkLogsNoError
 - Correction streamsutil: all TT_ variables set with function setVar to enable export
+
+Version 3.6.1:
+- New function checkLogsNoError2, Check if pe log files and pe stdouterr have no error Token ERROR

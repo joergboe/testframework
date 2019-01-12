@@ -1097,11 +1097,31 @@ TTRO_help_checkLogsNoError='
 # Exits:
 #	if called with wrong params
 #	a file is not readable
-if no files are scanned'
+#	if no files are scanned'
 checkLogsNoError() {
 	isDebug && printDebug "$FUNCNAME $*"
 	checkTokenIsNotInDirs 'true' 'ERROR' '*' $TTTT_jobLogDirs
 }
 export -f checkLogsNoError
+
+TTRO_help_checkLogsNoError2='
+# Function checkLogsNoError2
+#	Check if pe log files and pe stdouterr have no error Token ERROR
+# Parameters:
+#	TTTT_jobnoCanceled - if true, the check done
+#	TTTT_jobLogDirs - The list with the log dirs
+# Returns:
+#	true
+#	Set failure if the token was in on of the log files
+# Exits:
+#	if called with wrong params
+#	a file is not readable
+#	if no files are scanned'
+checkLogsNoError2() {
+	isDebug && printDebug "$FUNCNAME $*"
+	checkTokenIsNotInDirs 'true' 'ERROR' 'pe.*' $TTTT_jobLogDirs
+	checkTokenIsNotInDirs 'true' 'ERROR' 'pec.pe*' $TTTT_jobLogDirs
+}
+export -f checkLogsNoError2
 
 :
