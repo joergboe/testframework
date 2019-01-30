@@ -118,6 +118,7 @@ declare -r -A singleOptions=(
 	['sequential']='-s --sequential'
 	['clean']='--clean'
 	['loadReduce']='--load-reduce'
+	['shell']='--shell'
 )
 declare -r -A valueOptions=(
 	['workdir']='-w --workdir'
@@ -153,7 +154,8 @@ if ! declare -p TTPRN_verboseDisable &> /dev/null; then TTPRN_verboseDisable='';
 # get parametes and set option variables and cases map
 declare parametersection="" # we start with options
 while [[ $# -ge 1 ]]; do
-  case $1 in
+	case $1 in
+	# serve the special cases first
 	-h|--help )
 		[[ -z $parametersection ]] || optionInParamSection $1
 		usage
@@ -200,6 +202,7 @@ while [[ $# -ge 1 ]]; do
 			usage
 			exit ${errInvocation}
 		fi;;
+	# now serve all general options and value options
 	-* )
 		[[ -z $parametersection ]] || optionInParamSection $1
 		declare optionFound=""
@@ -309,6 +312,7 @@ setVar 'TTPRN_debug' "$debug"
 setVar 'TTPRN_debugDisable' ''
 setVar 'TTPRN_verbose' "$verbose"
 setVar 'TTPRN_verboseDisable' ''
+
 if [[ -n $summary ]]; then
 	declare -xr TTXX_summary='true'
 else
@@ -319,7 +323,11 @@ if [[ -n $xtraprint ]]; then
 else
 	setVar 'TTRO_xtraPrint' ''
 fi
-
+if [[ -n $shell ]]; then
+	declare -xr TTXX_shell='true'
+else
+	declare -xr TTXX_shell=''
+fi
 #---------------------------------------------------------
 # create workdir if necessary and make it absolute
 if [[ -z ${workdir} ]]; then
@@ -391,7 +399,7 @@ done
 
 #-------------------------------------------
 # set the global programm defined properties
-if [[ -n $sequential ]]; then
+if [[ ( -n $sequential ) || ( -n $shell ) ]]; then
 	setVar 'TTRO_noParallelCases' 1
 	setVar 'TTRO_treads' "$threads"
 else

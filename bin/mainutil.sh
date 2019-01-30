@@ -40,6 +40,7 @@ function usage {
 	-v|--verbose             : Be verbose to stdout
 	-V|--version             : Print the version string
 	-d|--debug               : Print debug information. Debug implies verbose.
+	--shell                  : Opens a shell before Test case finalization. This implies option --sequential and the test case timeout is disabled.
 	--load-reduce            : Use only the half of the cores of the machine. If option --treads is used, the option load-reduce is ignored.
 	--summary                : Print special junit like test suite summary
 	--xtraprint              : Echo std out to terminal in case of test failue

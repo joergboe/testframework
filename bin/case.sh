@@ -333,6 +333,12 @@ else
 	printInfo "$executedTestSteps Case test steps executed"
 fi
 
+#open shell if required
+if [[ -n $TTXX_shell ]]; then
+	bash -i
+fi
+
+#test finalization
 TTTT_executionState='finalization'
 if [[ -n $TTTT_failureOccurred ]]; then
 	failureExit

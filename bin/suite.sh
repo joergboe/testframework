@@ -466,7 +466,7 @@ while [[ -z $allJobsGone ]]; do
 			if [[ ( -n ${tpid[$i]} ) && ( -n ${tjobid[$i]} ) ]]; then
 				numberJobsRunning=$((numberJobsRunning+1))
 				if [[ -z ${killed[$i]} ]]; then
-					if [[ ( ${endTime[$i]} -lt $now ) || ( $interruptReceived -gt 1 ) ]]; then
+					if [[ ( ( ${endTime[$i]} -lt $now ) && ( -z $TTXX_shell ) ) || ( $interruptReceived -gt 1 ) ]]; then
 						if [[ -z ${tjobid[$i]} ]]; then
 							tempjobspec="${tpid[$i]}"
 						else
