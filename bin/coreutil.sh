@@ -382,22 +382,23 @@ function createGlobalIndex {
 	</head>
 	<body>
 		<h1 style="text-align: center;">Test Report Collection '$TTRO_collection'</h1>
-		<h2>Test Case execution Summary</h2>
-		<p>
-		***** suites executed=$SUITE_EXECUTECount errors=$SUITE_ERRORCount skipped=$SUITE_SKIPCount<br>
-		***** cases  executed=$CASE_EXECUTECount failures=$CASE_FAILURECount errors=$CASE_ERRORCount skipped=$CASE_SKIPCount<br>
-		***** categories of this run: ${cats}<br>
-		***** used workdir: <a href="$TTRO_workDir">$TTRO_workDir</a><br>
-		</p>
-		<hr>
-		<h3>The Suite Lists</h3>
+		<h2>The Suite Lists</h2>
 		<p>
 			<ul>
 				<li><a href="suite.html">Global Dummy Suite</a></li>
 			</ul>
-			<hr>
-			Elapsed time : $2
+			<h2>Summary</h2>
+			<p>
+			<table>
+				<tr><td><b>Suites</b></td><td>executed=$SUITE_EXECUTECount</td><td></td><td>errors=$SUITE_ERRORCount</td><td>skipped=$SUITE_SKIPCount</td></tr>
+				<tr><td><b>Cases</b></td><td>executed=$CASE_EXECUTECount</td><td>failures=$CASE_FAILURECount</td><td>errors=$CASE_ERRORCount</td><td>skipped=$SUITE_SKIPCount</td></tr>
+			</table>
 			<br>
+			<hr><br>
+			Categories of this run: ${cats}<br><br>
+			Workdir: <a href="$TTRO_workDir">$TTRO_workDir</a><br><br>
+			Elapsed time : $2<br>
+			</p>
 		</p>
 	</body>
 	</html>
@@ -418,9 +419,6 @@ function createSuiteIndex {
 	</head>
 	<body>
 		<h1 style="text-align: center;">Test Suite '$TTRO_suiteNestingString'</h1>
-		<p>
-		Suite input dir   <a href="$TTRO_inputDirSuite">$TTRO_inputDirSuite</a><br>
-		Suite working dir <a href="$TTRO_workDirSuite">$TTRO_workDirSuite</a><br><hr>
 		<h2>Test Case execution:</h2>
 		<p>
 		<ul>
@@ -453,22 +451,22 @@ function addCaseEntry {
 	fi
 	case $4 in
 		SUCCESS )
-			echo "<li>$2:$3 $4<br>Time : $7    workdir <a href=\"$6\">$6</a></li>" >> "$1"
+			echo "<li><b>$2:$3</b><b> $4</b><br>Time : $7    <a href=\"$6\">workdir</a></li>" >> "$1"
 			if [[ -n $TTXX_summary  ]]; then
 				echo "$part1" >> "$8"
 			fi;;
 		ERROR )
-			echo "<li style=\"color: red\">$2:$3 $4<br>Time : $7    workdir <a href=\"$6\">$6</a></li>" >> "$1"
+			echo "<li><b>$2:$3</b><b style=\"color: red\"> $4</b><br>Time : $7    <a href=\"$6\">workdir</a></li>" >> "$1"
 			if [[ -n $TTXX_summary  ]]; then
 				echo -e "$part1\nERROR\n" >> "$8"
 			fi;;
 		FAILURE )
-			echo "<li style=\"color: red\">$2:$3 $4 : $reason<br>Time : $7    workdir <a href=\"$6\">$6</a></li>" >> "$1"
+			echo "<li><b>$2:$3</b><b style=\"color: red\"> $4</b> : $reason<br>Time : $7    <a href=\"$6\">workdir</a></li>" >> "$1"
 			if [[ -n $TTXX_summary  ]]; then
 				echo -e "$part1\nFAILURE\n${reason}\n" >> "$8"
 			fi;;
 		SKIP )
-			echo "<li style=\"color: blue\">$2:$3 $4 : $reason<br>Time : $7    workdir <a href=\"$6\">$6</a></li>" >> "$1"
+			echo "<li><b>$2:$3</b><b style=\"color: blue\"> $4</b> : $reason<br>Time : $7    <a href=\"$6\">workdir</a></li>" >> "$1"
 			if [[ -n $TTXX_summary  ]]; then
 				echo -e "$part1\nSKIPPED\n${reason}\n" >> "$8"
 			fi;;
@@ -485,6 +483,7 @@ readonly -f addCaseEntry
 function startSuiteList {
 	cat <<-EOF >> "$1"
 		</ul>
+		</p>
 		<h2>Test Suite execution:</h2>
 		<p>
 		<ul>
@@ -510,11 +509,7 @@ function addSuiteEntry {
 	if [[ $# -ne 12 ]]; then printErrorAndExit "wrong no of arguments $#" $errRt; fi
 	case $3 in
 		0 )
-		if [[ ( $8 -gt 0 ) || ( $9 -gt 0 ) || ( ${12} -gt 0 ) ]]; then
-			echo -n "<li style=\"color: red\"><a href=\"$5/suite.html\">$2</a> result code: $3" >> "$1"
-		else
-			echo -n "<li><a href=\"$5/suite.html\">$2</a> result code: $3" >> "$1"
-		fi;;
+			echo -n "<li><a href=\"$5/suite.html\">$2</a> result code: $3 work dir: <a href=\"$5\">$5</a>" >> "$1";;
 		$errSkip )
 			{ if read -r; then :; fi; } < "$5/REASON" #read one line from reason
 			echo -n "<li style=\"color: blue\"><a href=\"$5/suite.html\">$2</a> result code: $3 : $REPLY work dir: <a href=\"$5\">$5</a>" >> "$1";;
@@ -523,10 +518,27 @@ function addSuiteEntry {
 		* )
 			echo -n "<li style=\"color: red\"><a href=\"$5/suite.html\">$2</a> result code: $3  work dir: <a href=\"$5\">$5</a>" >> "$1"
 	esac
-	if [[ $3 != $errSkip ]]; then
-		echo "      <br><b>Cases</b> executed=$6 failures=$8 errors=$9 skipped=$7<b> Suites</b> executed=${10} errors=${12} skipped=${11}</li>" >> "$1"
+	if [[ $3 -ne $errSkip ]]; then
+		echo -n "      <br><b>Cases</b> executed=$6 " >> "$1"
+		if [[ $8 -ne 0 ]]; then
+			echo -n "<b style=\"color: red\">failures=$8 </b>" >> "$1"
+		else
+			echo -n "failures=$8 " >> "$1"
+		fi
+		if [[ $9 -ne 0 ]]; then
+			echo -n "<b style=\"color: red\">errors=$9 </b>" >> "$1"
+		else
+			echo -n "errors=$9 " >> "$1"
+		fi
+		echo -n "skipped=$7<b> Suites</b> executed=${10} " >> "$1"
+		if [[ $12 -ne 0 ]]; then
+			echo -n "<b style=\"color: red\">errors=${12} </b>" >> "$1"
+		else
+			echo -n "errors=${12} " >> "$1"
+		fi
+		echo "skipped=${11}</li>" >> "$1" >> "$1"
 	else
-		echo "      <br> ... </li>" >> "$1"
+		echo "      <br> ... </li>" >> "$1" >> "$1"
 	fi
 }
 readonly -f addSuiteEntry
@@ -538,9 +550,15 @@ readonly -f addSuiteEntry
 function endSuiteIndex {
 	cat <<-EOF >> "$1"
 		</ul>
-		<hr>
-		Elapsed time : $2
-		<br>
+		</p>
+		<h2>Summary</h2>
+		<p>
+			Suite input dir   <a href="$TTRO_inputDirSuite">$TTRO_inputDirSuite</a><br>
+			Suite working dir <a href="$TTRO_workDirSuite">$TTRO_workDirSuite</a><br>
+			<br>
+			Elapsed time : $2
+			<br>
+		</p>
 		</body>
 	</html>
 	EOF
