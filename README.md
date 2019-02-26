@@ -14,7 +14,7 @@ In directory samples you can see the Test Collection ANewTest, which is a sample
 
 # Installation
 
-The release package is a self extracting script. Execute it and follow the instructions. You can install the tool into 
+The release package is a self extracting script. Execute it and follow the instructions. You can install the tool into
 an arbitrary palace.
 If you want to install the tool into a system directory execute the installation script as root.
 It is recommended qto enter the location of the test framework into your PATH like:
@@ -65,7 +65,7 @@ Version 0.2.0:
 - Streams sample
 
 Version 2.0.0:
-- Remove concept of TestCollection.sh 
+- Remove concept of TestCollection.sh
 - Introductio of nested Test Suites
 
 Version 2.1.0:
@@ -210,3 +210,7 @@ Version 3.6.0:
 
 Version 3.6.1:
 - New function checkLogsNoError2, Check if pe log files and pe stdouterr have no error Token ERROR
+
+New Version:
+- Add command option --shell
+- breakdown in browser pages

@@ -103,7 +103,7 @@ function exeSuite {
 			fi
 		fi
 	fi
-	
+
 	#read result lists and append results to the own list
 	local x
 	if [[ $1 -ne 0 ]]; then
@@ -131,7 +131,7 @@ function exeSuite {
 		addSuiteEntry "$indexfilename" "$suiteNestingString" "$result" "$suitePath" "${sworkdir}"\
 		$CASE_EXECUTE_Count $CASE_SKIP_Count $CASE_FAILURE_Count $CASE_ERROR_Count $SUITE_EXECUTE_Count $SUITE_SKIP_Count $SUITE_ERROR_Count
 	fi
-	
+
 	printInfo "**** END Suite: ${suite} variant='$2' in ${suitePath} *******************"
 	return 0
 } #/exeSuite
@@ -375,28 +375,30 @@ readonly -f checkCats
 function createGlobalIndex {
 	cat <<-EOF > "$1"
 	<!DOCTYPE html>
-	<html>  
-	<head>    
+	<html>
+	<head>
 		<title>Test Report Collection '$TTRO_collection'</title>
 		<meta charset='utf-8'>
-	</head>  
-	<body>    
+	</head>
+	<body>
 		<h1 style="text-align: center;">Test Report Collection '$TTRO_collection'</h1>
-		<h2>Test Case execution Summary</h2>      
+		<h2>Test Case execution Summary</h2>
 		<p>
-		<hr>
 		***** suites executed=$SUITE_EXECUTECount errors=$SUITE_ERRORCount skipped=$SUITE_SKIPCount<br>
 		***** cases  executed=$CASE_EXECUTECount failures=$CASE_FAILURECount errors=$CASE_ERRORCount skipped=$CASE_SKIPCount<br>
 		***** categories of this run: ${cats}<br>
 		***** used workdir: <a href="$TTRO_workDir">$TTRO_workDir</a><br>
+		</p>
 		<hr>
-		</p>      
-		<hr>      
 		<h3>The Suite Lists</h3>
-		<ul>
-		  <li><a href="suite.html">Global Dummy Suite</a></li>
-		</ul>
-		Elapsed time : $2
+		<p>
+			<ul>
+				<li><a href="suite.html">Global Dummy Suite</a></li>
+			</ul>
+			<hr>
+			Elapsed time : $2
+			<br>
+		</p>
 	</body>
 	</html>
 	EOF
@@ -409,16 +411,16 @@ readonly -f createGlobalIndex
 function createSuiteIndex {
 	cat <<-EOF > "$1"
 	<!DOCTYPE html>
-	<html>  
-	<head>    
+	<html>
+	<head>
 		<title>Test Report Collection '$TTRO_collection'</title>
 		<meta charset='utf-8'>
-	</head>  
-	<body>    
+	</head>
+	<body>
 		<h1 style="text-align: center;">Test Suite '$TTRO_suiteNestingString'</h1>
 		<p>
 		Suite input dir   <a href="$TTRO_inputDirSuite">$TTRO_inputDirSuite</a><br>
-		Suite working dir <a href="$TTRO_workDirSuite">$TTRO_workDirSuite</a><br>
+		Suite working dir <a href="$TTRO_workDirSuite">$TTRO_workDirSuite</a><br><hr>
 		<h2>Test Case execution:</h2>
 		<p>
 		<ul>
@@ -427,7 +429,7 @@ function createSuiteIndex {
 readonly -f createSuiteIndex
 
 #
-# Add Case entry to suite index and to summary file
+# Add Case entry to suite index.html and to summary text file
 # $1 File name
 # $2 Case name
 # $3 Case variant
@@ -445,33 +447,33 @@ function addCaseEntry {
 	else
 		part1="Testcase: $2 took $7"
 	fi
-	
+
 	if [[ -e "$6/REASON" ]]; then
 		reason=$(<"$6/REASON")
 	fi
 	case $4 in
-		SUCCESS ) 
-			echo "<li>$2:$3 $4  Time : $7<br>workdir <a href=\"$6\">$6</a></li>" >> "$1"
+		SUCCESS )
+			echo "<li>$2:$3 $4<br>Time : $7    workdir <a href=\"$6\">$6</a></li>" >> "$1"
 			if [[ -n $TTXX_summary  ]]; then
 				echo "$part1" >> "$8"
 			fi;;
 		ERROR )
-			echo "<li style=\"color: red\">$2:$3 $4  Time : $7<br>workdir <a href=\"$6\">$6</a></li>" >> "$1"
+			echo "<li style=\"color: red\">$2:$3 $4<br>Time : $7    workdir <a href=\"$6\">$6</a></li>" >> "$1"
 			if [[ -n $TTXX_summary  ]]; then
 				echo -e "$part1\nERROR\n" >> "$8"
 			fi;;
 		FAILURE )
-			echo "<li style=\"color: red\">$2:$3 $4 : $reason  Time : $7<br>workdir <a href=\"$6\">$6</a></li>" >> "$1"
+			echo "<li style=\"color: red\">$2:$3 $4 : $reason<br>Time : $7    workdir <a href=\"$6\">$6</a></li>" >> "$1"
 			if [[ -n $TTXX_summary  ]]; then
 				echo -e "$part1\nFAILURE\n${reason}\n" >> "$8"
 			fi;;
 		SKIP )
-			echo "<li style=\"color: blue\">$2:$3 $4 : $reason  Time : $7<br>workdir <a href=\"$6\">$6</a></li>" >> "$1"
+			echo "<li style=\"color: blue\">$2:$3 $4 : $reason<br>Time : $7    workdir <a href=\"$6\">$6</a></li>" >> "$1"
 			if [[ -n $TTXX_summary  ]]; then
 				echo -e "$part1\nSKIPPED\n${reason}\n" >> "$8"
 			fi;;
 
-		*) 
+		*)
 			printErrorAndExit "Wrong result string $4" $errRt
 	esac
 }
@@ -491,7 +493,7 @@ function startSuiteList {
 readonly -f startSuiteList
 
 #
-# Add Suite entry to suite index
+# Add Suite entry to suite index.html
 # $1 File name
 # $2 Suite nesting string
 # $3 Suite result
@@ -536,7 +538,9 @@ readonly -f addSuiteEntry
 function endSuiteIndex {
 	cat <<-EOF >> "$1"
 		</ul>
+		<hr>
 		Elapsed time : $2
+		<br>
 		</body>
 	</html>
 	EOF
