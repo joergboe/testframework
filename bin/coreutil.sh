@@ -559,24 +559,33 @@ function addSuiteEntry {
 	if [[ $3 -ne $errSkip ]]; then
 		echo -n "      <br><b>Cases</b> executed=$6 " >> "$1"
 		if [[ $8 -ne 0 ]]; then
-			echo -n "<b style=\"color: red\">failures=$8 </b>" >> "$1"
+			echo -n "<span style=\"color: red\">failures=$8 </span>" >> "$1"
 		else
 			echo -n "failures=$8 " >> "$1"
 		fi
 		if [[ $9 -ne 0 ]]; then
-			echo -n "<b style=\"color: red\">errors=$9 </b>" >> "$1"
+			echo -n "<span style=\"color: red\">errors=$9 </span>" >> "$1"
 		else
 			echo -n "errors=$9 " >> "$1"
 		fi
-		echo -n "skipped=$7<b> Suites</b> executed=${10} " >> "$1"
+		if [[ $7 -ne 0 ]]; then
+			echo -n "<span style=\"color: blue\">skipped=$7 </span>" >> "$1"
+		else
+			echo -n "skipped=$7 " >> "$1"
+		fi
+		echo -n "<b> Suites</b> executed=${10} " >> "$1"
 		if [[ $12 -ne 0 ]]; then
-			echo -n "<b style=\"color: red\">errors=${12} </b>" >> "$1"
+			echo -n "<span style=\"color: red\">errors=${12} </span>" >> "$1"
 		else
 			echo -n "errors=${12} " >> "$1"
 		fi
-		echo "skipped=${11}</li>" >> "$1" >> "$1"
+		if [[ ${11} -ne 0 ]]; then
+			echo "<span style=\"color: blue\">skipped=${11}</span></li>" >> "$1"
+		else
+			echo "skipped=${11}</li>" >> "$1"
+		fi
 	else
-		echo "      <br> ... </li>" >> "$1" >> "$1"
+		echo "      <br> ... </li>" >> "$1"
 	fi
 }
 readonly -f addSuiteEntry
