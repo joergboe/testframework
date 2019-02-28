@@ -574,7 +574,7 @@ function addSuiteEntry {
 			echo -n "skipped=$7 " >> "$1"
 		fi
 		echo -n "<b> Suites</b> executed=${10} " >> "$1"
-		if [[ $12 -ne 0 ]]; then
+		if [[ ${12} -ne 0 ]]; then
 			echo -n "<span style=\"color: red\">errors=${12} </span>" >> "$1"
 		else
 			echo -n "errors=${12} " >> "$1"
