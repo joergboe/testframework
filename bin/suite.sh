@@ -1,7 +1,7 @@
 #!/bin/bash
 
 ######################################################
-# Test suite 
+# Test suite
 # Testframework Test Suite execution script
 ######################################################
 
@@ -39,7 +39,7 @@ function handleSigint {
 		printInfo "SIGINT: Abort Suite"
 		exit $errSigint
 	else
-		interruptReceived=$((interruptReceived+1))	
+		interruptReceived=$((interruptReceived+1))
 	fi
 	return 0
 }
@@ -76,9 +76,9 @@ source "${TTRO_scriptDir}/coreutil.sh"
 function usage {
 	local command=${0##*/}
 	cat <<-EOF
-	
+
 	usage: ${command} suiteIndex suiteVariant suiteWorkdir suiteNestingLevel suiteNestingPath suiteNestingString preamblError;
-	
+
 	Requires exported execution list variables
 	EOF
 }
@@ -163,7 +163,7 @@ if [[ -n $TTTT_preamblError ]]; then
 fi
 
 #check skipfile
-if [[ $TTRO_suiteIndex -ne 0 ]]; then 
+if [[ $TTRO_suiteIndex -ne 0 ]]; then
 	if [[ ( -e "${TTRO_inputDirSuite}/SKIP" ) && ( -z $TTPRN_skipIgnore ) ]]; then
 		printInfo "SKIP file found suite=$TTRO_suite variant='$TTRO_variantSuite'"
 		setSkip 'SKIP file found'
@@ -383,6 +383,7 @@ declare -a tjobid=()	#the job id of process group (jobspec)
 declare -a tpid=()		#pid of the case job this is the crucical value of the structure
 declare -a tcase=()		#the name of the running case
 declare -a tvariant=()	#the variant of the running case
+declare -a tcasePath=()	#the input dir of the running case
 declare -a startTime=()
 declare -a timeout=()
 declare -a endTime=()
@@ -405,6 +406,7 @@ for ((i=0; i<maxParralelJobs; i++)); do
 	tpid[$i]=""
 	tcase[$i]=""
 	tvariant[$i]=""
+	tcasePath[$i]=""
 	startTime[$i]=""
 	timeout[$i]=""
 	startTime[$i]=""
@@ -493,7 +495,7 @@ while [[ -z $allJobsGone ]]; do
 						if ! kill -9 "${tempjobspec}"; then
 							printWarning "Can not force kill i=${i} jobspec=${tempjobspec} pid=${tpid[$i]} Gone?"
 						fi
-					fi  
+					fi
 				fi
 			fi
 		done
@@ -564,7 +566,7 @@ while [[ -z $allJobsGone ]]; do
 							rm "${tcaseWorkDir[$i]}/ELAPSED"
 						fi
 						echo "$tmpCaseAndVariant : $caseElapsedTime" >> "${TTRO_workDirSuite}/CASE_EXECUTE"
-						
+
 						#executeList+=("$tmpCaseAndVariant")
 						printInfon "END: i=$i pid=$pid jobspec=%$jobid case=${tmpCase} variant='${tmpVariant}' running=$numberJobsRunning systemLoad=$TTTT_systemLoad"
 						tpid[$i]=""
@@ -583,28 +585,28 @@ while [[ -z $allJobsGone ]]; do
 									echo "$tmpCaseAndVariant" >> "${TTRO_workDirSuite}/CASE_SUCCESS"
 									variantSuccess=$((variantSuccess+1))
 									#successList+=("$tmpCaseAndVariant")
-									addCaseEntry "$indexfilename" "$tmpCase" "$tmpVariant" 'SUCCESS' '1' "${tcaseWorkDir[$i]}" "$caseElapsedTime" "$TTTT_tempSummayName"
+									addCaseEntry "$indexfilename" "$tmpCase" "$tmpVariant" 'SUCCESS' "${tcasePath[$i]}" "${tcaseWorkDir[$i]}" "$caseElapsedTime" "$TTTT_tempSummayName"
 								;;
 								SKIP )
 									{ if read -r; then :; fi; } < "${tcaseWorkDir[$i]}/REASON" #read one line from reason
 									echo "$tmpCaseAndVariant: $REPLY" >> "${TTRO_workDirSuite}/CASE_SKIP"
 									variantSkiped=$((variantSkiped+1))
 									#skipList+=("$tmpCaseAndVariant")
-									addCaseEntry "$indexfilename" "$tmpCase" "$tmpVariant" 'SKIP' '1' "${tcaseWorkDir[$i]}" "$caseElapsedTime" "$TTTT_tempSummayName"
+									addCaseEntry "$indexfilename" "$tmpCase" "$tmpVariant" 'SKIP' "${tcasePath[$i]}" "${tcaseWorkDir[$i]}" "$caseElapsedTime" "$TTTT_tempSummayName"
 								;;
 								FAILURE )
 									{ if read -r; then :; fi; } < "${tcaseWorkDir[$i]}/REASON" #read one line from reason
 									echo "$tmpCaseAndVariant: $REPLY" >> "${TTRO_workDirSuite}/CASE_FAILURE"
 									variantFailures=$((variantFailures+1))
 									#failureList+=("$tmpCaseAndVariant")
-									addCaseEntry "$indexfilename" "$tmpCase" "$tmpVariant" 'FAILURE' '1' "${tcaseWorkDir[$i]}" "$caseElapsedTime" "$TTTT_tempSummayName"
+									addCaseEntry "$indexfilename" "$tmpCase" "$tmpVariant" 'FAILURE' "${tcasePath[$i]}" "${tcaseWorkDir[$i]}" "$caseElapsedTime" "$TTTT_tempSummayName"
 									[[ ( -n $TTRO_xtraPrint ) && ( "$TTRO_noParallelCases" -ne 1 ) ]] && cat "${tcaseWorkDir[$i]}/${TEST_LOG}"
 								;;
 								ERROR )
 									echo "$tmpCaseAndVariant" >> "${TTRO_workDirSuite}/CASE_ERROR"
 									variantErrors=$((variantErrors+1))
 									#errorList+=("$tmpCaseAndVariant")
-									addCaseEntry "$indexfilename" "$tmpCase" "$tmpVariant" 'ERROR' '1' "${tcaseWorkDir[$i]}" "$caseElapsedTime" "$TTTT_tempSummayName"
+									addCaseEntry "$indexfilename" "$tmpCase" "$tmpVariant" 'ERROR' "${tcasePath[$i]}" "${tcaseWorkDir[$i]}" "$caseElapsedTime" "$TTTT_tempSummayName"
 									[[ ( -n $TTRO_xtraPrint ) && ( "$TTRO_noParallelCases" -ne 1 ) ]] && cat "${tcaseWorkDir[$i]}/${TEST_LOG}"
 								;;
 								* )
@@ -612,7 +614,7 @@ while [[ -z $allJobsGone ]]; do
 									echo "$tmpCaseAndVariant" >> "${TTRO_workDirSuite}/CASE_ERROR"
 									variantErrors=$((variantErrors+1))
 									#errorList+=("$tmpCaseAndVariant")
-									addCaseEntry "$indexfilename" "$tmpCase" "$tmpVariant" 'ERROR' '1' "${tcaseWorkDir[$i]}" "$caseElapsedTime" "$TTTT_tempSummayName"
+									addCaseEntry "$indexfilename" "$tmpCase" "$tmpVariant" 'ERROR' "${tcasePath[$i]}" "${tcaseWorkDir[$i]}" "$caseElapsedTime" "$TTTT_tempSummayName"
 									tmp2="ERROR"
 									[[ ( -n $TTRO_xtraPrint ) && ( "$TTRO_noParallelCases" -ne 1 ) ]] && cat "${tcaseWorkDir[$i]}/${TEST_LOG}"
 								;;
@@ -622,7 +624,7 @@ while [[ -z $allJobsGone ]]; do
 							echo "$tmpCaseAndVariant" >> "${TTRO_workDirSuite}/CASE_ERROR"
 							variantErrors=$((variantErrors+1))
 							#errorList+=("$tmpCaseAndVariant")
-							addCaseEntry "$indexfilename" "$tmpCase" "$tmpVariant" 'ERROR' '1' "${tcaseWorkDir[$i]}" "$caseElapsedTime" "$TTTT_tempSummayName"
+							addCaseEntry "$indexfilename" "$tmpCase" "$tmpVariant" 'ERROR' "${tcasePath[$i]}" "${tcaseWorkDir[$i]}" "$caseElapsedTime" "$TTTT_tempSummayName"
 							tmp2="ERROR"
 							[[ ( -n $TTRO_xtraPrint ) && ( "$TTRO_noParallelCases" -ne 1 ) ]] && cat "${tcaseWorkDir[$i]}/${TEST_LOG}"
 						fi
@@ -721,6 +723,7 @@ while [[ -z $allJobsGone ]]; do
 		tjobid[$availableTpidIndex]="$tmp5"
 		tcase[$availableTpidIndex]="$caseName"
 		tvariant[$availableTpidIndex]="$caseVariant"
+		tcasePath[$availableTpidIndex]="$casePath"
 		killed[$availableTpidIndex]=""
 		tmp="$(date +'%-s')"
 		isDebug && printDebug "Enter tjobid[$availableTpidIndex]=${tjobid[$availableTpidIndex]} state=$tmp2 tpid[${availableTpidIndex}]=$tmp4 time=${tmp} state=$tmp2"
@@ -742,7 +745,7 @@ if [[ $jobIndex -ne $jobsEnded ]]; then
 	printError "The nuber of jobs started=$jobIndex is not equal to the number of jobs ended=$jobsEnded"
 fi
 
-#fin 
+#fin
 startSuiteList "$indexfilename"
 
 ##execution loop over sub suites and variants
@@ -847,7 +850,7 @@ fi
 printInfo "$executedTestFinSteps Test Suite Finalisation steps executed"
 
 #-------------------------------------------------------
-#put results to results file for information purose only 
+#put results to results file for information purose only
 echo -e "CASE_EXECUTE=$jobIndex\nCASE_FAILURE=$variantFailures\nCASE_ERROR=$variantErrors\nCASE_SKIP=$variantSkiped\nCASE_SUCCESS=$variantSuccess" > "${TTRO_workDirSuite}/RESULT"
 echo -e "SUITE_EXECUTE=$suiteVariants\nSUITE_ERROR=$suiteErrors\nSUITE_SKIP=$suiteSkip" >> "${TTRO_workDirSuite}/RESULT"
 
@@ -874,7 +877,7 @@ for x in CASE_EXECUTE CASE_SKIP CASE_FAILURE CASE_ERROR CASE_SUCCESS SUITE_EXECU
 	isDebug && printDebug "Overall $x = ${!tmp3}"
 done
 
-# html 
+# html
 getElapsedTime "$suiteStartTime"
 endSuiteIndex "$indexfilename" "$TTTT_elapsedTime"
 

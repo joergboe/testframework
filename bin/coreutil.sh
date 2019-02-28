@@ -373,10 +373,46 @@ readonly -f checkCats
 # $1 the file to create
 # $2 elapsed time
 function createGlobalIndex {
+	local suiteErrorTxt
+	if [[ $SUITE_ERRORCount -ne 0 ]]; then
+		suiteErrorTxt="<span style=\"color: red\">errors=$SUITE_ERRORCount</span>"
+	else
+		suiteErrorTxt="errors=0"
+	fi
+	local suiteSkipTxt
+	if [[ $SUITE_SKIPCount -ne 0 ]]; then
+		suiteSkipTxt="<span style=\"color: blue\">skipped=$SUITE_SKIPCount</span>"
+	else
+		suiteSkipTxt="skipped=0"
+	fi
+	local caseErrorTxt
+	if [[ $CASE_ERRORCount -ne 0 ]]; then
+		caseErrorTxt="<span style=\"color: red\">errors=$CASE_ERRORCount</span>"
+	else
+		caseErrorTxt="errors=0"
+	fi
+	local caseSkipTxt
+	if [[ $CASE_SKIPCount -ne 0 ]]; then
+		caseSkipTxt="<span style=\"color: blue\">skipped=$CASE_SKIPCount</span>"
+	else
+		caseSkipTxt="skipped=0"
+	fi
+	local caseFailureTxt
+	if [[ $CASE_FAILURECount -ne 0 ]]; then
+		caseFailureTxt="<span style=\"color: red\">failures=$CASE_FAILURECount</span>"
+	else
+		caseFailureTxt="failures=0"
+	fi
+
 	cat <<-EOF > "$1"
 	<!DOCTYPE html>
 	<html>
 	<head>
+	<!-- <style>
+		td {
+			margin-left: 80px;
+		}
+	</style> -->
 		<title>Test Report Collection '$TTRO_collection'</title>
 		<meta charset='utf-8'>
 	</head>
@@ -390,8 +426,8 @@ function createGlobalIndex {
 			<h2>Summary</h2>
 			<p>
 			<table>
-				<tr><td><b>Suites</b></td><td>executed=$SUITE_EXECUTECount</td><td></td><td>errors=$SUITE_ERRORCount</td><td>skipped=$SUITE_SKIPCount</td></tr>
-				<tr><td><b>Cases</b></td><td>executed=$CASE_EXECUTECount</td><td>failures=$CASE_FAILURECount</td><td>errors=$CASE_ERRORCount</td><td>skipped=$SUITE_SKIPCount</td></tr>
+				<tr><td><b>Suites</b></td><td>executed=$SUITE_EXECUTECount</td><td></td><td>$suiteErrorTxt</td><td>$suiteSkipTxt</td></tr>
+				<tr><td><b>Cases</b></td><td>executed=$CASE_EXECUTECount</td><td>$caseFailureTxt</td><td>$caseErrorTxt</td><td>$caseSkipTxt</td></tr>
 			</table>
 			<br>
 			<hr><br>
@@ -437,12 +473,14 @@ readonly -f createSuiteIndex
 # $7 Elapsed time
 # $8 Summary file name
 function addCaseEntry {
+	local mycasename
 	local reason=''
 	local part1=''
-	local nl=$'\n'
 	if [[ -n $3 ]]; then
+		mycasename="$2::$3"
 		part1="Testcase: $2:$3 took $7"
 	else
+		mycasename="$2"
 		part1="Testcase: $2 took $7"
 	fi
 
@@ -451,22 +489,22 @@ function addCaseEntry {
 	fi
 	case $4 in
 		SUCCESS )
-			echo "<li><b>$2:$3</b><b> $4</b><br>Time : $7    <a href=\"$6\">workdir</a></li>" >> "$1"
+			echo "<li><a href=\"$6\"><b>$mycasename</b></a> - <a href=\"$5\">InputDir</a><br>$4 - Time elapsed: $7</li>" >> "$1"
 			if [[ -n $TTXX_summary  ]]; then
 				echo "$part1" >> "$8"
 			fi;;
 		ERROR )
-			echo "<li><b>$2:$3</b><b style=\"color: red\"> $4</b><br>Time : $7    <a href=\"$6\">workdir</a></li>" >> "$1"
+			echo "<li><a href=\"$6\"><b>$mycasename</b></a> - <a href=\"$5\">InputDir</a><br><span style=\"color: red\">$4</span> - Time elapsed: $7</li>" >> "$1"
 			if [[ -n $TTXX_summary  ]]; then
 				echo -e "$part1\nERROR\n" >> "$8"
 			fi;;
 		FAILURE )
-			echo "<li><b>$2:$3</b><b style=\"color: red\"> $4</b> : $reason<br>Time : $7    <a href=\"$6\">workdir</a></li>" >> "$1"
+			echo "<li><a href=\"$6\"><b>$mycasename</b></a> - <a href=\"$5\">InputDir</a><br><span style=\"color: red\">$4</span> : $reason - Time elapsed: $7</li>" >> "$1"
 			if [[ -n $TTXX_summary  ]]; then
 				echo -e "$part1\nFAILURE\n${reason}\n" >> "$8"
 			fi;;
 		SKIP )
-			echo "<li><b>$2:$3</b><b style=\"color: blue\"> $4</b> : $reason<br>Time : $7    <a href=\"$6\">workdir</a></li>" >> "$1"
+			echo "<li><a href=\"$6\"><b>$mycasename</b></a> - <a href=\"$5\">InputDdir</a><br><span style=\"color: blue\">$4</span> : $reason-Time elapsed: $7</li>" >> "$1"
 			if [[ -n $TTXX_summary  ]]; then
 				echo -e "$part1\nSKIPPED\n${reason}\n" >> "$8"
 			fi;;
@@ -509,14 +547,14 @@ function addSuiteEntry {
 	if [[ $# -ne 12 ]]; then printErrorAndExit "wrong no of arguments $#" $errRt; fi
 	case $3 in
 		0 )
-			echo -n "<li><a href=\"$5/suite.html\">$2</a> result code: $3 work dir: <a href=\"$5\">$5</a>" >> "$1";;
+			echo -n "<li><a href=\"$5/suite.html\"><b>$2</b></a> - ResultCode: $3 - <a href=\"$5\">WorkDir</a> - <a href=\"$4\">InputDir</a>" >> "$1";;
 		$errSkip )
 			{ if read -r; then :; fi; } < "$5/REASON" #read one line from reason
-			echo -n "<li style=\"color: blue\"><a href=\"$5/suite.html\">$2</a> result code: $3 : $REPLY work dir: <a href=\"$5\">$5</a>" >> "$1";;
+			echo -n "<li style=\"color: blue\"><a href=\"$5/suite.html\"><b>$2</b></a> - ResulCode: $3 : $REPLY - <a href=\"$5\">WorkDir</a> - <a href=\"$4\">InputDir</a>" >> "$1";;
 		$errSigint )
-			echo -n "<li style=\"color: red\"><a href=\"$5/suite.html\">$2</a> result code: $3  work dir: <a href=\"$5\">$5</a>" >> "$1";;
+			echo -n "<li style=\"color: red\"><a href=\"$5/suite.html\"><b>$2</b></a> - ResultCode: $3 - <a href=\"$5\">WorkDir</a> - <a href=\"$4\">InputDir</a>" >> "$1";;
 		* )
-			echo -n "<li style=\"color: red\"><a href=\"$5/suite.html\">$2</a> result code: $3  work dir: <a href=\"$5\">$5</a>" >> "$1"
+			echo -n "<li style=\"color: red\"><a href=\"$5/suite.html\"><b>$2</b></a> - ResultCode: $3 - <a href=\"$5\">WorkDir</a> - <a href=\"$4\">InputDir</a>" >> "$1"
 	esac
 	if [[ $3 -ne $errSkip ]]; then
 		echo -n "      <br><b>Cases</b> executed=$6 " >> "$1"
