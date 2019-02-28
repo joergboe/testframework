@@ -5,7 +5,7 @@ STEPS='mySubmit checkJobNo waitForFin myCancelJob myEvaluate'
 FINS='cancelJob'
 
 myEvaluate() {
-	if ! linewisePatternMatch "$TT_dataDir/Tuples" '' '*http://httpbin.org/get*'; then
+	if ! linewisePatternMatch "$TT_dataDir/Tuples" '' '*http*://httpbin.org/get*'; then
 		setFailure 'No match found'
 	fi
 }
