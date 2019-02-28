@@ -550,9 +550,9 @@ function addSuiteEntry {
 			echo -n "<li><a href=\"$5/suite.html\"><b>$2</b></a> - ResultCode: $3 - <a href=\"$5\">WorkDir</a> - <a href=\"$4\">InputDir</a>" >> "$1";;
 		$errSkip )
 			{ if read -r; then :; fi; } < "$5/REASON" #read one line from reason
-			echo -n "<li style=\"color: blue\"><a href=\"$5/suite.html\"><b>$2</b></a> - ResulCode: $3 : $REPLY - <a href=\"$5\">WorkDir</a> - <a href=\"$4\">InputDir</a>" >> "$1";;
+			echo -n "<li style=\"color: blue\"><a href=\"$5/suite.html\"><b>$2</b></a> - ResulCode: $3 SKIP: $REPLY - <a href=\"$5\">WorkDir</a> - <a href=\"$4\">InputDir</a>" >> "$1";;
 		$errSigint )
-			echo -n "<li style=\"color: red\"><a href=\"$5/suite.html\"><b>$2</b></a> - ResultCode: $3 - <a href=\"$5\">WorkDir</a> - <a href=\"$4\">InputDir</a>" >> "$1";;
+			echo -n "<li style=\"color: red\"><a href=\"$5/suite.html\"><b>$2</b></a> - ResultCode: $3 SIGINT received - <a href=\"$5\">WorkDir</a> - <a href=\"$4\">InputDir</a>" >> "$1";;
 		* )
 			echo -n "<li style=\"color: red\"><a href=\"$5/suite.html\"><b>$2</b></a> - ResultCode: $3 - <a href=\"$5\">WorkDir</a> - <a href=\"$4\">InputDir</a>" >> "$1"
 	esac
