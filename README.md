@@ -211,6 +211,6 @@ Version 3.6.0:
 Version 3.6.1:
 - New function checkLogsNoError2, Check if pe log files and pe stdouterr have no error Token ERROR
 
-New Version:
+Version 3.7.0:
 - Add command option --shell
 - breakdown in browser pages
