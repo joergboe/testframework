@@ -41,10 +41,10 @@ source "${TTRO_scriptDir}/coreutil.sh"
 function usage {
 	local command=${0##*/}
 	cat <<-EOF
-	
+
 	#usage: ${command} scriptsPath suitePath casePath workdir variant;
 	usage: ${command} casePath workdir variant preamblError;
-	
+
 	EOF
 }
 isDebug && printDebug "$0 $*"
@@ -183,6 +183,7 @@ function errorExit {
 #####################################################################################################
 #Start of main testcase body
 printInfo "**** START Case $TTRO_case variant '$TTRO_variantCase' in workdir $TTRO_workDirCase pid $$ ********************"
+echo "$caseStartTime" > "$TTRO_workDirCase/STARTTIME"
 
 #----------------------------------
 # enter working dir
@@ -294,7 +295,7 @@ for name_xyza in 'TTRO_stepsCase' 'STEPS'; do
 			if isDebug; then
 				v=$(declare -p "$name_xyza")
 				printDebug "$v"
-			fi 
+			fi
 			eval "l_xyza=\${#$name_xyza[@]}"
 			for (( i_xyza=0; i_xyza<l_xyza; i_xyza++)); do
 				eval "step_xyza=\${$name_xyza[$i_xyza]}"

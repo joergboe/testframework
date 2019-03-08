@@ -563,7 +563,12 @@ while [[ -z $allJobsGone ]]; do
 						caseElapsedTime='?'
 						if [[ -e "${tcaseWorkDir[$i]}/ELAPSED" ]]; then
 							caseElapsedTime=$(<"${tcaseWorkDir[$i]}/ELAPSED")
-							rm "${tcaseWorkDir[$i]}/ELAPSED"
+						else
+							if [[ -e "${tcaseWorkDir[$i]}/STARTTIME" ]]; then
+								caseStartTime=$(<"${tcaseWorkDir[$i]}/STARTTIME")
+								getElapsedTime "$caseStartTime"
+								caseElapsedTime="$TTTT_elapsedTime"
+							fi
 						fi
 						echo "$tmpCaseAndVariant : $caseElapsedTime" >> "${TTRO_workDirSuite}/CASE_EXECUTE"
 
