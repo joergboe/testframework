@@ -408,16 +408,12 @@ function createGlobalIndex {
 	<!DOCTYPE html>
 	<html>
 	<head>
-	<!-- <style>
-		td {
-			margin-left: 80px;
-		}
-	</style> -->
-		<title>Test Report Collection '$TTRO_collection'</title>
 		<meta charset='utf-8'>
+		<style>h1 { background-color: gray; color: white; text-align: center; }</style>
+		<title>Test Report Collection '$TTRO_collection'</title>
 	</head>
 	<body>
-		<h1 style="text-align: center;">Test Report Collection '$TTRO_collection'</h1>
+		<h1>Test Report Collection '$TTRO_collection'</h1>
 		<h2>The Suite Lists</h2>
 		<p>
 			<ul>
@@ -450,11 +446,12 @@ function createSuiteIndex {
 	<!DOCTYPE html>
 	<html>
 	<head>
-		<title>Test Report Collection '$TTRO_collection'</title>
+		<style>h1 { background-color: gray; color: white; text-align: center; }</style>
 		<meta charset='utf-8'>
+		<title>Test Report Collection '$TTRO_collection'</title>
 	</head>
 	<body>
-		<h1 style="text-align: center;">Test Suite '$TTRO_suiteNestingString'</h1>
+		<h1>Test Suite '$TTRO_suiteNestingString'</h1>
 		<h2>Test Case execution:</h2>
 		<p>
 		<ul>
@@ -487,6 +484,9 @@ function addCaseEntry {
 	if [[ -e "$6/REASON" ]]; then
 		reason=$(<"$6/REASON")
 	fi
+	if [[ -e "$6/TIMEOUT" ]]; then
+		reason='Timeout'
+	fi
 	case $4 in
 		SUCCESS )
 			echo "<li><a href=\"$6\"><b>$mycasename</b></a> - <a href=\"$5\">InputDir</a><br>$4 - Time elapsed: $7</li>" >> "$1"
@@ -494,7 +494,7 @@ function addCaseEntry {
 				echo "$part1" >> "$8"
 			fi;;
 		ERROR )
-			echo "<li><a href=\"$6\"><b>$mycasename</b></a> - <a href=\"$5\">InputDir</a><br><span style=\"color: red\">$4</span> - Time elapsed: $7</li>" >> "$1"
+			echo "<li><a href=\"$6\"><b>$mycasename</b></a> - <a href=\"$5\">InputDir</a><br><span style=\"color: red\">$4 ${reason}</span> - Time elapsed: $7</li>" >> "$1"
 			if [[ -n $TTXX_summary  ]]; then
 				echo -e "$part1\nERROR\n" >> "$8"
 			fi;;
