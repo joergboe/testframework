@@ -29,14 +29,14 @@ declare TTTT_executionState='initializing'
 # Function handle SIGINT
 function handleSigint {
 	if [[ $interruptReceived -eq 0 ]]; then
-		printInfo "SIGINT: Test Suite will be stopped. To interrupt running test cases press ^C again"
+		printWarning "SIGINT: Test Suite will be stopped. To interrupt running test cases press ^C again"
 		interruptReceived=1
 	elif [[ $interruptReceived -eq 1 ]]; then
 		interruptReceived=$((interruptReceived+1))
-		printInfo "SIGINT: Test cases will be stopped"
+		printWarning "SIGINT: Test cases will be stopped"
 	elif [[ $interruptReceived -gt 2 ]]; then
 		interruptReceived=$((interruptReceived+1))
-		printInfo "SIGINT: Abort Suite"
+		printWarning "SIGINT: Abort Suite"
 		exit $errSigint
 	else
 		interruptReceived=$((interruptReceived+1))
@@ -81,25 +81,6 @@ function usage {
 
 	Requires exported execution list variables
 	EOF
-}
-
-# check for duplicate jobspec in running jobs list
-function checkDuplicateJobspec {
-	local i
-	local js
-	for ((i=0; i<maxParralelJobs; i++)); do
-		if [[ -n ${tpid[$i]} ]]; then #this job is ment to be running
-			js="${tjobid[$i]}"
-			#echo "Check index $i list entry $js - value to be inserted $1"
-			if [[ -n $js ]]; then #and as a jobspec assigned
-				if [[ $js -eq $1 ]]; then
-					printWarning "Jobspec $1 is already in running jobs list at index i=$i ! Delete the jobspec"
-					tjobid[$i]=''
-				fi
-			fi
-		fi
-	done
-	return 0
 }
 
 isDebug && printDebug "$0 $*"
@@ -357,11 +338,31 @@ if isFunction 'testPreparation'; then
 	fi
 fi
 printInfo "$executedTestPrepSteps Test Suite Preparation steps executed"
-
+unset x
 #-------------------------------------------------
 #test case execution
 TTTT_executionState='execution'
-unset x
+
+# check for duplicate jobspec in running jobs list
+function checkDuplicateJobspec {
+	local i
+	local js
+	for ((i=0; i<maxParralelJobs; i++)); do
+		if [[ -n ${tpid[$i]} ]]; then #this job is ment to be running
+			js="${tjobid[$i]}"
+			#echo "Check index $i list entry $js - value to be inserted $1"
+			if [[ -n $js ]]; then #and as a jobspec assigned
+				if [[ $js -eq $1 ]]; then
+					printWarning "Jobspec $1 is already in running jobs list at index i=$i ! Delete the jobspec"
+					tjobid[$i]=''
+				fi
+			fi
+		fi
+	done
+	return 0
+}
+
+
 if [[ $TTRO_noParallelCases -eq 1 ]]; then
 	declare -ri maxParralelJobs=1
 else
@@ -389,30 +390,326 @@ declare -a timeout=()
 declare -a endTime=()
 declare -a killed=()
 declare -a tcaseWorkDir=()
-declare availableTpidIndex=""
+declare -a freeSlots=()	# the list of the free slots in txxxx arrays
 declare allJobsGone=""
-declare -i jobIndex=0 #index of job next to start
+declare highLoad=''	#true if the system is in high load state
+declare -i jobIndex=0 #index of next job to start
+declare nextJobIndexToStart=''	#the index of the next job to start if any, empty if no more job is available (or interrupt)
 declare -i jobsEnded=0 # the number of ended jobs
 #result and summary variables
 declare -i variantSuccess=0 variantSkiped=0 variantFailures=0 variantErrors=0
-declare -i numberJobsRunning
+declare -i numberJobsRunning=0
 declare thisJobRuns
 declare sleepCyclesAndNoJobEnds=0
 
+# check for timed out jobs and kill them
+# TTXX_shell disables timeout check
+checkJobTimeouts() {
+	isDebug && printDebug "check for timed out jobs"
+	local now
+	while ! now="$(date +'%-s')"; do #guard external command if sigint is received
+		: #TODO: is signal received from this job too?
+	done
+	local i tempjobspec finalTime
+	for ((i=0; i<maxParralelJobs; i++)); do
+		#if [[ ( -n ${tpid[$i]} ) && ( -n ${tjobid[$i]} ) ]]; then
+		if [[ -n ${tpid[$i]} ]]; then
+			if [[ -z ${killed[$i]} ]]; then # the job was not yet killed
+				if [[ ( ( ${endTime[$i]} -lt $now ) && ( -z $TTXX_shell ) ) || ( $interruptReceived -gt 1 ) ]]; then
+					if [[ -z ${tjobid[$i]} ]]; then
+						tempjobspec="${tpid[$i]}"
+						printError "tpid $tempjobspec with no jobspec encountered"
+					else
+						tempjobspec="%${tjobid[$i]}"
+					fi
+					printWarning "Timeout Kill i=${i} jobspec=${tempjobspec} with SIGTERM case=${tcase[$i]} variant=${tvariant[$i]} pid=${tpid[$i]}"
+					#SIGINT and SIGHUP seems not to work can not install handler for both signals in case.sh
+					if kill "${tempjobspec}"; then
+						echo "timeout" > "${tcaseWorkDir[$i]}/TIMEOUT"
+					else
+						printWarning "Can not kill i=${i} jobspec=${tempjobspec} Gone?"
+					fi
+					killed[$i]="$now"
+				fi
+			else
+				finalTime=$((${killed[$i]}+$TTTT_casesAdditionalTime))
+				if [[ $now -gt $finalTime ]]; then
+					if [[ -z ${tjobid[$i]} ]]; then
+						tempjobspec="${tpid[$i]}"
+						printError "tpid $tempjobspec with no jobspec encountered"
+					else
+						tempjobspec="%${tjobid[$i]}"
+					fi
+					printError "Forced Kill i=${i} jobspec=${tempjobspec} case=${tcase[$i]} variant=${tvariant[$i]} pid=${tpid[$i]}"
+					if ! kill -9 "${tempjobspec}"; then
+						printWarning "Can not force kill i=${i} jobspec=${tempjobspec} pid=${tpid[$i]} Gone?"
+					fi
+				fi
+			fi
+		fi
+	done
+}
+
+# handle job ends
+# count jobs
+# prepare list of free slots
+handleJobEnd() {
+	#echo "CHECK JOB END"
+	isDebug && printDebug "check for ended jobs"
+	numberJobsRunning=0; freeSlots=()
+	local oneJobStopFound=''
+	local i
+	for ((i=0; i<maxParralelJobs; i++)); do
+		local pid="${tpid[$i]}"
+		local jobid="${tjobid[$i]}"
+		if [[ -n $pid ]]; then
+			isDebug && printDebug "check wether job is still running i=$i pid=$pid jobspec=%$jobid"
+			local thisJobRuns='true'
+			if [[ -z $jobid ]]; then
+				thisJobRuns=''
+				echo "JOB Gone jobid is re-used $jobid"
+				isDebug && printDebug "Job is Gone jobid is re-used $jobid"
+			else
+				#if ps --pid "$pid" &> /dev/null; then
+				#if jobsOutput=$(LC_ALL=en_US jobs "%$jobid" 2>/dev/null); then ... this does not work in rhel 6 (bash 4.1.2)
+				local jobsOutput
+				if jobsOutput=$(export LC_ALL='en_US.UTF-8'; jobs "%$jobid" 2>/dev/null); then
+					#echo "***** $jobsOutput"
+					local tmp1=$(cut -d ' ' -f1 <<< $jobsOutput)
+					local tmp2=$(cut -d ' ' -f2 <<< $jobsOutput)
+					if [[ $tmp1 =~ \[(.*)\] ]]; then
+						local tmp3="${BASH_REMATCH[1]}"
+						if [[ $tmp2 == 'Done' ]]; then
+							thisJobRuns=''
+							#echo "JOB DONE $tmp3"
+							isDebug && printDebug "Job is Done $tmp3"
+						elif [[ $tmp2 == 'Running' ]]; then
+							#echo "JOB RUNS $tmp3"
+							isDebug && printDebug "Job is Running $tmp3"
+						else
+							printError "Invalid job state $tmp2 jobspec=%$tmp3"
+							thisJobRuns=''
+						fi
+					else
+						printError "Wrong output of jobs command $jobsOutput"
+					fi
+				else
+					local psres=$?
+					if [[ $psres -eq $errSigint ]]; then
+						isDebug && printDebug "SIGINT: during jobs"
+					else
+						thisJobRuns=''
+						echo "JOB Gone $jobid"
+						isDebug && printDebug "Job is Gone $jobid"
+					fi
+				fi
+			fi
+			if [[ -n $thisJobRuns ]]; then
+				numberJobsRunning=$((numberJobsRunning+1))
+			else
+				oneJobStopFound='true'
+				jobsEnded=$((jobsEnded+1))
+				freeSlots+=( $i )
+				#echo "JOB END"
+				local tmpCase="${tcase[$i]}"
+				local tmpVariant="${tvariant[$i]}"
+				#tmpCaseAndVariant="${tmpCase##*/}"
+				local tmpCaseAndVariant="${TTRO_suiteNestingString}::${tmpCase}"
+				if [[ -n $tmpVariant ]]; then
+					tmpCaseAndVariant="${tmpCaseAndVariant}:${tmpVariant}"
+				fi
+				local caseElapsedTime='?'
+				if [[ -e "${tcaseWorkDir[$i]}/ELAPSED" ]]; then
+					caseElapsedTime=$(<"${tcaseWorkDir[$i]}/ELAPSED")
+				else
+					if [[ -e "${tcaseWorkDir[$i]}/STARTTIME" ]]; then
+						local caseStartTime=$(<"${tcaseWorkDir[$i]}/STARTTIME")
+						getElapsedTime "$caseStartTime"
+						caseElapsedTime="$TTTT_elapsedTime"
+					fi
+				fi
+				echo "$tmpCaseAndVariant : $caseElapsedTime" >> "${TTRO_workDirSuite}/CASE_EXECUTE"
+				getSystemLoad100
+				#executeList+=("$tmpCaseAndVariant")
+				printInfon "END: i=$i pid=$pid jobspec=%$jobid case=${tmpCase} variant='${tmpVariant}' running=$numberJobsRunning systemLoad=$TTTT_systemLoad"
+				tpid[$i]=""
+				tjobid[$i]=""
+				#collect variant result
+				local jobsResultFile="${tcaseWorkDir[$i]}/RESULT"
+				if [[ -e ${jobsResultFile} ]]; then
+					local jobsResult=$(<"${jobsResultFile}")
+					case "$jobsResult" in
+						SUCCESS )
+							echo "$tmpCaseAndVariant" >> "${TTRO_workDirSuite}/CASE_SUCCESS"
+							variantSuccess=$((variantSuccess+1))
+							addCaseEntry "$indexfilename" "$tmpCase" "$tmpVariant" 'SUCCESS' "${tcasePath[$i]}" "${tcaseWorkDir[$i]}" "$caseElapsedTime" "$TTTT_tempSummayName"
+						;;
+						SKIP )
+							{ if read -r; then :; fi; } < "${tcaseWorkDir[$i]}/REASON" #read one line from reason
+							echo "$tmpCaseAndVariant: $REPLY" >> "${TTRO_workDirSuite}/CASE_SKIP"
+							variantSkiped=$((variantSkiped+1))
+							addCaseEntry "$indexfilename" "$tmpCase" "$tmpVariant" 'SKIP' "${tcasePath[$i]}" "${tcaseWorkDir[$i]}" "$caseElapsedTime" "$TTTT_tempSummayName"
+						;;
+						FAILURE )
+							{ if read -r; then :; fi; } < "${tcaseWorkDir[$i]}/REASON" #read one line from reason
+							echo "$tmpCaseAndVariant: $REPLY" >> "${TTRO_workDirSuite}/CASE_FAILURE"
+							variantFailures=$((variantFailures+1))
+							addCaseEntry "$indexfilename" "$tmpCase" "$tmpVariant" 'FAILURE' "${tcasePath[$i]}" "${tcaseWorkDir[$i]}" "$caseElapsedTime" "$TTTT_tempSummayName"
+							[[ ( -n $TTRO_xtraPrint ) && ( "$TTRO_noParallelCases" -ne 1 ) ]] && cat "${tcaseWorkDir[$i]}/${TEST_LOG}"
+						;;
+						ERROR )
+							echo "$tmpCaseAndVariant" >> "${TTRO_workDirSuite}/CASE_ERROR"
+							variantErrors=$((variantErrors+1))
+							addCaseEntry "$indexfilename" "$tmpCase" "$tmpVariant" 'ERROR' "${tcasePath[$i]}" "${tcaseWorkDir[$i]}" "$caseElapsedTime" "$TTTT_tempSummayName"
+							[[ ( -n $TTRO_xtraPrint ) && ( "$TTRO_noParallelCases" -ne 1 ) ]] && cat "${tcaseWorkDir[$i]}/${TEST_LOG}"
+						;;
+						* )
+							printError "${tmpCase}:${tmpVariant} : Invalid Case-variant result $jobsResult case workdir ${tcaseWorkDir[$i]}"
+							echo "$tmpCaseAndVariant" >> "${TTRO_workDirSuite}/CASE_ERROR"
+							variantErrors=$((variantErrors+1))
+							addCaseEntry "$indexfilename" "$tmpCase" "$tmpVariant" 'ERROR' "${tcasePath[$i]}" "${tcaseWorkDir[$i]}" "$caseElapsedTime" "$TTTT_tempSummayName"
+							jobsResult="ERROR"
+							[[ ( -n $TTRO_xtraPrint ) && ( "$TTRO_noParallelCases" -ne 1 ) ]] && cat "${tcaseWorkDir[$i]}/${TEST_LOG}"
+						;;
+					esac
+				else
+					printError "No RESULT file in case workdir ${tcaseWorkDir[$i]}"
+					echo "$tmpCaseAndVariant" >> "${TTRO_workDirSuite}/CASE_ERROR"
+					variantErrors=$((variantErrors+1))
+					addCaseEntry "$indexfilename" "$tmpCase" "$tmpVariant" 'ERROR' "${tcasePath[$i]}" "${tcaseWorkDir[$i]}" "$caseElapsedTime" "$TTTT_tempSummayName"
+					jobsResult="ERROR"
+					[[ ( -n $TTRO_xtraPrint ) && ( "$TTRO_noParallelCases" -ne 1 ) ]] && cat "${tcaseWorkDir[$i]}/${TEST_LOG}"
+				fi
+				echo " Result: $jobsResult"
+			fi
+		else
+			freeSlots+=( $i )
+		fi
+	done
+	if [[ -n $oneJobStopFound ]]; then
+		sleepCyclesAndNoJobEnds=0
+	fi
+}
+
+# Check that all jobs are gone
+checkAllJobsGone() {
+	local -i j=0
+	local i
+	for ((i=0; i<maxParralelJobs; i++)); do
+		isDebug && printDebug "Check for all jobs gone: i=$i"
+		if [[ -n ${tpid[$i]} ]]; then
+			isDebug && printDebug "Check for all jobs gone: i=$i is not free pid=${tpid[$i]}"
+			break
+		fi
+		j=$((j+1))
+	done
+	if [[ $j -eq $maxParralelJobs ]]; then
+		isDebug && printDebug "All jobs gone"
+		#echo "ALL JOBS GONE"
+		allJobsGone="true"
+	fi
+}
+
+#wait if no slot is free an not allJobsGone
+sleepIf() {
+	if [[ ( ${#freeSlots[*]} -eq 0 ) && -z $allJobsGone ]]; then
+		local waitTime='0.2'
+		if [[ $sleepCyclesAndNoJobEnds -ge 10 ]]; then
+			waitTime='1'
+		else
+			sleepCyclesAndNoJobEnds=$((sleepCyclesAndNoJobEnds+1))
+		fi
+		printError "SLEEP $waitTime sleepCyclesAndNoJobEnds=$sleepCyclesAndNoJobEnds"
+		isDebug && printDebug "sleep $waitTime sleepCyclesAndNoJobEnds=$sleepCyclesAndNoJobEnds"
+		if sleep "$waitTime"; then
+			isDebug && printDebug "sleep returns success"
+		else
+			local cresult=$?
+			if [[ $cresult -eq 130 ]]; then
+				printInfo "SIGINT received in sleep in programm $commandname ********************"
+			else
+				printError "Unhandled result $cresult after sleep"
+			fi
+		fi
+	fi
+	return 0
+}
+
+# Start a new job
+startNewJob() {
+	local freeSlotIndx=0
+	while [[ -n $nextJobIndexToStart && ( $numberJobsRunning -lt $currentParralelJobs ) && ( $freeSlotIndx -lt ${#freeSlots[*]} ) ]]; do
+		local freeSlot="${freeSlots[$freeSlotIndx]}"; freeSlotIndx=$((freeSlotIndx+1));
+		local casePath="${caseVariantPathes[$nextJobIndexToStart]}"
+		local caseName="${casePath##*/}"
+		local caseVariant="${caseVariantIds[$nextJobIndexToStart]}"
+		local cworkdir="${caseVariantWorkdirs[$nextJobIndexToStart]}"
+		local cpreamblError="${casePreambErrors[$nextJobIndexToStart]}"
+		#make and cleanup case work dir
+		if [[ -e $cworkdir ]]; then
+			printErrorAndExit "Case workdir exists! Probably duplicate variant. workdir: $cworkdir" $errSuiteError
+		fi
+		mkdir -p "$cworkdir"
+		local cmd="${TTRO_scriptDir}/case.sh"
+		getSystemLoad100
+		numberJobsRunning=$((numberJobsRunning+1))
+		printInfon "START: jobIndex=$nextJobIndexToStart case=$caseName variant=$caseVariant i=$freeSlot running=$((numberJobsRunning)) systemLoad=$TTTT_systemLoad"
+		#Start job connect output to stdout in single thread case
+		if [[ "$TTRO_noParallelCases" -eq 1 ]]; then
+			$cmd "$casePath" "$cworkdir" "$caseVariant" "$cpreamblError" 2>&1 | tee -i "${cworkdir}/${TEST_LOG}" &
+			local newPid=$!
+		else
+			$cmd "$casePath" "$cworkdir" "$caseVariant" "$cpreamblError" &> "${cworkdir}/${TEST_LOG}" &
+			local newPid=$!
+		fi
+		#jobsOutput=$(LC_ALL=en_US jobs %+)  ... this does not work in rhel 6 (bash 4.1.2)
+		local jobsOutput=$(export LC_ALL='en_US.UTF-8'; jobs %+)
+		echo "$jobsOutput" > "$cworkdir/JOBS"
+		echo "Full Job list" >> "$cworkdir/JOBS"
+		LC_ALL='en_US.UTF-8' jobs -l >> "$cworkdir/JOBS"
+		isDebug && printDebug "jobspec:$jobsOutput"
+		local tmp1=$(cut -d ' ' -f1 <<< $jobsOutput)
+		local jobState=$(cut -d ' ' -f2 <<< $jobsOutput)
+		if [[ $tmp1 =~ \[(.*)\]\+ ]]; then
+			local tmp5="${BASH_REMATCH[1]}"
+			echo " jobspec=%$tmp5 pid=$newPid state=$jobState"
+			checkDuplicateJobspec "$tmp5"
+		else
+			echo
+			tjobid[$freeSlot]=""
+			printErrorAndExit "No jobindex extract from jobs output '$jobsOutput'" $errRt
+		fi
+		tpid[$freeSlot]="$newPid"
+		tjobid[$freeSlot]="$tmp5"
+		tcase[$freeSlot]="$caseName"
+		tvariant[$freeSlot]="$caseVariant"
+		tcasePath[$freeSlot]="$casePath"
+		killed[$freeSlot]=""
+		local now="$(date +'%-s')"
+		isDebug && printDebug "Enter tjobid[$freeSlot]=${tjobid[$freeSlot]} state=$jobState tpid[${freeSlot}]=$newPid time=${now} state=$jobState"
+		startTime[$freeSlot]="$now"
+		local jobTimeout=${caseTimeout[$jobIndex]}
+		if [[ $jobTimeout -lt $TTTT_casesTimeout ]]; then
+			jobTimeout="$TTTT_casesTimeout"
+		fi
+		isVerbose && printVerbose "Job timeout $jobTimeout"
+		endTime[$freeSlot]=$((now+jobTimeout))
+		timeout[$freeSlot]="$jobTimeout"
+		tcaseWorkDir[$freeSlot]="$cworkdir"
+		jobIndex=$((jobIndex+1))
+		if [[ ( $interruptReceived -gt 0 ) || ( $jobIndex -ge $noCaseVariants ) ]]; then
+			nextJobIndexToStart=''
+		else
+			nextJobIndexToStart="$jobIndex"
+		fi
+	done
+}
 
 #init the work structure for maxParralelJobs
 for ((i=0; i<maxParralelJobs; i++)); do
-	tjobid[$i]=""
-	tpid[$i]=""
-	tcase[$i]=""
-	tvariant[$i]=""
-	tcasePath[$i]=""
-	startTime[$i]=""
-	timeout[$i]=""
-	startTime[$i]=""
-	endTime[$i]=""
-	killed[$i]=""
-	tcaseWorkDir[$i]=""
+	tjobid[$i]=""; tpid[$i]=""; tcase[$i]=""; tvariant[$i]=""; tcasePath[$i]=""
+	startTime[$i]=""; timeout[$i]=""; startTime[$i]=""; endTime[$i]=""
+	killed[$i]=""; tcaseWorkDir[$i]=""
 done
 
 #print special summary
@@ -420,329 +717,42 @@ TTTT_tempSummayName="${TTRO_workDirSuite}/part1.tmp"
 rm -f "$TTTT_tempSummayName"
 touch "$TTTT_tempSummayName"
 
-declare casePath caseName caseVariant
 #the loop until all jobs are gone
+if [[ $noCaseVariants -gt 0 ]]; then
+	nextJobIndexToStart=0
+else
+	nextJobIndexToStart=''
+fi
 while [[ -z $allJobsGone ]]; do
-	if [[ $jobIndex -lt $noCaseVariants ]]; then
-		casePath="${caseVariantPathes[$jobIndex]}"
-		caseName="${casePath##*/}"	#a new case is to be started
-		caseVariant="${caseVariantIds[$jobIndex]}"
-		isVerbose && printVerbose "jobIndex=$jobIndex Try to start $caseName variant '$caseVariant'"
-	else
-		casePath=""
-		caseName=""		#no new case to start
-		caseVariant=""
-		isVerbose && printVerbose "Last job of suite $TTRO_suite reached ****"
-	fi
-	availableTpidIndex=""
-	isDebug && printDebug "Loop precond availableTpidIndex='${availableTpidIndex}' allJobsGone='${allJobsGone}' caseName='${caseName}' variant='${caseVariant}'"
+	isDebug && printDebug "Loop precond allJobsGone='${allJobsGone}' jobIndex='${nextJobIndexToStart}'"
 	# loop either not the final job and no job slot is available or the final job and not all jobs gone
-	while [[ ( -n $caseName && -z ${availableTpidIndex} ) || ( -z $caseName && -z $allJobsGone ) ]]; do
-		isDebug && printDebug "Loop cond availableTpidIndex='${availableTpidIndex}' allJobsGone='${allJobsGone}' caseName='${caseName}' variant='${caseVariant}'"
+	while [[ ( -n $nextJobIndexToStart && ( $numberJobsRunning -ge  $currentParralelJobs ) || ( ${#freeSlots[*]} -eq 0 ) ) || ( -z $nextJobIndexToStart && -z $allJobsGone ) ]]; do
+		isDebug && printDebug "Loop cond numberJobsRunning='$numberJobsRunning' currentParralelJobs='$currentParralelJobs' allJobsGone='$allJobsGone' nextJobIndexToStart='$nextJobIndexToStart'"
+		checkJobTimeouts
+		handleJobEnd
 		if [[ $interruptReceived -gt 0 ]]; then
-			casePath=""
-			caseName=""		#no new case to start
-			caseVariant=""
+			nextJobIndexToStart=''
 			isVerbose && printVerbose "Interrupt suite $TTRO_suite interruptReceived=$interruptReceived ****"
 		fi
-		#during normal run check for one available job space
-		getSystemLoad100
-		if [[ -n $caseName ]]; then
-			for ((i=0; i<currentParralelJobs; i++)); do
-				isDebug && printDebug "Check free i=$i"
-				if [[ -z ${tpid[$i]} ]]; then
-					isDebug && printDebug "i=$i is free"
-					#echo "FREE INDEX $i"
-					availableTpidIndex=$i
-					break
-				fi
-			done
-		fi
-		#check for timed out jobs
-		isDebug && printDebug "check for timed out jobs"
-		while ! now="$(date +'%-s')"; do #guard external command if sigint is received
-			:
-		done
-		numberJobsRunning=0
-		for ((i=0; i<maxParralelJobs; i++)); do
-			if [[ ( -n ${tpid[$i]} ) && ( -n ${tjobid[$i]} ) ]]; then
-				numberJobsRunning=$((numberJobsRunning+1))
-				if [[ -z ${killed[$i]} ]]; then
-					if [[ ( ( ${endTime[$i]} -lt $now ) && ( -z $TTXX_shell ) ) || ( $interruptReceived -gt 1 ) ]]; then
-						if [[ -z ${tjobid[$i]} ]]; then
-							tempjobspec="${tpid[$i]}"
-						else
-							tempjobspec="%${tjobid[$i]}"
-						fi
-						printWarning "Timeout Kill i=${i} jobspec=${tempjobspec} with SIGTERM case=${tcase[$i]} variant=${tvariant[$i]} pid=${tpid[$i]}"
-						#SIGINT and SIGHUP seems not to work can not install handler for both signals in case.sh
-						if kill "${tempjobspec}"; then
-							echo "timeout" > "${tcaseWorkDir[$i]}/TIMEOUT"
-						else
-							printWarning "Can not kill i=${i} jobspec=${tempjobspec} Gone?"
-						fi
-						killed[$i]="$now"
-					fi
-				else
-					tmp=$((${killed[$i]}+$TTTT_casesAdditionalTime))
-					if [[ $now -gt $tmp ]]; then
-						if [[ -z ${tjobid[$i]} ]]; then
-							tempjobspec="${tpid[$i]}"
-						else
-							tempjobspec="%${tjobid[$i]}"
-						fi
-						printError "Forced Kill i=${i} jobspec=${tempjobspec} case=${tcase[$i]} variant=${tvariant[$i]} pid=${tpid[$i]}"
-						if ! kill -9 "${tempjobspec}"; then
-							printWarning "Can not force kill i=${i} jobspec=${tempjobspec} pid=${tpid[$i]} Gone?"
-						fi
-					fi
-				fi
-			fi
-		done
-		#check for ended jobs
-		if [[ -z ${availableTpidIndex} ]]; then
-			#echo "CHECK JOB END"
-			isDebug && printDebug "check for ended jobs"
-			oneJobStopFound=''
-			for ((i=0; i<maxParralelJobs; i++)); do
-				pid="${tpid[$i]}"
-				jobid="${tjobid[$i]}"
-				if [[ -n $pid ]]; then
-					isDebug && printDebug "check wether job is still running i=$i pid=$pid jobspec=%$jobid"
-					thisJobRuns='true'
-					if [[ -z $jobid ]]; then
-						thisJobRuns=''
-						#echo "JOB Gone jobid is re-used $jobid"
-						isDebug && printDebug "Job is Gone jobid is re-used $jobid"
-					else
-						#if ps --pid "$pid" &> /dev/null; then
-						#if tmp=$(LC_ALL=en_US jobs "%$jobid" 2>/dev/null); then ... this does not work in rhel 6 (bash 4.1.2)
-						if tmp=$(export LC_ALL='en_US.UTF-8'; jobs "%$jobid" 2>/dev/null); then
-							#echo "***** $tmp"
-							tmp1=$(cut -d ' ' -f1 <<< $tmp)
-							tmp2=$(cut -d ' ' -f2 <<< $tmp)
-							if [[ $tmp1 =~ \[(.*)\] ]]; then
-								tmp3="${BASH_REMATCH[1]}"
-								if [[ $tmp2 == 'Done' ]]; then
-									thisJobRuns=''
-									#echo "JOB DONE $tmp3"
-									isDebug && printDebug "Job is Done $tmp3"
-								elif [[ $tmp2 == 'Running' ]]; then
-									#echo "JOB RUNS $tmp3"
-									isDebug && printDebug "Job is Running $tmp3"
-								else
-									printError "Invalid job state $tmp2 jobspec=%$tmp3"
-									thisJobRuns=''
-								fi
-							else
-								printError "Wrong output of jobs command $tmp"
-							fi
-						else
-							psres=$?
-							if [[ $psres -eq $errSigint ]]; then
-								isDebug && printDebug "SIGINT: during jobs"
-							else
-								thisJobRuns=''
-								echo "JOB Gone $jobid"
-								isDebug && printDebug "Job is Gone $jobid"
-							fi
-						fi
-					fi
-					if [[ -z $thisJobRuns ]]; then
-						oneJobStopFound='true'
-						jobsEnded=$((jobsEnded+1))
-						#echo "JOB END"
-						numberJobsRunning=$((numberJobsRunning-1))
-						tmpCase="${tcase[$i]}"
-						tmpVariant="${tvariant[$i]}"
-						#tmpCaseAndVariant="${tmpCase##*/}"
-						tmpCaseAndVariant="${TTRO_suiteNestingString}::${tmpCase}"
-						if [[ -n $tmpVariant ]]; then
-							tmpCaseAndVariant="${tmpCaseAndVariant}:${tmpVariant}"
-						fi
-						caseElapsedTime='?'
-						if [[ -e "${tcaseWorkDir[$i]}/ELAPSED" ]]; then
-							caseElapsedTime=$(<"${tcaseWorkDir[$i]}/ELAPSED")
-						else
-							if [[ -e "${tcaseWorkDir[$i]}/STARTTIME" ]]; then
-								caseStartTime=$(<"${tcaseWorkDir[$i]}/STARTTIME")
-								getElapsedTime "$caseStartTime"
-								caseElapsedTime="$TTTT_elapsedTime"
-							fi
-						fi
-						echo "$tmpCaseAndVariant : $caseElapsedTime" >> "${TTRO_workDirSuite}/CASE_EXECUTE"
-
-						#executeList+=("$tmpCaseAndVariant")
-						printInfon "END: i=$i pid=$pid jobspec=%$jobid case=${tmpCase} variant='${tmpVariant}' running=$numberJobsRunning systemLoad=$TTTT_systemLoad"
-						tpid[$i]=""
-						tjobid[$i]=""
-						#if there is a new job to start: take only the first free index and only if less than currentParralelJobs
-						if [[ -z "${availableTpidIndex}" && "$i" -lt "${currentParralelJobs}" && -n "$caseName" ]]; then
-							#echo "JOB END INDEX AVAILALE $i"
-							availableTpidIndex=$i
-						fi
-						#collect variant result
-						tmp="${tcaseWorkDir[$i]}/RESULT"
-						if [[ -e ${tmp} ]]; then
-							tmp2=$(<"${tmp}")
-							case "$tmp2" in
-								SUCCESS )
-									echo "$tmpCaseAndVariant" >> "${TTRO_workDirSuite}/CASE_SUCCESS"
-									variantSuccess=$((variantSuccess+1))
-									#successList+=("$tmpCaseAndVariant")
-									addCaseEntry "$indexfilename" "$tmpCase" "$tmpVariant" 'SUCCESS' "${tcasePath[$i]}" "${tcaseWorkDir[$i]}" "$caseElapsedTime" "$TTTT_tempSummayName"
-								;;
-								SKIP )
-									{ if read -r; then :; fi; } < "${tcaseWorkDir[$i]}/REASON" #read one line from reason
-									echo "$tmpCaseAndVariant: $REPLY" >> "${TTRO_workDirSuite}/CASE_SKIP"
-									variantSkiped=$((variantSkiped+1))
-									#skipList+=("$tmpCaseAndVariant")
-									addCaseEntry "$indexfilename" "$tmpCase" "$tmpVariant" 'SKIP' "${tcasePath[$i]}" "${tcaseWorkDir[$i]}" "$caseElapsedTime" "$TTTT_tempSummayName"
-								;;
-								FAILURE )
-									{ if read -r; then :; fi; } < "${tcaseWorkDir[$i]}/REASON" #read one line from reason
-									echo "$tmpCaseAndVariant: $REPLY" >> "${TTRO_workDirSuite}/CASE_FAILURE"
-									variantFailures=$((variantFailures+1))
-									#failureList+=("$tmpCaseAndVariant")
-									addCaseEntry "$indexfilename" "$tmpCase" "$tmpVariant" 'FAILURE' "${tcasePath[$i]}" "${tcaseWorkDir[$i]}" "$caseElapsedTime" "$TTTT_tempSummayName"
-									[[ ( -n $TTRO_xtraPrint ) && ( "$TTRO_noParallelCases" -ne 1 ) ]] && cat "${tcaseWorkDir[$i]}/${TEST_LOG}"
-								;;
-								ERROR )
-									echo "$tmpCaseAndVariant" >> "${TTRO_workDirSuite}/CASE_ERROR"
-									variantErrors=$((variantErrors+1))
-									#errorList+=("$tmpCaseAndVariant")
-									addCaseEntry "$indexfilename" "$tmpCase" "$tmpVariant" 'ERROR' "${tcasePath[$i]}" "${tcaseWorkDir[$i]}" "$caseElapsedTime" "$TTTT_tempSummayName"
-									[[ ( -n $TTRO_xtraPrint ) && ( "$TTRO_noParallelCases" -ne 1 ) ]] && cat "${tcaseWorkDir[$i]}/${TEST_LOG}"
-								;;
-								* )
-									printError "${tmpCase}:${tmpVariant} : Invalid Case-variant result $tmp2 case workdir ${tcaseWorkDir[$i]}"
-									echo "$tmpCaseAndVariant" >> "${TTRO_workDirSuite}/CASE_ERROR"
-									variantErrors=$((variantErrors+1))
-									#errorList+=("$tmpCaseAndVariant")
-									addCaseEntry "$indexfilename" "$tmpCase" "$tmpVariant" 'ERROR' "${tcasePath[$i]}" "${tcaseWorkDir[$i]}" "$caseElapsedTime" "$TTTT_tempSummayName"
-									tmp2="ERROR"
-									[[ ( -n $TTRO_xtraPrint ) && ( "$TTRO_noParallelCases" -ne 1 ) ]] && cat "${tcaseWorkDir[$i]}/${TEST_LOG}"
-								;;
-							esac
-						else
-							printError "No RESULT file in case workdir ${tcaseWorkDir[$i]}"
-							echo "$tmpCaseAndVariant" >> "${TTRO_workDirSuite}/CASE_ERROR"
-							variantErrors=$((variantErrors+1))
-							#errorList+=("$tmpCaseAndVariant")
-							addCaseEntry "$indexfilename" "$tmpCase" "$tmpVariant" 'ERROR' "${tcasePath[$i]}" "${tcaseWorkDir[$i]}" "$caseElapsedTime" "$TTTT_tempSummayName"
-							tmp2="ERROR"
-							[[ ( -n $TTRO_xtraPrint ) && ( "$TTRO_noParallelCases" -ne 1 ) ]] && cat "${tcaseWorkDir[$i]}/${TEST_LOG}"
-						fi
-						echo " Result: $tmp2"
-					fi
-				fi
-			done
-			if [[ -n $oneJobStopFound ]]; then
-				sleepCyclesAndNoJobEnds=0
-			fi
-		fi
 		#during final job run: check that all jobs are gone
-		if [[ -z $caseName ]]; then
-			declare -i j=0
-			for ((i=0; i<maxParralelJobs; i++)); do
-				isDebug && printDebug "Check for all jobs gone: i=$i"
-				if [[ -n ${tpid[$i]} ]]; then
-					isDebug && printDebug "Check for all jobs gone: i=$i is not free pid=${tpid[$i]}"
-					break
-				fi
-				j=$((j+1))
-			done
-			if [[ $j -eq $maxParralelJobs ]]; then
-				isDebug && printDebug "All jobs gone"
-				#echo "ALL JOBS GONE"
-				allJobsGone="true"
-			fi
+		if [[ -z $nextJobIndexToStart ]]; then
+			checkAllJobsGone
 		fi
-		#wait
-		if [[ -z ${availableTpidIndex} && -z $allJobsGone ]]; then
-			tmp='0.2'
-			if [[ $sleepCyclesAndNoJobEnds -ge 10 ]]; then
-				tmp='1'
-			else
-				sleepCyclesAndNoJobEnds=$((sleepCyclesAndNoJobEnds+1))
-			fi
-			#echo "SLEEP $tmp sleepCyclesAndNoJobEnds=$sleepCyclesAndNoJobEnds"
-			isDebug && printDebug "sleep $tmp sleepCyclesAndNoJobEnds=$sleepCyclesAndNoJobEnds"
-			if sleep "$tmp"; then
-				isDebug && printDebug "sleep returns success"
-			else
-				cresult=$?
-				if [[ $cresult -eq 130 ]]; then
-					printInfo "SIGINT received in sleep in programm $commandname ********************"
-				else
-					printError "Unhandled result $cresult after sleep"
-				fi
-			fi
-		fi
-		isDebug && printDebug "Loop post cond availableTpidIndex='${availableTpidIndex}' allJobsGone='${allJobsGone}' caseName='${caseName}' variant='${caseVariant}'"
+		sleepIf
+		isDebug && printDebug "Loop POST cond numberJobsRunning='$numberJobsRunning' currentParralelJobs='$currentParralelJobs' allJobsGone='$allJobsGone' nextJobIndexToStart='$nextJobIndexToStart'"
 	done
 	#start a new job
 	#echo "PAST LOOP INNER"
-	if [[ -n $caseName && -n $availableTpidIndex ]]; then
-		cworkdir="${caseVariantWorkdirs[$jobIndex]}"
-		cpreamblError="${casePreambErrors[$jobIndex]}"
-		#make and cleanup case work dir
-		if [[ -e $cworkdir ]]; then
-			printErrorAndExit "Case workdir exists! Probably duplicate variant. workdir: $cworkdir" $errSuiteError
-		fi
-		mkdir -p "$cworkdir"
-		tmp=1 # count running jobs + 1
-		for ((i=0; i<maxParralelJobs; i++)); do
-			if [[ -n ${tpid[$i]} ]]; then
-				tmp=$((tmp+1))
-			fi
-		done
-		cmd="${TTRO_scriptDir}/case.sh"
-		printInfon "START: jobIndex=$jobIndex case=$caseName variant=$caseVariant i=$availableTpidIndex running=$tmp systemLoad=$TTTT_systemLoad"
-		#Start job connect output to stdout in single thread case
-		if [[ "$TTRO_noParallelCases" -eq 1 ]]; then
-			$cmd "$casePath" "$cworkdir" "$caseVariant" "$cpreamblError" 2>&1 | tee -i "${cworkdir}/${TEST_LOG}" &
-			tmp4=$!
-		else
-			$cmd "$casePath" "$cworkdir" "$caseVariant" "$cpreamblError" &> "${cworkdir}/${TEST_LOG}" &
-			tmp4=$!
-		fi
-		#tmp=$(LC_ALL=en_US jobs %+)  ... this does not work in rhel 6 (bash 4.1.2)
-		tmp=$(export LC_ALL='en_US.UTF-8'; jobs %+)
-		echo "$tmp" > "$cworkdir/JOBS"
-		echo "Full Job list" >> "$cworkdir/JOBS"
-		LC_ALL='en_US.UTF-8' jobs -l >> "$cworkdir/JOBS"
-		isDebug && printDebug "jobspec:$tmp"
-		tmp1=$(cut -d ' ' -f1 <<< $tmp)
-		tmp2=$(cut -d ' ' -f2 <<< $tmp)
-		if [[ $tmp1 =~ \[(.*)\]\+ ]]; then
-			tmp5="${BASH_REMATCH[1]}"
-			echo " jobspec=%$tmp5 pid=$tmp4 state=$tmp2"
-			checkDuplicateJobspec "$tmp5"
-		else
-			echo
-			tjobid[$availableTpidIndex]=""
-			printErrorAndExit "No jobindex extract from jobs output '$tmp'" $errRt
-		fi
-		tpid[$availableTpidIndex]="$tmp4"
-		tjobid[$availableTpidIndex]="$tmp5"
-		tcase[$availableTpidIndex]="$caseName"
-		tvariant[$availableTpidIndex]="$caseVariant"
-		tcasePath[$availableTpidIndex]="$casePath"
-		killed[$availableTpidIndex]=""
-		tmp="$(date +'%-s')"
-		isDebug && printDebug "Enter tjobid[$availableTpidIndex]=${tjobid[$availableTpidIndex]} state=$tmp2 tpid[${availableTpidIndex}]=$tmp4 time=${tmp} state=$tmp2"
-		startTime[$availableTpidIndex]="$tmp"
-		tmp1=${caseTimeout[$jobIndex]}
-		if [[ $tmp1 -lt $TTTT_casesTimeout ]]; then
-			tmp1="$TTTT_casesTimeout"
-		fi
-		isVerbose && printVerbose "Job timeout $tmp1"
-		endTime[$availableTpidIndex]=$((tmp+tmp1))
-		timeout[$availableTpidIndex]="$tmp1"
-		tcaseWorkDir[$availableTpidIndex]="$cworkdir"
-		jobIndex=$((jobIndex+1))
-	fi
+	#determine load state in parallel working mode
+	#highLoad=''
+	#if [[ $numberJobsRunning2 -gt 1 ]]; then
+#		if [[ $TTTT_systemLoad100 -gt $TTRO_loadLimit100 ]]; then
+#			highLoad='highLoad'
+#			isDebug && printDebug "highLoad $TTTT_systemLoad100 -gt $TTRO_loadLimit100"
+#		fi
+#	fi
+	echo "NEW JOB POTENTIAL"
+	startNewJob
 done
 
 #check number of jobs ended and job index

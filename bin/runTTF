@@ -125,6 +125,7 @@ declare -r -A valueOptions=(
 	['directory']='-i --directory'
 	['threads']='-j --threads'
 	['reference']='--ref'
+	['loadLimit']='--load-limit --loadlimit'
 )
 for x in ${!singleOptions[@]}; do
 	declare ${x}=""
@@ -303,7 +304,13 @@ if [[ -z $threads ]]; then
 		threads=$noCpus
 	fi
 fi
-
+if [[ -z $loadLimit ]]; then
+	if [[ -n $loadReduce ]]; then
+		loadLimit=$((noCpus/2))
+	else
+		loadLimit=$noCpus
+	fi
+fi
 #---------------------------------------------------------
 
 declare -rx TTXX_runCategoryPatternArray=$(declare -p TTTT_runCategoryPatternArray)
@@ -406,6 +413,7 @@ else
 	setVar 'TTRO_noParallelCases' "$threads"
 	setVar 'TTRO_treads' 1
 fi
+setVar 'TTRO_loadLimit100' "$loadLimit"
 
 #some more property definitions
 for ((i=0; i<${#varNamesToSet[@]}; i++)); do
