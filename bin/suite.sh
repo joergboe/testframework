@@ -591,28 +591,9 @@ handleJobEnd() {
 	fi
 }
 
-# Check that all jobs are gone
-checkAllJobsGone() {
-	local -i j=0
-	local i
-	for ((i=0; i<maxParralelJobs; i++)); do
-		isDebug && printDebug "Check for all jobs gone: i=$i"
-		if [[ -n ${tpid[$i]} ]]; then
-			isDebug && printDebug "Check for all jobs gone: i=$i is not free pid=${tpid[$i]}"
-			break
-		fi
-		j=$((j+1))
-	done
-	if [[ $j -eq $maxParralelJobs ]]; then
-		isDebug && printDebug "All jobs gone"
-		#echo "ALL JOBS GONE"
-		allJobsGone="true"
-	fi
-}
-
 #wait if no slot is free an not allJobsGone
 sleepIf() {
-	if [[ ( ${#freeSlots[*]} -eq 0 ) && -z $allJobsGone ]]; then
+	if [[ ( -n $nextJobIndexToStart && ( $numberJobsRunning -ge $currentParralelJobs ) ) || ( -z $nextJobIndexToStart && -z $allJobsGone ) ]]; then
 		local waitTime='0.2'
 		if [[ $sleepCyclesAndNoJobEnds -ge 10 ]]; then
 			waitTime='1'
@@ -638,7 +619,8 @@ sleepIf() {
 # Start a new job
 startNewJob() {
 	local freeSlotIndx=0
-	while [[ -n $nextJobIndexToStart && ( $numberJobsRunning -lt $currentParralelJobs ) && ( $freeSlotIndx -lt ${#freeSlots[*]} ) ]]; do
+	while [[ -n $nextJobIndexToStart && ( $numberJobsRunning -lt $currentParralelJobs ) ]]; do
+		if [[ $freeSlotIndx -ge ${#freeSlots[*]} ]]; then printErrorAndExit "No free slot but one job to start freeSlotIndx=$freeSlotIndx free slots=${#freeSlots[*]}" $errRt; fi
 		local freeSlot="${freeSlots[$freeSlotIndx]}"; freeSlotIndx=$((freeSlotIndx+1));
 		local casePath="${caseVariantPathes[$nextJobIndexToStart]}"
 		local caseName="${casePath##*/}"
@@ -710,6 +692,7 @@ for ((i=0; i<maxParralelJobs; i++)); do
 	tjobid[$i]=""; tpid[$i]=""; tcase[$i]=""; tvariant[$i]=""; tcasePath[$i]=""
 	startTime[$i]=""; timeout[$i]=""; startTime[$i]=""; endTime[$i]=""
 	killed[$i]=""; tcaseWorkDir[$i]=""
+	freeSlots+=( $i )
 done
 
 #print special summary
@@ -735,23 +718,14 @@ while [[ -z $allJobsGone ]]; do
 			isVerbose && printVerbose "Interrupt suite $TTRO_suite interruptReceived=$interruptReceived ****"
 		fi
 		#during final job run: check that all jobs are gone
-		if [[ -z $nextJobIndexToStart ]]; then
-			checkAllJobsGone
+		if [[ -z $nextJobIndexToStart && ( $numberJobsRunning -eq 0 ) ]]; then
+			isDebug && printDebug "All jobs gone"
+			#echo "ALL JOBS GONE"
+			allJobsGone="true"
 		fi
 		sleepIf
 		isDebug && printDebug "Loop POST cond numberJobsRunning='$numberJobsRunning' currentParralelJobs='$currentParralelJobs' allJobsGone='$allJobsGone' nextJobIndexToStart='$nextJobIndexToStart'"
 	done
-	#start a new job
-	#echo "PAST LOOP INNER"
-	#determine load state in parallel working mode
-	#highLoad=''
-	#if [[ $numberJobsRunning2 -gt 1 ]]; then
-#		if [[ $TTTT_systemLoad100 -gt $TTRO_loadLimit100 ]]; then
-#			highLoad='highLoad'
-#			isDebug && printDebug "highLoad $TTTT_systemLoad100 -gt $TTRO_loadLimit100"
-#		fi
-#	fi
-	echo "NEW JOB POTENTIAL"
 	startNewJob
 done
 
