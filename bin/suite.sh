@@ -401,21 +401,19 @@ declare -i variantSuccess=0 variantSkiped=0 variantFailures=0 variantErrors=0
 declare -i numberJobsRunning=0
 declare thisJobRuns
 declare sleepCyclesAndNoJobEnds=0
+declare TTTT_now=''
 
 # check for timed out jobs and kill them
 # TTXX_shell disables timeout check
+# expect TTTT_now is actual time
 checkJobTimeouts() {
 	isDebug && printDebug "check for timed out jobs"
-	local now
-	while ! now="$(date +'%-s')"; do #guard external command if sigint is received
-		: #TODO: is signal received from this job too?
-	done
 	local i tempjobspec finalTime
 	for ((i=0; i<maxParralelJobs; i++)); do
 		#if [[ ( -n ${tpid[$i]} ) && ( -n ${tjobid[$i]} ) ]]; then
 		if [[ -n ${tpid[$i]} ]]; then
 			if [[ -z ${killed[$i]} ]]; then # the job was not yet killed
-				if [[ ( ( ${endTime[$i]} -lt $now ) && ( -z $TTXX_shell ) ) || ( $interruptReceived -gt 1 ) ]]; then
+				if [[ ( ( ${endTime[$i]} -lt $TTTT_now ) && ( -z $TTXX_shell ) ) || ( $interruptReceived -gt 1 ) ]]; then
 					if [[ -z ${tjobid[$i]} ]]; then
 						tempjobspec="${tpid[$i]}"
 						printError "tpid $tempjobspec with no jobspec encountered"
@@ -429,11 +427,11 @@ checkJobTimeouts() {
 					else
 						printWarning "Can not kill i=${i} jobspec=${tempjobspec} Gone?"
 					fi
-					killed[$i]="$now"
+					killed[$i]="$TTTT_now"
 				fi
 			else
 				finalTime=$((${killed[$i]}+$TTTT_casesAdditionalTime))
-				if [[ $now -gt $finalTime ]]; then
+				if [[ $TTTT_now -gt $finalTime ]]; then
 					if [[ -z ${tjobid[$i]} ]]; then
 						tempjobspec="${tpid[$i]}"
 						printError "tpid $tempjobspec with no jobspec encountered"
@@ -589,7 +587,7 @@ handleJobEnd() {
 	if [[ -n $oneJobStopFound ]]; then
 		sleepCyclesAndNoJobEnds=0
 	fi
-}
+} # /handleJobEnd
 
 #wait if no slot is free an not allJobsGone
 sleepIf() {
@@ -616,8 +614,9 @@ sleepIf() {
 	return 0
 }
 
-# Start a new job
-startNewJob() {
+# Start one or more new job(s)
+# expect TTTT_now is actual time
+startNewJobs() {
 	local freeSlotIndx=0
 	while [[ -n $nextJobIndexToStart && ( $numberJobsRunning -lt $currentParralelJobs ) ]]; do
 		if [[ $freeSlotIndx -ge ${#freeSlots[*]} ]]; then printErrorAndExit "No free slot but one job to start freeSlotIndx=$freeSlotIndx free slots=${#freeSlots[*]}" $errRt; fi
@@ -667,15 +666,14 @@ startNewJob() {
 		tvariant[$freeSlot]="$caseVariant"
 		tcasePath[$freeSlot]="$casePath"
 		killed[$freeSlot]=""
-		local now="$(date +'%-s')"
-		isDebug && printDebug "Enter tjobid[$freeSlot]=${tjobid[$freeSlot]} state=$jobState tpid[${freeSlot}]=$newPid time=${now} state=$jobState"
-		startTime[$freeSlot]="$now"
+		isDebug && printDebug "Enter tjobid[$freeSlot]=${tjobid[$freeSlot]} state=$jobState tpid[${freeSlot}]=$newPid time=${TTTT_now} state=$jobState"
+		startTime[$freeSlot]="$TTTT_now"
 		local jobTimeout=${caseTimeout[$jobIndex]}
 		if [[ $jobTimeout -lt $TTTT_casesTimeout ]]; then
 			jobTimeout="$TTTT_casesTimeout"
 		fi
 		isVerbose && printVerbose "Job timeout $jobTimeout"
-		endTime[$freeSlot]=$((now+jobTimeout))
+		endTime[$freeSlot]=$((TTTT_now+jobTimeout))
 		timeout[$freeSlot]="$jobTimeout"
 		tcaseWorkDir[$freeSlot]="$cworkdir"
 		jobIndex=$((jobIndex+1))
@@ -685,7 +683,7 @@ startNewJob() {
 			nextJobIndexToStart="$jobIndex"
 		fi
 	done
-}
+} #/startNewJobs
 
 #init the work structure for maxParralelJobs
 for ((i=0; i<maxParralelJobs; i++)); do
@@ -711,6 +709,7 @@ while [[ -z $allJobsGone ]]; do
 	# loop either not the final job and no job slot is available or the final job and not all jobs gone
 	while [[ ( -n $nextJobIndexToStart && ( $numberJobsRunning -ge  $currentParralelJobs ) || ( ${#freeSlots[*]} -eq 0 ) ) || ( -z $nextJobIndexToStart && -z $allJobsGone ) ]]; do
 		isDebug && printDebug "Loop cond numberJobsRunning='$numberJobsRunning' currentParralelJobs='$currentParralelJobs' allJobsGone='$allJobsGone' nextJobIndexToStart='$nextJobIndexToStart'"
+		while ! TTTT_now="$(date +'%-s')"; do :; done #guard external command if sigint is received TODO: is signal received from this job too?
 		checkJobTimeouts
 		handleJobEnd
 		if [[ $interruptReceived -gt 0 ]]; then
@@ -726,7 +725,8 @@ while [[ -z $allJobsGone ]]; do
 		sleepIf
 		isDebug && printDebug "Loop POST cond numberJobsRunning='$numberJobsRunning' currentParralelJobs='$currentParralelJobs' allJobsGone='$allJobsGone' nextJobIndexToStart='$nextJobIndexToStart'"
 	done
-	startNewJob
+	while ! TTTT_now="$(date +'%-s')"; do :; done #guard external command if sigint is received
+	startNewJobs
 done
 
 #check number of jobs ended and job index
