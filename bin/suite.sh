@@ -845,7 +845,7 @@ echo -e "SUITE_EXECUTE=$suiteVariants\nSUITE_ERROR=$suiteErrors\nSUITE_SKIP=$sui
 
 #-------------------------------------------------------
 #Final verbose suite result printout
-printInfo "**** Results Suite: $TTRO_suite ***********************************************"
+echo "**** Results Suite: '$TTRO_suite' Variant: '$TTRO_variantSuite' ****"
 for x in CASE_EXECUTE CASE_SKIP CASE_FAILURE CASE_ERROR CASE_SUCCESS SUITE_EXECUTE SUITE_SKIP SUITE_ERROR; do
 	tmp="${TTRO_workDirSuite}/${x}"
 	eval "${x}_NO=0"
@@ -875,8 +875,8 @@ if [[ $interruptReceived -gt 0 ]]; then
 	suiteResult=$errSigint
 fi
 
-printf "**** Suite: $TTRO_suite Variant: '$TTRO_variantSuite' cases=%i failures=%i errors=%i skipped=%i *****\n" $jobIndex $variantFailures $variantErrors $variantSkiped
-printInfo "**** Elapsed time $TTTT_elapsedTime *****"
+echo "**** cases=$jobIndex failures=$variantFailures errors=$variantErrors skipped=$variantSkiped *****"
+echo "**** Elapsed time $TTTT_elapsedTime *****"
 echo "$TTTT_elapsedTime" > "${TTRO_workDirSuite}/ELAPSED"
 
 #---------------------------------------------------------------------------------
@@ -896,6 +896,6 @@ rm -f "$TTTT_tempSummayName"
 
 builtin echo -n "$suiteResult" > "${TTRO_workDirSuite}/DONE"
 
-isDebug && printDebug "END: Suite $TTRO_suite variant='$TTRO_variantSuite' suite exit code $suiteResult"
+isDebug && printDebug "END: Suite '$TTRO_suite' variant='$TTRO_variantSuite' suite exit code $suiteResult"
 
 exit $suiteResult

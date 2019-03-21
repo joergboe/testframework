@@ -51,7 +51,7 @@ function exeSuite {
 		isDebug && printDebug "$FUNCNAME: no execution of suite $suitePath: variant='$2'"
 		return 0
 	fi
-	printInfo "**** START Suite: ${suite} variant='$2' in ${suitePath} *****************"
+	printInfo "**** START Suite: '${suite}' variant='$2' in ${suitePath} ****"
 	#make and cleanup suite work dir
 	local sworkdir="$TTRO_workDir"
 	if [[ -n $suiteNestingPath ]]; then
@@ -132,7 +132,7 @@ function exeSuite {
 		$CASE_EXECUTE_Count $CASE_SKIP_Count $CASE_FAILURE_Count $CASE_ERROR_Count $SUITE_EXECUTE_Count $SUITE_SKIP_Count $SUITE_ERROR_Count
 	fi
 
-	printInfo "**** END Suite: ${suite} variant='$2' in ${suitePath} *******************"
+	printInfo "**** END Suite: '${suite}' variant='$2' in ${suitePath} ****"
 	return 0
 } #/exeSuite
 readonly -f exeSuite
