@@ -454,7 +454,7 @@ checkJobTimeouts() {
 handleJobEnd() {
 	#echo "CHECK JOB END"
 	isDebug && printDebug "check for ended jobs"
-	numberJobsRunning=0; freeSlots=()
+	freeSlots=()
 	local oneJobStopFound=''
 	local i
 	for ((i=0; i<maxParralelJobs; i++)); do
@@ -497,14 +497,13 @@ handleJobEnd() {
 						isDebug && printDebug "SIGINT: during jobs"
 					else
 						thisJobRuns=''
-						echo "JOB Gone $jobid"
+						#echo "JOB Gone $jobid"
 						isDebug && printDebug "Job is Gone $jobid"
 					fi
 				fi
 			fi
-			if [[ -n $thisJobRuns ]]; then
-				numberJobsRunning=$((numberJobsRunning+1))
-			else
+			if [[ -z $thisJobRuns ]]; then
+				numberJobsRunning=$((numberJobsRunning-1))
 				oneJobStopFound='true'
 				jobsEnded=$((jobsEnded+1))
 				freeSlots+=( $i )
@@ -527,7 +526,6 @@ handleJobEnd() {
 					fi
 				fi
 				echo "$tmpCaseAndVariant : $caseElapsedTime" >> "${TTRO_workDirSuite}/CASE_EXECUTE"
-				getSystemLoad100
 				#executeList+=("$tmpCaseAndVariant")
 				printInfon "END: i=$i pid=$pid jobspec=%$jobid case=${tmpCase} variant='${tmpVariant}' running=$numberJobsRunning systemLoad=$TTTT_systemLoad"
 				tpid[$i]=""
@@ -594,11 +592,16 @@ sleepIf() {
 	if [[ ( -n $nextJobIndexToStart && ( $numberJobsRunning -ge $currentParralelJobs ) ) || ( -z $nextJobIndexToStart && -z $allJobsGone ) ]]; then
 		local waitTime='0.2'
 		if [[ $sleepCyclesAndNoJobEnds -ge 10 ]]; then
+			sleepCyclesAndNoJobEnds=$((sleepCyclesAndNoJobEnds+1))
 			waitTime='1'
 		else
 			sleepCyclesAndNoJobEnds=$((sleepCyclesAndNoJobEnds+1))
 		fi
-		printError "SLEEP $waitTime sleepCyclesAndNoJobEnds=$sleepCyclesAndNoJobEnds"
+		if [[ $sleepCyclesAndNoJobEnds -eq 1 ]]; then
+			printInfo "SLEEP $waitTime"
+		else
+			echo -e -n "SLEEP $waitTime sleepCyclesAndNoJobEnds=$sleepCyclesAndNoJobEnds      \r" #add some spaces at end to clean the prevois numbers
+		fi
 		isDebug && printDebug "sleep $waitTime sleepCyclesAndNoJobEnds=$sleepCyclesAndNoJobEnds"
 		if sleep "$waitTime"; then
 			isDebug && printDebug "sleep returns success"
@@ -632,9 +635,8 @@ startNewJobs() {
 		fi
 		mkdir -p "$cworkdir"
 		local cmd="${TTRO_scriptDir}/case.sh"
-		getSystemLoad100
 		numberJobsRunning=$((numberJobsRunning+1))
-		printInfon "START: jobIndex=$nextJobIndexToStart case=$caseName variant=$caseVariant i=$freeSlot running=$((numberJobsRunning)) systemLoad=$TTTT_systemLoad"
+		printInfon "START: jobIndex=$nextJobIndexToStart case=$caseName variant=$caseVariant i=$freeSlot running=$numberJobsRunning systemLoad=$TTTT_systemLoad"
 		#Start job connect output to stdout in single thread case
 		if [[ "$TTRO_noParallelCases" -eq 1 ]]; then
 			$cmd "$casePath" "$cworkdir" "$caseVariant" "$cpreamblError" 2>&1 | tee -i "${cworkdir}/${TEST_LOG}" &
@@ -685,6 +687,12 @@ startNewJobs() {
 	done
 } #/startNewJobs
 
+# set up the currentParralelJobs
+# depending on system load
+#  requires $TTTT_systemLoad
+checkSystemLoad() {
+	:
+}
 #init the work structure for maxParralelJobs
 for ((i=0; i<maxParralelJobs; i++)); do
 	tjobid[$i]=""; tpid[$i]=""; tcase[$i]=""; tvariant[$i]=""; tcasePath[$i]=""
@@ -711,6 +719,8 @@ while [[ -z $allJobsGone ]]; do
 		isDebug && printDebug "Loop cond numberJobsRunning='$numberJobsRunning' currentParralelJobs='$currentParralelJobs' allJobsGone='$allJobsGone' nextJobIndexToStart='$nextJobIndexToStart'"
 		while ! TTTT_now="$(date +'%-s')"; do :; done #guard external command if sigint is received TODO: is signal received from this job too?
 		checkJobTimeouts
+		getSystemLoad100
+		checkSystemLoad
 		handleJobEnd
 		if [[ $interruptReceived -gt 0 ]]; then
 			nextJobIndexToStart=''
@@ -726,6 +736,7 @@ while [[ -z $allJobsGone ]]; do
 		isDebug && printDebug "Loop POST cond numberJobsRunning='$numberJobsRunning' currentParralelJobs='$currentParralelJobs' allJobsGone='$allJobsGone' nextJobIndexToStart='$nextJobIndexToStart'"
 	done
 	while ! TTTT_now="$(date +'%-s')"; do :; done #guard external command if sigint is received
+	getSystemLoad100
 	startNewJobs
 done
 
