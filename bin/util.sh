@@ -147,7 +147,7 @@ function printDebug {
 	for ((i=${#FUNCNAME[@]}-1; i>0; i--)); do
 		stackInfo="$stackInfo ${FUNCNAME[$i]}"
 	done
-	echo -e "\033[32m$dd DEBUG: ${commandname}${stackInfo}: ${1}\033[0m"
+	echo -e "\033[32m$dd DEBUG: ${TTXX_commandname}${stackInfo}: ${1}\033[0m"
 }
 readonly -f printDebug
 
@@ -165,7 +165,7 @@ function printDebugn {
 	for ((i=${#FUNCNAME[@]}-1; i>0; i--)); do
 		stackInfo="$stackInfo ${FUNCNAME[$i]}"
 	done
-	echo -en "\033[32m$dd DEBUG:${commandname}${stackInfo}: ${1}\033[0m"
+	echo -en "\033[32m$dd DEBUG:${TTXX_commandname}${stackInfo}: ${1}\033[0m"
 }
 readonly -f printDebugn
 
@@ -704,7 +704,7 @@ function copyAndTransform {
 			dest="${x#$1}"
 			dest="$2/$dest"
 			echo $dest
-			if isVerbose; then 
+			if isVerbose; then
 				mkdir -pv "$dest"
 			else
 				mkdir -p "$dest"
@@ -819,7 +819,7 @@ function copyAndMorph {
 			dest="${x#$1}"
 			dest="$2/$dest"
 			echo $dest
-			if isVerbose; then 
+			if isVerbose; then
 				mkdir -pv "$dest"
 			else
 				mkdir -p "$dest"
@@ -1009,7 +1009,7 @@ TTRO_help_linewisePatternMatchInterceptAndSuccess='
 #	$1 - the input file
 #	$2 - if set to "true" all pattern must generate a match
 #	$3 .. - the pattern to match
-#	returns 
+#	returns
 #	and the result code from linewisePatternMatch in TTTT_result'
 function linewisePatternMatchInterceptAndSuccess {
 	if linewisePatternMatch "$@"; then
@@ -1030,7 +1030,7 @@ TTRO_help_linewisePatternMatchInterceptAndError='
 #	$1 - the input file
 #	$2 - if set to "true" all pattern must generate a match
 #	$3 .. - the pattern to match
-#	returns 
+#	returns
 #	and the result code from linewisePatternMatch in TTTT_result'
 function linewisePatternMatchInterceptAndError {
 	if linewisePatternMatch "$@"; then
@@ -1248,7 +1248,7 @@ TTRO_help_echoExecuteAndIntercept2='
 # Function echoExecuteAndIntercept2
 #	echo and execute the command line
 #	additionally the expected returncode is checked
-#	if the expected result is not received the failure condition is set 
+#	if the expected result is not received the failure condition is set
 #	the function returns success(0)
 #	the function exits if an input parameter is wrong
 # Parameters:
@@ -1680,7 +1680,7 @@ TTRO_help_timeFromSeconds='
 #	returns a formated string hh:mm:ss from seconds
 #	parameters
 #		$1   input in seconds
-#	return	
+#	return
 #		TTTT_timeFromSeconds the formated string
 #		success'
 function timeFromSeconds {

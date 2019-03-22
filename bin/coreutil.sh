@@ -87,7 +87,7 @@ function exeSuite {
 		result=$?
 		if [[ $result -eq $errSigint ]]; then
 			printWarning "Set SIGINT Execution of suite ${suite} variant '$2' ended with result=$result"
-			interruptReceived=$((interruptReceived+1))
+			TTXX_interruptReceived=$((TTXX_interruptReceived+1))
 		elif [[ $result -eq $errSkip ]]; then
 			printInfo "Suite skipped suite ${suite} variant '$2'"
 			suiteSkip=$(( suiteSkip+1 ))

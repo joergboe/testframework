@@ -18,8 +18,8 @@ shopt -s globstar nullglob
 
 #-----------------------------------------------------
 # Shutdown and interrut vars and functions
-declare -i interruptReceived=0
-declare -r commandname="${0##*/}"
+declare -i TTXX_interruptReceived=0
+declare -r TTXX_commandname="${0##*/}"
 declare caseExecutionLoopRunning=''
 #start time
 declare -r suiteStartTime=$(date -u +%s)
@@ -28,25 +28,21 @@ declare TTTT_executionState='initializing'
 
 # Function handle SIGINT
 function handleSigint {
-	if [[ $interruptReceived -eq 0 ]]; then
+	TTXX_interruptReceived=$((TTXX_interruptReceived+1))
+	if [[ $TTXX_interruptReceived -eq 1 ]]; then
 		printWarning "SIGINT: Test Suite will be stopped. To interrupt running test cases press ^C again"
-		interruptReceived=1
-	elif [[ $interruptReceived -eq 1 ]]; then
-		interruptReceived=$((interruptReceived+1))
+	elif [[ $TTXX_interruptReceived -eq 2 ]]; then
 		printWarning "SIGINT: Test cases will be stopped"
-	elif [[ $interruptReceived -gt 2 ]]; then
-		interruptReceived=$((interruptReceived+1))
+	elif [[ $TTXX_interruptReceived -gt 3 ]]; then
 		printWarning "SIGINT: Abort Suite"
 		exit $errSigint
-	else
-		interruptReceived=$((interruptReceived+1))
 	fi
 	return 0
 }
 
 # Function interruptSignalSuite
 function interruptSignalSuite {
-	printInfo "SIGINT received in test suite execution programm $commandname ********************"
+	printInfo "SIGINT received in test suite execution programm $TTXX_commandname ********************"
 	handleSigint
 	return 0
 }
@@ -413,7 +409,7 @@ checkJobTimeouts() {
 		#if [[ ( -n ${tpid[$i]} ) && ( -n ${tjobid[$i]} ) ]]; then
 		if [[ -n ${tpid[$i]} ]]; then
 			if [[ -z ${killed[$i]} ]]; then # the job was not yet killed
-				if [[ ( ( ${endTime[$i]} -lt $TTTT_now ) && ( -z $TTXX_shell ) ) || ( $interruptReceived -gt 1 ) ]]; then
+				if [[ ( ( ${endTime[$i]} -lt $TTTT_now ) && ( -z $TTXX_shell ) ) || ( $TTXX_interruptReceived -gt 1 ) ]]; then
 					if [[ -z ${tjobid[$i]} ]]; then
 						tempjobspec="${tpid[$i]}"
 						printError "tpid $tempjobspec with no jobspec encountered"
@@ -608,7 +604,7 @@ sleepIf() {
 		else
 			local cresult=$?
 			if [[ $cresult -eq 130 ]]; then
-				printInfo "SIGINT received in sleep in programm $commandname ********************"
+				printInfo "SIGINT received in sleep in programm $TTXX_commandname ********************"
 			else
 				printError "Unhandled result $cresult after sleep"
 			fi
@@ -679,7 +675,7 @@ startNewJobs() {
 		timeout[$freeSlot]="$jobTimeout"
 		tcaseWorkDir[$freeSlot]="$cworkdir"
 		jobIndex=$((jobIndex+1))
-		if [[ ( $interruptReceived -gt 0 ) || ( $jobIndex -ge $noCaseVariants ) ]]; then
+		if [[ ( $TTXX_interruptReceived -gt 0 ) || ( $jobIndex -ge $noCaseVariants ) ]]; then
 			nextJobIndexToStart=''
 		else
 			nextJobIndexToStart="$jobIndex"
@@ -722,9 +718,9 @@ while [[ -z $allJobsGone ]]; do
 		getSystemLoad100
 		checkSystemLoad
 		handleJobEnd
-		if [[ $interruptReceived -gt 0 ]]; then
+		if [[ $TTXX_interruptReceived -gt 0 ]]; then
 			nextJobIndexToStart=''
-			isVerbose && printVerbose "Interrupt suite $TTRO_suite interruptReceived=$interruptReceived ****"
+			isVerbose && printVerbose "Interrupt suite $TTRO_suite interruptReceived=$TTXX_interruptReceived ****"
 		fi
 		#during final job run: check that all jobs are gone
 		if [[ -z $nextJobIndexToStart && ( $numberJobsRunning -eq 0 ) ]]; then
@@ -753,7 +749,7 @@ declare -i suiteVariants=0 suiteErrors=0 suiteSkip=0
 for sindex_xyza in ${childSuites[$TTRO_suiteIndex]}; do
 	suitePath="${suitesPath[$sindex_xyza]}"
 	suite="${suitesName[$sindex_xyza]}"
-	if [[ $interruptReceived -gt 0 ]]; then
+	if [[ $TTXX_interruptReceived -gt 0 ]]; then
 		printInfo "SIGINT: end Suites loop"
 		break
 	fi
@@ -768,7 +764,7 @@ for sindex_xyza in ${childSuites[$TTRO_suiteIndex]}; do
 		else
 			for x_xyza in $variantList; do
 				exeSuite "$sindex_xyza" "$x_xyza" "$TTRO_suiteNestingLevel" "$TTRO_suiteNestingPath" "$TTRO_suiteNestingString" "$TTRO_workDirSuite" "$preamblError"
-				if [[ $interruptReceived -gt 0 ]]; then
+				if [[ $TTXX_interruptReceived -gt 0 ]]; then
 					printInfo "SIGINT: end Suites loop"
 					break
 				fi
@@ -780,7 +776,7 @@ for sindex_xyza in ${childSuites[$TTRO_suiteIndex]}; do
 			declare -i j_xyza
 			for ((j_xyza=0; j_xyza<variantCount; j_xyza++)); do
 				exeSuite "$sindex_xyza" "$j_xyza" "$TTRO_suiteNestingLevel" "$TTRO_suiteNestingPath" "$TTRO_suiteNestingString" "$TTRO_workDirSuite" "$preamblError"
-				if [[ $interruptReceived -gt 0 ]]; then
+				if [[ $TTXX_interruptReceived -gt 0 ]]; then
 					printInfo "SIGINT: end Suites loop"
 					break
 				fi
@@ -791,7 +787,7 @@ for sindex_xyza in ${childSuites[$TTRO_suiteIndex]}; do
 		fi
 	fi
 	isVerbose && printVerbose "**** END Nested Suite: $suite **************************************"
-	if [[ $interruptReceived -gt 0 ]]; then
+	if [[ $TTXX_interruptReceived -gt 0 ]]; then
 		printInfo "SIGINT: end Suites loop"
 		break
 	fi
@@ -882,7 +878,7 @@ getElapsedTime "$suiteStartTime"
 endSuiteIndex "$indexfilename" "$TTTT_elapsedTime"
 
 declare suiteResult=0
-if [[ $interruptReceived -gt 0 ]]; then
+if [[ $TTXX_interruptReceived -gt 0 ]]; then
 	suiteResult=$errSigint
 fi
 
