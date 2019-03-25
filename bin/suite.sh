@@ -18,22 +18,22 @@ shopt -s globstar nullglob
 
 #-----------------------------------------------------
 # Shutdown and interrut vars and functions
-declare -i TTXX_interruptReceived=0
-declare -r TTXX_commandname="${0##*/}"
-declare caseExecutionLoopRunning=''
+declare -i TTTI_interruptReceived=0
+declare -r TTTI_commandname="${0##*/}"
+#declare caseExecutionLoopRunning=''
 #start time
-declare -r suiteStartTime=$(date -u +%s)
+declare -r TTTT_suiteStartTime=$(date -u +%s)
 #state
 declare TTTT_executionState='initializing'
 
 # Function handle SIGINT
-function handleSigint {
-	TTXX_interruptReceived=$((TTXX_interruptReceived+1))
-	if [[ $TTXX_interruptReceived -eq 1 ]]; then
+handleSigint() {
+	TTTI_interruptReceived=$((TTTI_interruptReceived+1))
+	if [[ $TTTI_interruptReceived -eq 1 ]]; then
 		printWarning "SIGINT: Test Suite will be stopped. To interrupt running test cases press ^C again"
-	elif [[ $TTXX_interruptReceived -eq 2 ]]; then
+	elif [[ $TTTI_interruptReceived -eq 2 ]]; then
 		printWarning "SIGINT: Test cases will be stopped"
-	elif [[ $TTXX_interruptReceived -gt 3 ]]; then
+	elif [[ $TTTI_interruptReceived -gt 3 ]]; then
 		printWarning "SIGINT: Abort Suite"
 		exit $errSigint
 	fi
@@ -41,8 +41,8 @@ function handleSigint {
 }
 
 # Function interruptSignalSuite
-function interruptSignalSuite {
-	printInfo "SIGINT received in test suite execution programm $TTXX_commandname ********************"
+interruptSignalSuite() {
+	printInfo "SIGINT received in test suite execution programm $TTTI_commandname ********************"
 	handleSigint
 	return 0
 }
@@ -51,7 +51,7 @@ trap interruptSignalSuite SIGINT
 
 # Function errorTrapFunc
 #	global error exit function - prints the caller stack
-function errorTrapFunc {
+errorTrapFunc() {
 	echo -e "\033[31mERROR: $FUNCNAME ***************"
 	local -i i=0;
 	while caller $i; do
@@ -69,7 +69,7 @@ source "${TTRO_scriptDir}/util.sh"
 source "${TTRO_scriptDir}/coreutil.sh"
 
 # usage and parameters
-function usage {
+usage() {
 	local command=${0##*/}
 	cat <<-EOF
 
@@ -109,33 +109,18 @@ declare -rx TTRO_suite="${suitesName[$TTRO_suiteIndex]}"
 declare -rx TTRO_inputDirSuite="${suitesPath[$TTRO_suiteIndex]}"
 declare -a TTTT_categoryArray=()
 
-declare -a cases=() # case pathes
-declare -a casesNames=() # the short path
-declare -i noCases=0
-declare x
-for x in ${childCases[$TTRO_suiteIndex]}; do
-	if [[ -n ${executeCase[$x]} ]]; then
-		cases+=( "${casesPath[$x]}" )
-		casesNames+=( "${casesName[$x]}" )
-		noCases=$((noCases+1))
-	fi
-done
-
-readonly cases casesNames noCases
-isDebug && printDebug "noCases=$noCases"
-
 # enter working dir
 cd "$TTRO_workDirSuite"
 
 #prepare index.html name
-indexfilename="${TTRO_workDirSuite}/suite.html"
+TTTI_indexfilename="${TTRO_workDirSuite}/suite.html"
 
 #handle preambl error
 if [[ -n $TTTT_preamblError ]]; then
-	createSuiteIndex "$indexfilename"
-	echo "ERROR Preambl Error" >> "$indexfilename"
-	getElapsedTime "$suiteStartTime"
-	endSuiteIndex "$indexfilename" "$TTTT_elapsedTime"
+	createSuiteIndex "$TTTI_indexfilename"
+	echo "ERROR Preambl Error" >> "$TTTI_indexfilename"
+	getElapsedTime "$TTTT_suiteStartTime"
+	endSuiteIndex "$TTTI_indexfilename" "$TTTT_elapsedTime"
 	printErrorAndExit "Preambl Error" $errRt
 fi
 
@@ -144,32 +129,32 @@ if [[ $TTRO_suiteIndex -ne 0 ]]; then
 	if [[ ( -e "${TTRO_inputDirSuite}/SKIP" ) && ( -z $TTPRN_skipIgnore ) ]]; then
 		printInfo "SKIP file found suite=$TTRO_suite variant='$TTRO_variantSuite'"
 		setSkip 'SKIP file found'
-		createSuiteIndex "$indexfilename"
-		echo "SKIPPED: $TTPRN_skip" >> "$indexfilename"
-		getElapsedTime "$suiteStartTime"
-		endSuiteIndex "$indexfilename" "$TTTT_elapsedTime"
+		createSuiteIndex "$TTTI_indexfilename"
+		echo "SKIPPED: $TTPRN_skip" >> "$TTTI_indexfilename"
+		getElapsedTime "$TTTT_suiteStartTime"
+		endSuiteIndex "$TTTI_indexfilename" "$TTTT_elapsedTime"
 		echo "$TTPRN_skip" > "${TTRO_workDirSuite}/REASON"
 		exit $errSkip
 	fi
 
 	#source suite file
-	tmp="${TTRO_inputDirSuite}/${TEST_SUITE_FILE}"
-	if [[ -e "$tmp" ]]; then
-		isVerbose && printVerbose  "Source Suite file $tmp"
-		source "$tmp"
+	TTTI_tmp="${TTRO_inputDirSuite}/${TEST_SUITE_FILE}"
+	if [[ -e "$TTTI_tmp" ]]; then
+		isVerbose && printVerbose  "Source Suite file $TTTI_tmp"
+		source "$TTTI_tmp"
 		fixPropsVars
 		writeProtectExportedFunctions
 	else
-		printErrorAndExit "No Suite file $tmp" $errScript
+		printErrorAndExit "No Suite file $TTTI_tmp" $errScript
 	fi
 fi
 
 #------------------------------------------------
 # diagnostics
 isVerbose && printTestframeEnvironment
-tmp="${TTRO_workDirSuite}/${TEST_ENVIRONMET_LOG}"
-printTestframeEnvironment > "$tmp"
-export >> "$tmp"
+TTTI_tmp="${TTRO_workDirSuite}/${TEST_ENVIRONMET_LOG}"
+printTestframeEnvironment > "$TTTI_tmp"
+export >> "$TTTI_tmp"
 
 #check skip
 if [[ $TTRO_suiteIndex -ne 0 ]]; then
@@ -179,10 +164,10 @@ if [[ $TTRO_suiteIndex -ne 0 ]]; then
 	fi
 	if isSkip; then
 		printInfo "SKIP variable set; Skip execution suite=$TTRO_suite variant=$TTRO_variantSuite"
-		createSuiteIndex "$indexfilename"
-		echo "SKIPPED: $TTPRN_skip" >> "$indexfilename"
-		getElapsedTime "$suiteStartTime"
-		endSuiteIndex "$indexfilename" "$TTTT_elapsedTime"
+		createSuiteIndex "$TTTI_indexfilename"
+		echo "SKIPPED: $TTPRN_skip" >> "$TTTI_indexfilename"
+		getElapsedTime "$TTTT_suiteStartTime"
+		endSuiteIndex "$TTTI_indexfilename" "$TTTT_elapsedTime"
 		echo "$TTPRN_skip" > "${TTRO_workDirSuite}/REASON"
 		exit $errSkip
 	fi
@@ -190,97 +175,112 @@ fi
 
 #--------------------------------------------------
 # prepare output lists
-for x in CASE_EXECUTE CASE_SKIP CASE_FAILURE CASE_ERROR CASE_SUCCESS SUITE_EXECUTE SUITE_SKIP SUITE_ERROR; do
-	tmp="${TTRO_workDirSuite}/${x}"
-	if [[ -e $tmp ]]; then
-		printError "Result list exists in suite $TTRO_suite list: $tmp"
-		rm -rf "$tmp"
+for TTTI_x in CASE_EXECUTE CASE_SKIP CASE_FAILURE CASE_ERROR CASE_SUCCESS SUITE_EXECUTE SUITE_SKIP SUITE_ERROR; do
+	TTTI_tmp="${TTRO_workDirSuite}/${TTTI_x}"
+	if [[ -e $TTTI_tmp ]]; then
+		printError "Result list exists in suite $TTRO_suite list: $TTTI_tmp"
+		rm -rf "$TTTI_tmp"
 	fi
-	if [[ $x == SUITE_* ]]; then
-		builtin echo "#suite[:variant][::suite[:variant]..]" > "$tmp"
+	if [[ $TTTI_x == SUITE_* ]]; then
+		builtin echo "#suite[:variant][::suite[:variant]..]" > "$TTTI_tmp"
 	else
-		builtin echo "#suite[:variant][::suite[:variant]..]::case[:variant]" > "$tmp"
+		builtin echo "#suite[:variant][::suite[:variant]..]::case[:variant]" > "$TTTI_tmp"
 	fi
 done
-tmp="${TTRO_workDirSuite}/RESULT"
-if [[ -e $tmp ]]; then
-	printError "Result file exists in suite $TTRO_suite list: $tmp"
-	rm -rf "$tmp"
+TTTI_tmp="${TTRO_workDirSuite}/RESULT"
+if [[ -e $TTTI_tmp ]]; then
+	printError "Result file exists in suite $TTRO_suite list: $TTTI_tmp"
+	rm -rf "$TTTI_tmp"
 fi
-touch "$tmp"
+touch "$TTTI_tmp"
 
 #create index.html
-createSuiteIndex "$indexfilename"
+createSuiteIndex "$TTTI_indexfilename"
 
 #----------------------------------------------------------------------------------
+#make the linear list of cases pathes and cases names
+declare -a TTTI_cases=() # case pathes
+declare -a TTTI_casesNames=() # the short path
+declare -i TTTI_noCases=0
+declare TTTI_x
+for TTTI_x in ${childCases[$TTRO_suiteIndex]}; do
+	if [[ -n ${executeCase[$TTTI_x]} ]]; then
+		TTTI_cases+=( "${casesPath[$TTTI_x]}" )
+		TTTI_casesNames+=( "${casesName[$TTTI_x]}" )
+		TTTI_noCases=$((TTTI_noCases+1))
+	fi
+done
+
+readonly TTTI_cases TTTI_casesNames TTTI_noCases
+isDebug && printDebug "noCases=$TTTI_noCases"
+
 #extract test case variants from list and put all cases and variants into the lists
 function setTimeoutInArray {
 	if isExisting 'timeout'; then
-		caseTimeout[$noCaseVariants]="$timeout"
-		if [[ ${caseTimeout[$noCaseVariants]} -eq 0 ]]; then
-			printError "wrong timeout in case $caseName. timeout='$timeout'"
+		TTTI_caseTimeout[$TTTI_noCaseVariants]="$timeout"
+		if [[ ${TTTI_caseTimeout[$TTTI_noCaseVariants]} -eq 0 ]]; then
+			printError "wrong timeout in case $TTTI_caseName. timeout='$timeout'"
 		fi
 	else
-		caseTimeout[$noCaseVariants]=0
+		TTTI_caseTimeout[$TTTI_noCaseVariants]=0
 	fi
 }
 
-declare -a caseVariantPathes=()		#the case path of all case variants
-declare -a caseVariantIds=()		#the variant id of all cases
-declare -a caseVariantWorkdirs=()	#the workdir of each variant
-declare -a casePreambErrors=()		#true if case has peambl error
-declare -ai caseTimeout=()			#the individual timeout
-declare -i noCaseVariants=0			#the overall number of case variants
-declare variantCount='' variantList='' preamblError=''
-for ((i=0; i<noCases; i++)) do
-	casePath="${cases[$i]}"
-	caseName="${casePath##*/}"
+declare -a TTTI_caseVariantPathes=()		#the case path of all case variants
+declare -a TTTI_caseVariantIds=()		#the variant id of all cases
+declare -a TTTI_caseVariantWorkdirs=()	#the workdir of each variant
+declare -a TTTI_casePreambErrors=()		#true if case has peambl error
+declare -ai TTTI_caseTimeout=()			#the individual timeout
+declare -i TTTI_noCaseVariants=0			#the overall number of case variants
+declare variantCount='' variantList='' TTTI_preamblError=''
+for ((TTTI_i=0; TTTI_i<TTTI_noCases; TTTI_i++)) do
+	TTTI_casePath="${TTTI_cases[$TTTI_i]}"
+	TTTI_caseName="${TTTI_casePath##*/}"
 	unset timeout
-	if evalPreambl "${casePath}/${TEST_CASE_FILE}"; then
-		preamblError=''
+	if evalPreambl "${TTTI_casePath}/${TEST_CASE_FILE}"; then
+		TTTI_preamblError=''
 	else
-		preamblError='true'; variantCount=''; variantList=''
+		TTTI_preamblError='true'; variantCount=''; variantList=''
 	fi
 	#echo "variantCount=$variantCount variantList=$variantList"
 	if [[ -z $variantCount ]]; then
 		if [[ -z $variantList ]]; then
-			caseVariantPathes[$noCaseVariants]="$casePath"
-			caseVariantIds[$noCaseVariants]=""
-			caseVariantWorkdirs[$noCaseVariants]="${TTRO_workDirSuite}/${caseName}"
-			casePreambErrors[$noCaseVariants]="$preamblError"
+			TTTI_caseVariantPathes[$TTTI_noCaseVariants]="$TTTI_casePath"
+			TTTI_caseVariantIds[$TTTI_noCaseVariants]=""
+			TTTI_caseVariantWorkdirs[$TTTI_noCaseVariants]="${TTRO_workDirSuite}/${TTTI_caseName}"
+			TTTI_casePreambErrors[$TTTI_noCaseVariants]="$TTTI_preamblError"
 			setTimeoutInArray
-			noCaseVariants=$((noCaseVariants+1))
+			TTTI_noCaseVariants=$((TTTI_noCaseVariants+1))
 		else
-			for x in $variantList; do
-				caseVariantPathes[$noCaseVariants]="$casePath"
-				caseVariantIds[$noCaseVariants]="${x}"
-				caseVariantWorkdirs[$noCaseVariants]="${TTRO_workDirSuite}/${caseName}/${x}"
-				casePreambErrors[$noCaseVariants]="$preamblError"
+			for TTTI_x in $variantList; do
+				TTTI_caseVariantPathes[$TTTI_noCaseVariants]="$TTTI_casePath"
+				TTTI_caseVariantIds[$TTTI_noCaseVariants]="${TTTI_x}"
+				TTTI_caseVariantWorkdirs[$TTTI_noCaseVariants]="${TTRO_workDirSuite}/${TTTI_caseName}/${TTTI_x}"
+				TTTI_casePreambErrors[$TTTI_noCaseVariants]="$TTTI_preamblError"
 				setTimeoutInArray
-				noCaseVariants=$((noCaseVariants+1))
+				TTTI_noCaseVariants=$((TTTI_noCaseVariants+1))
 			done
-			unset x
 		fi
 	else
 		if [[ -z $variantList ]]; then
-			for ((j=0; j<variantCount; j++)); do
-				caseVariantPathes[$noCaseVariants]="$casePath"
-				caseVariantIds[$noCaseVariants]="${j}"
-				caseVariantWorkdirs[$noCaseVariants]="${TTRO_workDirSuite}/${caseName}/${j}"
-				casePreambErrors[$noCaseVariants]="$preamblError"
+			for ((TTTI_j=0; TTTI_j<variantCount; TTTI_j++)); do
+				TTTI_caseVariantPathes[$TTTI_noCaseVariants]="$TTTI_casePath"
+				TTTI_caseVariantIds[$TTTI_noCaseVariants]="${TTTI_j}"
+				TTTI_caseVariantWorkdirs[$TTTI_noCaseVariants]="${TTRO_workDirSuite}/${TTTI_caseName}/${TTTI_j}"
+				TTTI_casePreambErrors[$TTTI_noCaseVariants]="$TTTI_preamblError"
 				setTimeoutInArray
-				noCaseVariants=$((noCaseVariants+1))
+				TTTI_noCaseVariants=$((TTTI_noCaseVariants+1))
 			done
-			unset j
+			unset TTTI_j
 		else
-			printError "In case ${TTRO_suite}:$caseName we have both variant variables variantCount=$variantCount and variantList=$variantList ! Case is skipped"
+			printError "In case ${TTRO_suite}:$TTTI_caseName we have both variant variables variantCount=$variantCount and variantList=$variantList ! Case is skipped"
 		fi
 	fi
 done
-unset i casePath caseName
+unset TTTI_i TTTI_casePath TTTI_caseName
 unset timeout variantCount variantList
 
-isVerbose && printVerbose "Execute Suite $TTRO_suite variant='$TTRO_variantSuite' in workdir $TTRO_workDirSuite number of cases=$noCases number of case variants=$noCaseVariants"
+isVerbose && printVerbose "Execute Suite $TTRO_suite variant='$TTRO_variantSuite' in workdir $TTRO_workDirSuite number of cases=$TTTI_noCases number of case variants=$TTTI_noCaseVariants"
 
 #------------------------------------------------
 # diagnostics
@@ -291,34 +291,34 @@ export >> "${TTRO_workDirSuite}/${TEST_ENVIRONMET_LOG}"
 #------------------------------------------------
 #execute test suite preparation
 TTTT_executionState='preparation'
-declare -i executedTestPrepSteps=0
-for name_xyza in 'TTRO_prepsSuite' 'PREPS'; do
-	if isExisting "$name_xyza"; then
-		if isArray "$name_xyza"; then
+declare -i TTTI_executedTestPrepSteps=0
+for TTTI_name_xyza in 'TTRO_prepsSuite' 'PREPS'; do
+	if isExisting "$TTTI_name_xyza"; then
+		if isArray "$TTTI_name_xyza"; then
 			if isDebug; then
-				v=$(declare -p "$name_xyza")
-				printDebug "$v"
+				TTTI_v=$(declare -p "$TTTI_name_xyza")
+				printDebug "$TTTI_v"
 			fi
-			eval "l_xyza=\${#$name_xyza[@]}"
-			for (( i_xyza=0; i_xyza<l_xyza; i_xyza++)); do
-				eval "step_xyza=\${$name_xyza[$i_xyza]}"
+			eval "TTTI_l_xyza=\${#$TTTI_name_xyza[@]}"
+			for (( TTTI_i_xyza=0; TTTI_i_xyza<TTTI_l_xyza; TTTI_i_xyza++)); do
+				eval "TTTI_step_xyza=\${$TTTI_name_xyza[$TTTI_i_xyza]}"
 				if isExistingAndTrue 'TTPR_noPrepsSuite'; then
-					printInfo "Suppress Suite Preparation: $step_xyza"
+					printInfo "Suppress Suite Preparation: $TTTI_step_xyza"
 				else
-					printInfo "Execute Suite Preparation: $step_xyza"
-					executedTestPrepSteps=$((executedTestPrepSteps+1))
-					eval "$step_xyza"
+					printInfo "Execute Suite Preparation: $TTTI_step_xyza"
+					TTTI_executedTestPrepSteps=$((TTTI_executedTestPrepSteps+1))
+					eval "$TTTI_step_xyza"
 				fi
 			done
 		else
-			isDebug && printDebug "$name_xyza=${!name_xyza}"
-			for x_xyza in ${!name_xyza}; do
+			isDebug && printDebug "$TTTI_name_xyza=${!TTTI_name_xyza}"
+			for TTTI_x_xyza in ${!TTTI_name_xyza}; do
 				if isExistingAndTrue 'TTPR_noPrepsSuite'; then
-					printInfo "Suppress Suite Preparation: $x_xyza"
+					printInfo "Suppress Suite Preparation: $TTTI_x_xyza"
 				else
-					printInfo "Execute Suite Preparation: $x_xyza"
-					executedTestPrepSteps=$((executedTestPrepSteps+1))
-					eval "${x_xyza}"
+					printInfo "Execute Suite Preparation: $TTTI_x_xyza"
+					TTTI_executedTestPrepSteps=$((TTTI_executedTestPrepSteps+1))
+					eval "${TTTI_x_xyza}"
 				fi
 			done
 		fi
@@ -329,12 +329,12 @@ if isFunction 'testPreparation'; then
 		printInfo "Suppress Suite Preparation: testPreparation"
 	else
 		printInfo "Execute Suite Preparation: testPreparation"
-		executedTestPrepSteps=$((executedTestPrepSteps+1))
+		TTTI_executedTestPrepSteps=$((TTTI_executedTestPrepSteps+1))
 		testPreparation
 	fi
 fi
-printInfo "$executedTestPrepSteps Test Suite Preparation steps executed"
-unset x
+printInfo "$TTTI_executedTestPrepSteps Test Suite Preparation steps executed"
+
 #-------------------------------------------------
 #test case execution
 TTTT_executionState='execution'
@@ -343,14 +343,14 @@ TTTT_executionState='execution'
 function checkDuplicateJobspec {
 	local i
 	local js
-	for ((i=0; i<maxParralelJobs; i++)); do
-		if [[ -n ${tpid[$i]} ]]; then #this job is ment to be running
-			js="${tjobid[$i]}"
+	for ((i=0; i<TTTI_maxParralelJobs; i++)); do
+		if [[ -n ${TTTI_tpid[$i]} ]]; then #this job is ment to be running
+			js="${TTTI_tjobid[$i]}"
 			#echo "Check index $i list entry $js - value to be inserted $1"
 			if [[ -n $js ]]; then #and as a jobspec assigned
 				if [[ $js -eq $1 ]]; then
 					printWarning "Jobspec $1 is already in running jobs list at index i=$i ! Delete the jobspec"
-					tjobid[$i]=''
+					TTTI_tjobid[$i]=''
 				fi
 			fi
 		fi
@@ -360,11 +360,11 @@ function checkDuplicateJobspec {
 
 
 if [[ $TTRO_noParallelCases -eq 1 ]]; then
-	declare -ri maxParralelJobs=1
+	declare -ri TTTI_maxParralelJobs=1
 else
-	declare -ri maxParralelJobs=$((TTRO_noParallelCases*2))
+	declare -ri TTTI_maxParralelJobs=$((TTRO_noParallelCases*2))
 fi
-declare -i currentParralelJobs=TTRO_noParallelCases
+declare -i TTTI_currentParralelJobs=TTRO_noParallelCases
 
 # do not set timer props here to avoid that nested suites have these props set
 declare TTTT_casesTimeout="$defaultTimeout"
@@ -376,67 +376,66 @@ if isExisting 'TTPR_additionalTime'; then
 	TTTT_casesAdditionalTime="$TTPR_additionalTime"
 fi
 
-declare -a tjobid=()	#the job id of process group (jobspec)
-declare -a tpid=()		#pid of the case job this is the crucical value of the structure
-declare -a tcase=()		#the name of the running case
-declare -a tvariant=()	#the variant of the running case
-declare -a tcasePath=()	#the input dir of the running case
-declare -a startTime=()
-declare -a timeout=()
-declare -a endTime=()
-declare -a killed=()
-declare -a tcaseWorkDir=()
-declare -a freeSlots=()	# the list of the free slots in txxxx arrays
-declare allJobsGone=""
-declare highLoad=''	#true if the system is in high load state
-declare -i jobIndex=0 #index of next job to start
-declare nextJobIndexToStart=''	#the index of the next job to start if any, empty if no more job is available (or interrupt)
-declare -i jobsEnded=0 # the number of ended jobs
+declare -a TTTI_tjobid=()	#the job id of process group (jobspec)
+declare -a TTTI_tpid=()		#pid of the case job this is the crucical value of the structure
+declare -a TTTI_tcase=()		#the name of the running case
+declare -a TTTI_tvariant=()	#the variant of the running case
+declare -a TTTI_tcasePath=()	#the input dir of the running case
+declare -a TTTI_tstartTime=()
+declare -a TTTI_ttimeout=()
+declare -a TTTI_tendTime=()
+declare -a TTTI_tkilled=()
+declare -a TTTI_tcaseWorkDir=()
+declare -a TTTI_freeSlots=()	# the list of the free slots in txxxx arrays
+declare TTTI_allJobsGone=""
+declare TTTI_highLoad=''	#true if the system is in high load state
+declare -i TTTI_jobIndex=0 #index of next job to start
+declare TTTI_nextJobIndexToStart=''	#the index of the next job to start if any, empty if no more job is available (or interrupt)
+declare -i TTTI_jobsEnded=0 # the number of ended jobs
 #result and summary variables
-declare -i variantSuccess=0 variantSkiped=0 variantFailures=0 variantErrors=0
-declare -i numberJobsRunning=0
-declare thisJobRuns
-declare sleepCyclesAndNoJobEnds=0
-declare TTTT_now=''
+declare -i TTTI_variantSuccess=0 TTTI_variantSkiped=0 TTTI_variantFailures=0 TTTI_variantErrors=0
+declare -i TTTI_numberJobsRunning=0
+declare TTTI_sleepCyclesAndNoJobEnds=0
+declare TTTI_now=''
 
 # check for timed out jobs and kill them
 # TTXX_shell disables timeout check
-# expect TTTT_now is actual time
+# expect TTTI_now is actual time
 checkJobTimeouts() {
 	isDebug && printDebug "check for timed out jobs"
 	local i tempjobspec finalTime
-	for ((i=0; i<maxParralelJobs; i++)); do
-		#if [[ ( -n ${tpid[$i]} ) && ( -n ${tjobid[$i]} ) ]]; then
-		if [[ -n ${tpid[$i]} ]]; then
-			if [[ -z ${killed[$i]} ]]; then # the job was not yet killed
-				if [[ ( ( ${endTime[$i]} -lt $TTTT_now ) && ( -z $TTXX_shell ) ) || ( $TTXX_interruptReceived -gt 1 ) ]]; then
-					if [[ -z ${tjobid[$i]} ]]; then
-						tempjobspec="${tpid[$i]}"
+	for ((i=0; i<TTTI_maxParralelJobs; i++)); do
+		#if [[ ( -n ${TTTI_tpid[$i]} ) && ( -n ${TTTI_tjobid[$i]} ) ]]; then
+		if [[ -n ${TTTI_tpid[$i]} ]]; then
+			if [[ -z ${TTTI_tkilled[$i]} ]]; then # the job was not yet killed
+				if [[ ( ( ${TTTI_tendTime[$i]} -lt $TTTI_now ) && ( -z $TTXX_shell ) ) || ( $TTTI_interruptReceived -gt 1 ) ]]; then
+					if [[ -z ${TTTI_tjobid[$i]} ]]; then
+						tempjobspec="${TTTI_tpid[$i]}"
 						printError "tpid $tempjobspec with no jobspec encountered"
 					else
-						tempjobspec="%${tjobid[$i]}"
+						tempjobspec="%${TTTI_tjobid[$i]}"
 					fi
-					printWarning "Timeout Kill i=${i} jobspec=${tempjobspec} with SIGTERM case=${tcase[$i]} variant=${tvariant[$i]} pid=${tpid[$i]}"
+					printWarning "Timeout Kill i=${i} jobspec=${tempjobspec} with SIGTERM case=${TTTI_tcase[$i]} variant=${TTTI_tvariant[$i]} pid=${TTTI_tpid[$i]}"
 					#SIGINT and SIGHUP seems not to work can not install handler for both signals in case.sh
 					if kill "${tempjobspec}"; then
-						echo "timeout" > "${tcaseWorkDir[$i]}/TIMEOUT"
+						echo "timeout" > "${TTTI_tcaseWorkDir[$i]}/TIMEOUT"
 					else
 						printWarning "Can not kill i=${i} jobspec=${tempjobspec} Gone?"
 					fi
-					killed[$i]="$TTTT_now"
+					TTTI_tkilled[$i]="$TTTI_now"
 				fi
 			else
-				finalTime=$((${killed[$i]}+$TTTT_casesAdditionalTime))
-				if [[ $TTTT_now -gt $finalTime ]]; then
-					if [[ -z ${tjobid[$i]} ]]; then
-						tempjobspec="${tpid[$i]}"
+				finalTime=$((${TTTI_tkilled[$i]}+$TTTT_casesAdditionalTime))
+				if [[ $TTTI_now -gt $finalTime ]]; then
+					if [[ -z ${TTTI_tjobid[$i]} ]]; then
+						tempjobspec="${TTTI_tpid[$i]}"
 						printError "tpid $tempjobspec with no jobspec encountered"
 					else
-						tempjobspec="%${tjobid[$i]}"
+						tempjobspec="%${TTTI_tjobid[$i]}"
 					fi
-					printError "Forced Kill i=${i} jobspec=${tempjobspec} case=${tcase[$i]} variant=${tvariant[$i]} pid=${tpid[$i]}"
+					printError "Forced Kill i=${i} jobspec=${tempjobspec} case=${TTTI_tcase[$i]} variant=${TTTI_tvariant[$i]} pid=${TTTI_tpid[$i]}"
 					if ! kill -9 "${tempjobspec}"; then
-						printWarning "Can not force kill i=${i} jobspec=${tempjobspec} pid=${tpid[$i]} Gone?"
+						printWarning "Can not force kill i=${i} jobspec=${tempjobspec} pid=${TTTI_tpid[$i]} Gone?"
 					fi
 				fi
 			fi
@@ -450,12 +449,12 @@ checkJobTimeouts() {
 handleJobEnd() {
 	#echo "CHECK JOB END"
 	isDebug && printDebug "check for ended jobs"
-	freeSlots=()
+	TTTI_freeSlots=()
 	local oneJobStopFound=''
 	local i
-	for ((i=0; i<maxParralelJobs; i++)); do
-		local pid="${tpid[$i]}"
-		local jobid="${tjobid[$i]}"
+	for ((i=0; i<TTTI_maxParralelJobs; i++)); do
+		local pid="${TTTI_tpid[$i]}"
+		local jobid="${TTTI_tjobid[$i]}"
 		if [[ -n $pid ]]; then
 			isDebug && printDebug "check wether job is still running i=$i pid=$pid jobspec=%$jobid"
 			local thisJobRuns='true'
@@ -499,112 +498,112 @@ handleJobEnd() {
 				fi
 			fi
 			if [[ -z $thisJobRuns ]]; then
-				numberJobsRunning=$((numberJobsRunning-1))
+				TTTI_numberJobsRunning=$((TTTI_numberJobsRunning-1))
 				oneJobStopFound='true'
-				jobsEnded=$((jobsEnded+1))
-				freeSlots+=( $i )
+				TTTI_jobsEnded=$((TTTI_jobsEnded+1))
+				TTTI_freeSlots+=( $i )
 				#echo "JOB END"
-				local tmpCase="${tcase[$i]}"
-				local tmpVariant="${tvariant[$i]}"
+				local tmpCase="${TTTI_tcase[$i]}"
+				local tmpVariant="${TTTI_tvariant[$i]}"
 				#tmpCaseAndVariant="${tmpCase##*/}"
 				local tmpCaseAndVariant="${TTRO_suiteNestingString}::${tmpCase}"
 				if [[ -n $tmpVariant ]]; then
 					tmpCaseAndVariant="${tmpCaseAndVariant}:${tmpVariant}"
 				fi
 				local caseElapsedTime='?'
-				if [[ -e "${tcaseWorkDir[$i]}/ELAPSED" ]]; then
-					caseElapsedTime=$(<"${tcaseWorkDir[$i]}/ELAPSED")
+				if [[ -e "${TTTI_tcaseWorkDir[$i]}/ELAPSED" ]]; then
+					caseElapsedTime=$(<"${TTTI_tcaseWorkDir[$i]}/ELAPSED")
 				else
-					if [[ -e "${tcaseWorkDir[$i]}/STARTTIME" ]]; then
-						local caseStartTime=$(<"${tcaseWorkDir[$i]}/STARTTIME")
+					if [[ -e "${TTTI_tcaseWorkDir[$i]}/STARTTIME" ]]; then
+						local caseStartTime=$(<"${TTTI_tcaseWorkDir[$i]}/STARTTIME")
 						getElapsedTime "$caseStartTime"
 						caseElapsedTime="$TTTT_elapsedTime"
 					fi
 				fi
 				echo "$tmpCaseAndVariant : $caseElapsedTime" >> "${TTRO_workDirSuite}/CASE_EXECUTE"
 				#executeList+=("$tmpCaseAndVariant")
-				printInfon "END: i=$i pid=$pid jobspec=%$jobid case=${tmpCase} variant='${tmpVariant}' running=$numberJobsRunning systemLoad=$TTTT_systemLoad"
-				tpid[$i]=""
-				tjobid[$i]=""
+				printInfon "END: i=$i pid=$pid jobspec=%$jobid case=${tmpCase} variant='${tmpVariant}' running=$TTTI_numberJobsRunning systemLoad=$TTTT_systemLoad"
+				TTTI_tpid[$i]=""
+				TTTI_tjobid[$i]=""
 				#collect variant result
-				local jobsResultFile="${tcaseWorkDir[$i]}/RESULT"
+				local jobsResultFile="${TTTI_tcaseWorkDir[$i]}/RESULT"
 				if [[ -e ${jobsResultFile} ]]; then
 					local jobsResult=$(<"${jobsResultFile}")
 					case "$jobsResult" in
 						SUCCESS )
 							echo "$tmpCaseAndVariant" >> "${TTRO_workDirSuite}/CASE_SUCCESS"
-							variantSuccess=$((variantSuccess+1))
-							addCaseEntry "$indexfilename" "$tmpCase" "$tmpVariant" 'SUCCESS' "${tcasePath[$i]}" "${tcaseWorkDir[$i]}" "$caseElapsedTime" "$TTTT_tempSummayName"
+							TTTI_variantSuccess=$((TTTI_variantSuccess+1))
+							addCaseEntry "$TTTI_indexfilename" "$tmpCase" "$tmpVariant" 'SUCCESS' "${TTTI_tcasePath[$i]}" "${TTTI_tcaseWorkDir[$i]}" "$caseElapsedTime" "$TTTI_tempSummayName"
 						;;
 						SKIP )
-							{ if read -r; then :; fi; } < "${tcaseWorkDir[$i]}/REASON" #read one line from reason
+							{ if read -r; then :; fi; } < "${TTTI_tcaseWorkDir[$i]}/REASON" #read one line from reason
 							echo "$tmpCaseAndVariant: $REPLY" >> "${TTRO_workDirSuite}/CASE_SKIP"
-							variantSkiped=$((variantSkiped+1))
-							addCaseEntry "$indexfilename" "$tmpCase" "$tmpVariant" 'SKIP' "${tcasePath[$i]}" "${tcaseWorkDir[$i]}" "$caseElapsedTime" "$TTTT_tempSummayName"
+							TTTI_variantSkiped=$((TTTI_variantSkiped+1))
+							addCaseEntry "$TTTI_indexfilename" "$tmpCase" "$tmpVariant" 'SKIP' "${TTTI_tcasePath[$i]}" "${TTTI_tcaseWorkDir[$i]}" "$caseElapsedTime" "$TTTI_tempSummayName"
 						;;
 						FAILURE )
-							{ if read -r; then :; fi; } < "${tcaseWorkDir[$i]}/REASON" #read one line from reason
+							{ if read -r; then :; fi; } < "${TTTI_tcaseWorkDir[$i]}/REASON" #read one line from reason
 							echo "$tmpCaseAndVariant: $REPLY" >> "${TTRO_workDirSuite}/CASE_FAILURE"
-							variantFailures=$((variantFailures+1))
-							addCaseEntry "$indexfilename" "$tmpCase" "$tmpVariant" 'FAILURE' "${tcasePath[$i]}" "${tcaseWorkDir[$i]}" "$caseElapsedTime" "$TTTT_tempSummayName"
-							[[ ( -n $TTRO_xtraPrint ) && ( "$TTRO_noParallelCases" -ne 1 ) ]] && cat "${tcaseWorkDir[$i]}/${TEST_LOG}"
+							TTTI_variantFailures=$((TTTI_variantFailures+1))
+							addCaseEntry "$TTTI_indexfilename" "$tmpCase" "$tmpVariant" 'FAILURE' "${TTTI_tcasePath[$i]}" "${TTTI_tcaseWorkDir[$i]}" "$caseElapsedTime" "$TTTI_tempSummayName"
+							[[ ( -n $TTRO_xtraPrint ) && ( "$TTRO_noParallelCases" -ne 1 ) ]] && cat "${TTTI_tcaseWorkDir[$i]}/${TEST_LOG}"
 						;;
 						ERROR )
 							echo "$tmpCaseAndVariant" >> "${TTRO_workDirSuite}/CASE_ERROR"
-							variantErrors=$((variantErrors+1))
-							addCaseEntry "$indexfilename" "$tmpCase" "$tmpVariant" 'ERROR' "${tcasePath[$i]}" "${tcaseWorkDir[$i]}" "$caseElapsedTime" "$TTTT_tempSummayName"
-							[[ ( -n $TTRO_xtraPrint ) && ( "$TTRO_noParallelCases" -ne 1 ) ]] && cat "${tcaseWorkDir[$i]}/${TEST_LOG}"
+							TTTI_variantErrors=$((TTTI_variantErrors+1))
+							addCaseEntry "$TTTI_indexfilename" "$tmpCase" "$tmpVariant" 'ERROR' "${TTTI_tcasePath[$i]}" "${TTTI_tcaseWorkDir[$i]}" "$caseElapsedTime" "$TTTI_tempSummayName"
+							[[ ( -n $TTRO_xtraPrint ) && ( "$TTRO_noParallelCases" -ne 1 ) ]] && cat "${TTTI_tcaseWorkDir[$i]}/${TEST_LOG}"
 						;;
 						* )
-							printError "${tmpCase}:${tmpVariant} : Invalid Case-variant result $jobsResult case workdir ${tcaseWorkDir[$i]}"
+							printError "${tmpCase}:${tmpVariant} : Invalid Case-variant result $jobsResult case workdir ${TTTI_tcaseWorkDir[$i]}"
 							echo "$tmpCaseAndVariant" >> "${TTRO_workDirSuite}/CASE_ERROR"
-							variantErrors=$((variantErrors+1))
-							addCaseEntry "$indexfilename" "$tmpCase" "$tmpVariant" 'ERROR' "${tcasePath[$i]}" "${tcaseWorkDir[$i]}" "$caseElapsedTime" "$TTTT_tempSummayName"
+							TTTI_variantErrors=$((TTTI_variantErrors+1))
+							addCaseEntry "$TTTI_indexfilename" "$tmpCase" "$tmpVariant" 'ERROR' "${TTTI_tcasePath[$i]}" "${TTTI_tcaseWorkDir[$i]}" "$caseElapsedTime" "$TTTI_tempSummayName"
 							jobsResult="ERROR"
-							[[ ( -n $TTRO_xtraPrint ) && ( "$TTRO_noParallelCases" -ne 1 ) ]] && cat "${tcaseWorkDir[$i]}/${TEST_LOG}"
+							[[ ( -n $TTRO_xtraPrint ) && ( "$TTRO_noParallelCases" -ne 1 ) ]] && cat "${TTTI_tcaseWorkDir[$i]}/${TEST_LOG}"
 						;;
 					esac
 				else
-					printError "No RESULT file in case workdir ${tcaseWorkDir[$i]}"
+					printError "No RESULT file in case workdir ${TTTI_tcaseWorkDir[$i]}"
 					echo "$tmpCaseAndVariant" >> "${TTRO_workDirSuite}/CASE_ERROR"
-					variantErrors=$((variantErrors+1))
-					addCaseEntry "$indexfilename" "$tmpCase" "$tmpVariant" 'ERROR' "${tcasePath[$i]}" "${tcaseWorkDir[$i]}" "$caseElapsedTime" "$TTTT_tempSummayName"
+					TTTI_variantErrors=$((TTTI_variantErrors+1))
+					addCaseEntry "$TTTI_indexfilename" "$tmpCase" "$tmpVariant" 'ERROR' "${TTTI_tcasePath[$i]}" "${TTTI_tcaseWorkDir[$i]}" "$caseElapsedTime" "$TTTI_tempSummayName"
 					jobsResult="ERROR"
-					[[ ( -n $TTRO_xtraPrint ) && ( "$TTRO_noParallelCases" -ne 1 ) ]] && cat "${tcaseWorkDir[$i]}/${TEST_LOG}"
+					[[ ( -n $TTRO_xtraPrint ) && ( "$TTRO_noParallelCases" -ne 1 ) ]] && cat "${TTTI_tcaseWorkDir[$i]}/${TEST_LOG}"
 				fi
 				echo " Result: $jobsResult"
 			fi
 		else
-			freeSlots+=( $i )
+			TTTI_freeSlots+=( $i )
 		fi
 	done
 	if [[ -n $oneJobStopFound ]]; then
-		sleepCyclesAndNoJobEnds=0
+		TTTI_sleepCyclesAndNoJobEnds=0
 	fi
 } # /handleJobEnd
 
 #wait if no slot is free an not allJobsGone
 sleepIf() {
-	if [[ ( -n $nextJobIndexToStart && ( $numberJobsRunning -ge $currentParralelJobs ) ) || ( -z $nextJobIndexToStart && -z $allJobsGone ) ]]; then
+	if [[ ( -n $TTTI_nextJobIndexToStart && ( $TTTI_numberJobsRunning -ge $TTTI_currentParralelJobs ) ) || ( -z $TTTI_nextJobIndexToStart && -z $TTTI_allJobsGone ) ]]; then
 		local waitTime='0.2'
-		if [[ $sleepCyclesAndNoJobEnds -ge 10 ]]; then
-			sleepCyclesAndNoJobEnds=$((sleepCyclesAndNoJobEnds+1))
+		if [[ $TTTI_sleepCyclesAndNoJobEnds -ge 10 ]]; then
+			TTTI_sleepCyclesAndNoJobEnds=$((TTTI_sleepCyclesAndNoJobEnds+1))
 			waitTime='1'
 		else
-			sleepCyclesAndNoJobEnds=$((sleepCyclesAndNoJobEnds+1))
+			TTTI_sleepCyclesAndNoJobEnds=$((TTTI_sleepCyclesAndNoJobEnds+1))
 		fi
-		if [[ $sleepCyclesAndNoJobEnds -eq 1 ]]; then
+		if [[ $TTTI_sleepCyclesAndNoJobEnds -eq 1 ]]; then
 			printInfo "SLEEP $waitTime"
 		else
-			echo -e -n "SLEEP $waitTime sleepCyclesAndNoJobEnds=$sleepCyclesAndNoJobEnds      \r" #add some spaces at end to clean the prevois numbers
+			echo -e -n "SLEEP $waitTime sleepCyclesAndNoJobEnds=$TTTI_sleepCyclesAndNoJobEnds      \r" #add some spaces at end to clean the prevois numbers
 		fi
-		isDebug && printDebug "sleep $waitTime sleepCyclesAndNoJobEnds=$sleepCyclesAndNoJobEnds"
+		isDebug && printDebug "sleep $waitTime sleepCyclesAndNoJobEnds=$TTTI_sleepCyclesAndNoJobEnds"
 		if sleep "$waitTime"; then
 			isDebug && printDebug "sleep returns success"
 		else
 			local cresult=$?
 			if [[ $cresult -eq 130 ]]; then
-				printInfo "SIGINT received in sleep in programm $TTXX_commandname ********************"
+				printInfo "SIGINT received in sleep in programm $TTTI_commandname ********************"
 			else
 				printError "Unhandled result $cresult after sleep"
 			fi
@@ -614,25 +613,25 @@ sleepIf() {
 }
 
 # Start one or more new job(s)
-# expect TTTT_now is actual time
+# expect TTTI_now is actual time
 startNewJobs() {
 	local freeSlotIndx=0
-	while [[ -n $nextJobIndexToStart && ( $numberJobsRunning -lt $currentParralelJobs ) ]]; do
-		if [[ $freeSlotIndx -ge ${#freeSlots[*]} ]]; then printErrorAndExit "No free slot but one job to start freeSlotIndx=$freeSlotIndx free slots=${#freeSlots[*]}" $errRt; fi
-		local freeSlot="${freeSlots[$freeSlotIndx]}"; freeSlotIndx=$((freeSlotIndx+1));
-		local casePath="${caseVariantPathes[$nextJobIndexToStart]}"
+	while [[ -n $TTTI_nextJobIndexToStart && ( $TTTI_numberJobsRunning -lt $TTTI_currentParralelJobs ) ]]; do
+		if [[ $freeSlotIndx -ge ${#TTTI_freeSlots[*]} ]]; then printErrorAndExit "No free slot but one job to start freeSlotIndx=$freeSlotIndx free slots=${#TTTI_freeSlots[*]}" $errRt; fi
+		local freeSlot="${TTTI_freeSlots[$freeSlotIndx]}"; freeSlotIndx=$((freeSlotIndx+1));
+		local casePath="${TTTI_caseVariantPathes[$TTTI_nextJobIndexToStart]}"
 		local caseName="${casePath##*/}"
-		local caseVariant="${caseVariantIds[$nextJobIndexToStart]}"
-		local cworkdir="${caseVariantWorkdirs[$nextJobIndexToStart]}"
-		local cpreamblError="${casePreambErrors[$nextJobIndexToStart]}"
+		local caseVariant="${TTTI_caseVariantIds[$TTTI_nextJobIndexToStart]}"
+		local cworkdir="${TTTI_caseVariantWorkdirs[$TTTI_nextJobIndexToStart]}"
+		local cpreamblError="${TTTI_casePreambErrors[$TTTI_nextJobIndexToStart]}"
 		#make and cleanup case work dir
 		if [[ -e $cworkdir ]]; then
 			printErrorAndExit "Case workdir exists! Probably duplicate variant. workdir: $cworkdir" $errSuiteError
 		fi
 		mkdir -p "$cworkdir"
 		local cmd="${TTRO_scriptDir}/case.sh"
-		numberJobsRunning=$((numberJobsRunning+1))
-		printInfon "START: jobIndex=$nextJobIndexToStart case=$caseName variant=$caseVariant i=$freeSlot running=$numberJobsRunning systemLoad=$TTTT_systemLoad"
+		TTTI_numberJobsRunning=$((TTTI_numberJobsRunning+1))
+		printInfon "START: jobIndex=$TTTI_nextJobIndexToStart case=$caseName variant=$caseVariant i=$freeSlot running=$TTTI_numberJobsRunning systemLoad=$TTTT_systemLoad"
 		#Start job connect output to stdout in single thread case
 		if [[ "$TTRO_noParallelCases" -eq 1 ]]; then
 			$cmd "$casePath" "$cworkdir" "$caseVariant" "$cpreamblError" 2>&1 | tee -i "${cworkdir}/${TEST_LOG}" &
@@ -655,30 +654,30 @@ startNewJobs() {
 			checkDuplicateJobspec "$tmp5"
 		else
 			echo
-			tjobid[$freeSlot]=""
+			TTTI_tjobid[$freeSlot]=""
 			printErrorAndExit "No jobindex extract from jobs output '$jobsOutput'" $errRt
 		fi
-		tpid[$freeSlot]="$newPid"
-		tjobid[$freeSlot]="$tmp5"
-		tcase[$freeSlot]="$caseName"
-		tvariant[$freeSlot]="$caseVariant"
-		tcasePath[$freeSlot]="$casePath"
-		killed[$freeSlot]=""
-		isDebug && printDebug "Enter tjobid[$freeSlot]=${tjobid[$freeSlot]} state=$jobState tpid[${freeSlot}]=$newPid time=${TTTT_now} state=$jobState"
-		startTime[$freeSlot]="$TTTT_now"
-		local jobTimeout=${caseTimeout[$jobIndex]}
+		TTTI_tpid[$freeSlot]="$newPid"
+		TTTI_tjobid[$freeSlot]="$tmp5"
+		TTTI_tcase[$freeSlot]="$caseName"
+		TTTI_tvariant[$freeSlot]="$caseVariant"
+		TTTI_tcasePath[$freeSlot]="$casePath"
+		TTTI_tkilled[$freeSlot]=""
+		isDebug && printDebug "Enter tjobid[$freeSlot]=${TTTI_tjobid[$freeSlot]} state=$jobState tpid[${freeSlot}]=$newPid time=${TTTI_now} state=$jobState"
+		TTTI_tstartTime[$freeSlot]="$TTTI_now"
+		local jobTimeout=${TTTI_caseTimeout[$TTTI_jobIndex]}
 		if [[ $jobTimeout -lt $TTTT_casesTimeout ]]; then
 			jobTimeout="$TTTT_casesTimeout"
 		fi
 		isVerbose && printVerbose "Job timeout $jobTimeout"
-		endTime[$freeSlot]=$((TTTT_now+jobTimeout))
-		timeout[$freeSlot]="$jobTimeout"
-		tcaseWorkDir[$freeSlot]="$cworkdir"
-		jobIndex=$((jobIndex+1))
-		if [[ ( $TTXX_interruptReceived -gt 0 ) || ( $jobIndex -ge $noCaseVariants ) ]]; then
-			nextJobIndexToStart=''
+		TTTI_tendTime[$freeSlot]=$((TTTI_now+jobTimeout))
+		TTTI_ttimeout[$freeSlot]="$jobTimeout"
+		TTTI_tcaseWorkDir[$freeSlot]="$cworkdir"
+		TTTI_jobIndex=$((TTTI_jobIndex+1))
+		if [[ ( $TTTI_interruptReceived -gt 0 ) || ( $TTTI_jobIndex -ge $TTTI_noCaseVariants ) ]]; then
+			TTTI_nextJobIndexToStart=''
 		else
-			nextJobIndexToStart="$jobIndex"
+			TTTI_nextJobIndexToStart="$TTTI_jobIndex"
 		fi
 	done
 } #/startNewJobs
@@ -690,145 +689,145 @@ checkSystemLoad() {
 	:
 }
 #init the work structure for maxParralelJobs
-for ((i=0; i<maxParralelJobs; i++)); do
-	tjobid[$i]=""; tpid[$i]=""; tcase[$i]=""; tvariant[$i]=""; tcasePath[$i]=""
-	startTime[$i]=""; timeout[$i]=""; startTime[$i]=""; endTime[$i]=""
-	killed[$i]=""; tcaseWorkDir[$i]=""
-	freeSlots+=( $i )
+for ((TTTI_i=0; TTTI_i<TTTI_maxParralelJobs; TTTI_i++)); do
+	TTTI_tjobid[$TTTI_i]=""; TTTI_tpid[$TTTI_i]=""; TTTI_tcase[$TTTI_i]=""; TTTI_tvariant[$TTTI_i]=""; TTTI_tcasePath[$TTTI_i]=""
+	TTTI_tstartTime[$TTTI_i]=""; TTTI_ttimeout[$TTTI_i]=""; TTTI_tstartTime[$TTTI_i]=""; TTTI_tendTime[$TTTI_i]=""
+	TTTI_tkilled[$TTTI_i]=""; TTTI_tcaseWorkDir[$TTTI_i]=""
+	TTTI_freeSlots+=( $TTTI_i )
 done
 
 #print special summary
-TTTT_tempSummayName="${TTRO_workDirSuite}/part1.tmp"
-rm -f "$TTTT_tempSummayName"
-touch "$TTTT_tempSummayName"
+TTTI_tempSummayName="${TTRO_workDirSuite}/part1.tmp"
+rm -f "$TTTI_tempSummayName"
+touch "$TTTI_tempSummayName"
 
 #the loop until all jobs are gone
-if [[ $noCaseVariants -gt 0 ]]; then
-	nextJobIndexToStart=0
+if [[ $TTTI_noCaseVariants -gt 0 ]]; then
+	TTTI_nextJobIndexToStart=0
 else
-	nextJobIndexToStart=''
+	TTTI_nextJobIndexToStart=''
 fi
-while [[ -z $allJobsGone ]]; do
-	isDebug && printDebug "Loop precond allJobsGone='${allJobsGone}' jobIndex='${nextJobIndexToStart}'"
+while [[ -z $TTTI_allJobsGone ]]; do
+	isDebug && printDebug "Loop precond allJobsGone='${TTTI_allJobsGone}' jobIndex='${TTTI_nextJobIndexToStart}'"
 	# loop either not the final job and no job slot is available or the final job and not all jobs gone
-	while [[ ( -n $nextJobIndexToStart && ( $numberJobsRunning -ge  $currentParralelJobs ) || ( ${#freeSlots[*]} -eq 0 ) ) || ( -z $nextJobIndexToStart && -z $allJobsGone ) ]]; do
-		isDebug && printDebug "Loop cond numberJobsRunning='$numberJobsRunning' currentParralelJobs='$currentParralelJobs' allJobsGone='$allJobsGone' nextJobIndexToStart='$nextJobIndexToStart'"
-		while ! TTTT_now="$(date +'%-s')"; do :; done #guard external command if sigint is received TODO: is signal received from this job too?
+	while [[ ( -n $TTTI_nextJobIndexToStart && ( $TTTI_numberJobsRunning -ge  $TTTI_currentParralelJobs ) || ( ${#TTTI_freeSlots[*]} -eq 0 ) ) || ( -z $TTTI_nextJobIndexToStart && -z $TTTI_allJobsGone ) ]]; do
+		isDebug && printDebug "Loop cond numberJobsRunning='$TTTI_numberJobsRunning' currentParralelJobs='$TTTI_currentParralelJobs' allJobsGone='$TTTI_allJobsGone' nextJobIndexToStart='$TTTI_nextJobIndexToStart'"
+		while ! TTTI_now="$(date +'%-s')"; do :; done #guard external command if sigint is received TODO: is signal received from this job too?
 		checkJobTimeouts
 		getSystemLoad100
 		checkSystemLoad
 		handleJobEnd
-		if [[ $TTXX_interruptReceived -gt 0 ]]; then
-			nextJobIndexToStart=''
-			isVerbose && printVerbose "Interrupt suite $TTRO_suite interruptReceived=$TTXX_interruptReceived ****"
+		if [[ $TTTI_interruptReceived -gt 0 ]]; then
+			TTTI_nextJobIndexToStart=''
+			isVerbose && printVerbose "Interrupt suite $TTRO_suite interruptReceived=$TTTI_interruptReceived ****"
 		fi
 		#during final job run: check that all jobs are gone
-		if [[ -z $nextJobIndexToStart && ( $numberJobsRunning -eq 0 ) ]]; then
+		if [[ -z $TTTI_nextJobIndexToStart && ( $TTTI_numberJobsRunning -eq 0 ) ]]; then
 			isDebug && printDebug "All jobs gone"
 			#echo "ALL JOBS GONE"
-			allJobsGone="true"
+			TTTI_allJobsGone="true"
 		fi
 		sleepIf
-		isDebug && printDebug "Loop POST cond numberJobsRunning='$numberJobsRunning' currentParralelJobs='$currentParralelJobs' allJobsGone='$allJobsGone' nextJobIndexToStart='$nextJobIndexToStart'"
+		isDebug && printDebug "Loop POST cond numberJobsRunning='$TTTI_numberJobsRunning' currentParralelJobs='$TTTI_currentParralelJobs' allJobsGone='$TTTI_allJobsGone' nextJobIndexToStart='$TTTI_nextJobIndexToStart'"
 	done
-	while ! TTTT_now="$(date +'%-s')"; do :; done #guard external command if sigint is received
+	while ! TTTI_now="$(date +'%-s')"; do :; done #guard external command if sigint is received
 	getSystemLoad100
 	startNewJobs
 done
 
 #check number of jobs ended and job index
-if [[ $jobIndex -ne $jobsEnded ]]; then
-	printError "The nuber of jobs started=$jobIndex is not equal to the number of jobs ended=$jobsEnded"
+if [[ $TTTI_jobIndex -ne $TTTI_jobsEnded ]]; then
+	printError "The nuber of jobs started=$TTTI_jobIndex is not equal to the number of jobs ended=$TTTI_jobsEnded"
 fi
 
 #fin
-startSuiteList "$indexfilename"
+startSuiteList "$TTTI_indexfilename"
 
 ##execution loop over sub suites and variants
-declare -i suiteVariants=0 suiteErrors=0 suiteSkip=0
-for sindex_xyza in ${childSuites[$TTRO_suiteIndex]}; do
-	suitePath="${suitesPath[$sindex_xyza]}"
-	suite="${suitesName[$sindex_xyza]}"
-	if [[ $TTXX_interruptReceived -gt 0 ]]; then
+declare -i TTTI_suiteVariants=0 TTTI_suiteErrors=0 TTTI_suiteSkip=0
+for TTTI_sindex_xyza in ${childSuites[$TTRO_suiteIndex]}; do
+	TTTI_suitePath="${suitesPath[$TTTI_sindex_xyza]}"
+	TTTI_suite="${suitesName[$TTTI_sindex_xyza]}"
+	if [[ $TTTI_interruptReceived -gt 0 ]]; then
 		printInfo "SIGINT: end Suites loop"
 		break
 	fi
-	isVerbose && printVerbose "**** START Nested Suite: $suite ************************************"
-	variantCount=""; variantList=""; preamblError=""
-	if ! evalPreambl "${suitePath}/${TEST_SUITE_FILE}"; then
-		preamblError='true'; variantCount=""; variantList=""
+	isVerbose && printVerbose "**** START Nested Suite: $TTTI_suite ************************************"
+	variantCount=""; variantList=""; TTTI_preamblError=""
+	if ! evalPreambl "${TTTI_suitePath}/${TEST_SUITE_FILE}"; then
+		TTTI_preamblError='true'; variantCount=""; variantList=""
 	fi
 	if [[ -z $variantCount ]]; then
 		if [[ -z $variantList ]]; then
- 			exeSuite "$sindex_xyza" "" "$TTRO_suiteNestingLevel" "$TTRO_suiteNestingPath" "$TTRO_suiteNestingString" "$TTRO_workDirSuite" "$preamblError"
+ 			exeSuite "$TTTI_sindex_xyza" "" "$TTRO_suiteNestingLevel" "$TTRO_suiteNestingPath" "$TTRO_suiteNestingString" "$TTRO_workDirSuite" "$TTTI_preamblError" "$TTTI_indexfilename"
 		else
-			for x_xyza in $variantList; do
-				exeSuite "$sindex_xyza" "$x_xyza" "$TTRO_suiteNestingLevel" "$TTRO_suiteNestingPath" "$TTRO_suiteNestingString" "$TTRO_workDirSuite" "$preamblError"
-				if [[ $TTXX_interruptReceived -gt 0 ]]; then
+			for TTTI_x_xyza in $variantList; do
+				exeSuite "$TTTI_sindex_xyza" "$TTTI_x_xyza" "$TTRO_suiteNestingLevel" "$TTRO_suiteNestingPath" "$TTRO_suiteNestingString" "$TTRO_workDirSuite" "$TTTI_preamblError" "$TTTI_indexfilename"
+				if [[ $TTTI_interruptReceived -gt 0 ]]; then
 					printInfo "SIGINT: end Suites loop"
 					break
 				fi
 			done
-			unset x_xyza
+			unset TTTI_x_xyza
 		fi
 	else
 		if [[ -z $variantList ]]; then
-			declare -i j_xyza
-			for ((j_xyza=0; j_xyza<variantCount; j_xyza++)); do
-				exeSuite "$sindex_xyza" "$j_xyza" "$TTRO_suiteNestingLevel" "$TTRO_suiteNestingPath" "$TTRO_suiteNestingString" "$TTRO_workDirSuite" "$preamblError"
-				if [[ $TTXX_interruptReceived -gt 0 ]]; then
+			declare -i TTTI_j_xyza
+			for ((TTTI_j_xyza=0; TTTI_j_xyza<variantCount; TTTI_j_xyza++)); do
+				exeSuite "$TTTI_sindex_xyza" "$TTTI_j_xyza" "$TTRO_suiteNestingLevel" "$TTRO_suiteNestingPath" "$TTRO_suiteNestingString" "$TTRO_workDirSuite" "$TTTI_preamblError" "$TTTI_indexfilename"
+				if [[ $TTTI_interruptReceived -gt 0 ]]; then
 					printInfo "SIGINT: end Suites loop"
 					break
 				fi
 			done
-			unset j_xyza
+			unset TTTI_j_xyza
 		else
-			printError "In suite $suite we have both variant variables variantCount=$variantCount and variantList=$variantList ! Suite is skipped"
+			printError "In suite $TTTI_suite we have both variant variables variantCount=$variantCount and variantList=$variantList ! Suite is skipped"
 		fi
 	fi
-	isVerbose && printVerbose "**** END Nested Suite: $suite **************************************"
-	if [[ $TTXX_interruptReceived -gt 0 ]]; then
+	isVerbose && printVerbose "**** END Nested Suite: $TTTI_suite **************************************"
+	if [[ $TTTI_interruptReceived -gt 0 ]]; then
 		printInfo "SIGINT: end Suites loop"
 		break
 	fi
 done
-unset sindex_xyza
+unset TTTI_sindex_xyza
 
 #test suite finalization
 TTTT_executionState='finalization'
-declare -i executedTestFinSteps=0
+declare -i TTTI_executedTestFinSteps=0
 if isFunction 'testFinalization'; then
 	if isExisting 'FINS' || isExisting 'TTRO_finSuite'; then
 		printErrorAndExit "You must not use FINS or TTRO_finSuite variable together with testFinalization function" $errRt
 	fi
 fi
-for name_xyza in 'TTRO_finSuite' 'FINS'; do
-	if isExisting "$name_xyza"; then
-		if isArray "$name_xyza"; then
+for TTTI_name_xyza in 'TTRO_finSuite' 'FINS'; do
+	if isExisting "$TTTI_name_xyza"; then
+		if isArray "$TTTI_name_xyza"; then
 			if isDebug; then
-				v=$(declare -p "$name_xyza")
-				printDebug "$v"
+				TTTI_v=$(declare -p "$TTTI_name_xyza")
+				printDebug "$TTTI_v"
 			fi
-			eval "l_xyza=\${#$name_xyza[@]}"
-			for (( i_xyza=0; i_xyza<l_xyza; i_xyza++)); do
-				eval "step=\${$name_xyza[$i_xyza]}"
+			eval "TTTI_l_xyza=\${#$TTTI_name_xyza[@]}"
+			for (( TTTI_i_xyza=0; TTTI_i_xyza<TTTI_l_xyza; TTTI_i_xyza++)); do
+				eval "TTTI_step_xyza=\${$TTTI_name_xyza[$TTTI_i_xyza]}"
 				if isExistingAndTrue 'TTPR_noFinsSuite'; then
-					printInfo "Suppress Suite Finalization: $step"
+					printInfo "Suppress Suite Finalization: $TTTI_step_xyza"
 				else
-					printInfo "Execute Suite Finalization: $step"
-					executedTestFinSteps=$((executedTestFinSteps+1))
-					eval "$step"
+					printInfo "Execute Suite Finalization: $TTTI_step_xyza"
+					TTTI_executedTestFinSteps=$((TTTI_executedTestFinSteps+1))
+					eval "$TTTI_step_xyza"
 				fi
 			done
 		else
-			isDebug && printDebug "$name_xyza=${!name_xyza}"
-			for x_xyza in ${!name_xyza}; do
+			isDebug && printDebug "$TTTI_name_xyza=${!TTTI_name_xyza}"
+			for TTTI_x_xyza in ${!TTTI_name_xyza}; do
 				if isExistingAndTrue 'TTPR_noFinsSuite'; then
-					printInfo "Suppress Suite Finalization: $x_xyza"
+					printInfo "Suppress Suite Finalization: $TTTI_x_xyza"
 				else
-					printInfo "Execute Suite Finalization: $x_xyza"
-					executedTestFinSteps=$((executedTestFinSteps+1))
-					eval "${x_xyza}"
+					printInfo "Execute Suite Finalization: $TTTI_x_xyza"
+					TTTI_executedTestFinSteps=$((TTTI_executedTestFinSteps+1))
+					eval "${TTTI_x_xyza}"
 				fi
 			done
 		fi
@@ -839,70 +838,70 @@ if isFunction 'testFinalization'; then
 		printInfo "Suppress Suite Finalization: testFinalization"
 	else
 		printInfo "Execute Suite Finalization: testFinalization"
-		executedTestFinSteps=$((executedTestFinSteps+1))
+		TTTI_executedTestFinSteps=$((TTTI_executedTestFinSteps+1))
 		testFinalization
 	fi
 fi
-printInfo "$executedTestFinSteps Test Suite Finalisation steps executed"
+printInfo "$TTTI_executedTestFinSteps Test Suite Finalisation steps executed"
 
 #-------------------------------------------------------
 #put results to results file for information purose only
-echo -e "CASE_EXECUTE=$jobIndex\nCASE_FAILURE=$variantFailures\nCASE_ERROR=$variantErrors\nCASE_SKIP=$variantSkiped\nCASE_SUCCESS=$variantSuccess" > "${TTRO_workDirSuite}/RESULT"
-echo -e "SUITE_EXECUTE=$suiteVariants\nSUITE_ERROR=$suiteErrors\nSUITE_SKIP=$suiteSkip" >> "${TTRO_workDirSuite}/RESULT"
+echo -e "CASE_EXECUTE=$TTTI_jobIndex\nCASE_FAILURE=$TTTI_variantFailures\nCASE_ERROR=$TTTI_variantErrors\nCASE_SKIP=$TTTI_variantSkiped\nCASE_SUCCESS=$TTTI_variantSuccess" > "${TTRO_workDirSuite}/RESULT"
+echo -e "SUITE_EXECUTE=$TTTI_suiteVariants\nSUITE_ERROR=$TTTI_suiteErrors\nSUITE_SKIP=$TTTI_suiteSkip" >> "${TTRO_workDirSuite}/RESULT"
 
 #-------------------------------------------------------
 #Final verbose suite result printout
 echo "**** Results Suite: '$TTRO_suite' Variant: '$TTRO_variantSuite' ****"
-for x in CASE_EXECUTE CASE_SKIP CASE_FAILURE CASE_ERROR CASE_SUCCESS SUITE_EXECUTE SUITE_SKIP SUITE_ERROR; do
-	tmp="${TTRO_workDirSuite}/${x}"
-	eval "${x}_NO=0"
-	isVerbose && printVerbose "**** $x List : ****"
-	if [[ -e ${tmp} ]]; then
+for TTTI_x in CASE_EXECUTE CASE_SKIP CASE_FAILURE CASE_ERROR CASE_SUCCESS SUITE_EXECUTE SUITE_SKIP SUITE_ERROR; do
+	TTTI_tmp="${TTRO_workDirSuite}/${TTTI_x}"
+	eval "${TTTI_x}_NO=0"
+	isVerbose && printVerbose "**** $TTTI_x List : ****"
+	if [[ -e ${TTTI_tmp} ]]; then
 		{
 			while read; do
 				if [[ $REPLY != \#* ]]; then
-					eval "${x}_NO=\$((${x}_NO+1))"
+					eval "${TTTI_x}_NO=\$((${TTTI_x}_NO+1))"
 				fi
 				isVerbose && printVerbose "$REPLY "
 			done
-		} < "$tmp"
+		} < "$TTTI_tmp"
 	else
-		printErrorAndExit "No result file ${tmp} exists" $errRt
+		printErrorAndExit "No result file ${TTTI_tmp} exists" $errRt
 	fi
-	tmp3="${x}_NO"
-	isDebug && printDebug "Overall $x = ${!tmp3}"
+	TTTI_tmp3="${TTTI_x}_NO"
+	isDebug && printDebug "Overall $TTTI_x = ${!TTTI_tmp3}"
 done
 
 # html
-getElapsedTime "$suiteStartTime"
-endSuiteIndex "$indexfilename" "$TTTT_elapsedTime"
+getElapsedTime "$TTTT_suiteStartTime"
+endSuiteIndex "$TTTI_indexfilename" "$TTTT_elapsedTime"
 
-declare suiteResult=0
-if [[ $TTXX_interruptReceived -gt 0 ]]; then
-	suiteResult=$errSigint
+declare TTTI_suiteResult=0
+if [[ $TTTI_interruptReceived -gt 0 ]]; then
+	TTTI_suiteResult=$errSigint
 fi
 
-echo "**** cases=$jobIndex failures=$variantFailures errors=$variantErrors skipped=$variantSkiped *****"
+echo "**** cases=$TTTI_jobIndex failures=$TTTI_variantFailures errors=$TTTI_variantErrors skipped=$TTTI_variantSkiped *****"
 echo "**** Elapsed time $TTTT_elapsedTime *****"
 echo "$TTTT_elapsedTime" > "${TTRO_workDirSuite}/ELAPSED"
 
 #---------------------------------------------------------------------------------
 #print special summary
 if [[ -n $TTXX_summary ]]; then
-	sname="${TTRO_suite}"
-	#if [[ -z $sname ]]; then sname='Dummy'; fi
-	if [[ -n ${TTRO_variantSuite} ]]; then sname="${sname}_${TTRO_variantSuite}"; fi
-	reportfile0="${TTRO_workDirSuite}/${sname}_part0.tmp"
-	reportfile="${TTRO_workDirSuite}/${sname}_summary.txt"
-	echo "Testsuite: ${sname}" > "$reportfile0"
-	echo -e "Tests run: $jobIndex, Failures: $variantFailures, Errors: $variantErrors, Skipped: $variantSkiped, Time elapsed: ${TTTT_elapsedTime}\n" >> "$reportfile0"
-	cat "$reportfile0" "$TTTT_tempSummayName" > "$reportfile"
-	rm -f "$reportfile0"
+	TTTI_sname="${TTRO_suite}"
+	#if [[ -z $TTTI_sname ]]; then TTTI_sname='Dummy'; fi
+	if [[ -n ${TTRO_variantSuite} ]]; then TTTI_sname="${TTTI_sname}_${TTRO_variantSuite}"; fi
+	TTTI_reportfile0="${TTRO_workDirSuite}/${TTTI_sname}_part0.tmp"
+	TTTI_reportfile="${TTRO_workDirSuite}/${TTTI_sname}_summary.txt"
+	echo "Testsuite: ${TTTI_sname}" > "$TTTI_reportfile0"
+	echo -e "Tests run: $TTTI_jobIndex, Failures: $TTTI_variantFailures, Errors: $TTTI_variantErrors, Skipped: $TTTI_variantSkiped, Time elapsed: ${TTTT_elapsedTime}\n" >> "$TTTI_reportfile0"
+	cat "$TTTI_reportfile0" "$TTTI_tempSummayName" > "$TTTI_reportfile"
+	rm -f "$TTTI_reportfile0"
 fi
-rm -f "$TTTT_tempSummayName"
+rm -f "$TTTI_tempSummayName"
 
-builtin echo -n "$suiteResult" > "${TTRO_workDirSuite}/DONE"
+builtin echo -n "$TTTI_suiteResult" > "${TTRO_workDirSuite}/DONE"
 
-isDebug && printDebug "END: Suite '$TTRO_suite' variant='$TTRO_variantSuite' suite exit code $suiteResult"
+isDebug && printDebug "END: Suite '$TTRO_suite' variant='$TTRO_variantSuite' suite exit code $TTTI_suiteResult"
 
-exit $suiteResult
+exit $TTTI_suiteResult

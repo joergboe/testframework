@@ -147,7 +147,7 @@ function printDebug {
 	for ((i=${#FUNCNAME[@]}-1; i>0; i--)); do
 		stackInfo="$stackInfo ${FUNCNAME[$i]}"
 	done
-	echo -e "\033[32m$dd DEBUG: ${TTXX_commandname}${stackInfo}: ${1}\033[0m"
+	echo -e "\033[32m$dd DEBUG: ${TTTI_commandname}${stackInfo}: ${1}\033[0m"
 }
 readonly -f printDebug
 
@@ -165,7 +165,7 @@ function printDebugn {
 	for ((i=${#FUNCNAME[@]}-1; i>0; i--)); do
 		stackInfo="$stackInfo ${FUNCNAME[$i]}"
 	done
-	echo -en "\033[32m$dd DEBUG:${TTXX_commandname}${stackInfo}: ${1}\033[0m"
+	echo -en "\033[32m$dd DEBUG:${TTTI_commandname}${stackInfo}: ${1}\033[0m"
 }
 readonly -f printDebugn
 

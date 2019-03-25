@@ -23,7 +23,8 @@ readonly -f isSkip
 # $5 the chain of suite string including variants delim :: : (parent value)
 # $6 parent sworkdir
 # $7 preambl error
-# expect suiteVariants suiteErrors suiteSkip
+# $8 html indexfilename
+# expect TTTI_suiteVariants TTTI_suiteErrors TTTI_suiteSkip
 function exeSuite {
 	isDebug && printDebug "******* $FUNCNAME $* number args $#"
 	local suite="${suitesName[$1]}"
@@ -32,6 +33,7 @@ function exeSuite {
 	local suiteNestingPath="$4"
 	local suiteNestingString="$5"
 	local preamblError="$7"
+	local indexfilename="$8"
 	if [[ $1 -ne 0 ]]; then
 		if [[ -z $suiteNestingPath ]]; then
 			suiteNestingPath+="${suite}"
@@ -64,7 +66,7 @@ function exeSuite {
 	if [[ -e $sworkdir ]]; then
 		if [[ $1 -ne 0 ]]; then
 			printError "Suite workdir already exists! Probably duplicate variant. workdir: $sworkdir"
-			suiteErrors=$(( suiteErrors + 1))
+			TTTI_suiteErrors=$(( TTTI_suiteErrors + 1))
 			builtin echo "$suiteNestingString" >> "${6}/SUITE_ERROR"
 			return 0
 		fi
@@ -75,7 +77,7 @@ function exeSuite {
 
 	# count execute suites but do not count the root suite
 	if [[ $nestingLevel -gt 0 ]]; then
-		suiteVariants=$((suiteVariants+1))
+		TTTI_suiteVariants=$((TTTI_suiteVariants+1))
 		builtin echo "$suiteNestingString" >> "${6}/SUITE_EXECUTE"
 	fi
 
@@ -87,16 +89,16 @@ function exeSuite {
 		result=$?
 		if [[ $result -eq $errSigint ]]; then
 			printWarning "Set SIGINT Execution of suite ${suite} variant '$2' ended with result=$result"
-			TTXX_interruptReceived=$((TTXX_interruptReceived+1))
+			TTTI_interruptReceived=$((TTTI_interruptReceived+1))
 		elif [[ $result -eq $errSkip ]]; then
 			printInfo "Suite skipped suite ${suite} variant '$2'"
-			suiteSkip=$(( suiteSkip+1 ))
+			TTTI_suiteSkip=$(( TTTI_suiteSkip+1 ))
 			{ if read -r; then :; fi; } < "${sworkdir}/REASON" #read one line from reason
 			builtin echo "$suiteNestingString: $REPLY" >> "${6}/SUITE_SKIP"
 		else
 			if [[ $nestingLevel -gt 0 ]]; then
 				printError "Execution of suite ${suite} variant '$2' ended with result=$result"
-				suiteErrors=$(( suiteErrors + 1))
+				TTTI_suiteErrors=$(( TTTI_suiteErrors + 1))
 				builtin echo "$suiteNestingString" >> "${6}/SUITE_ERROR"
 			else
 				printErrorAndExit "Execution of root suite failed" $errRt
@@ -189,7 +191,7 @@ readonly -f fixPropsVars
 # $1 is the filename to read
 # return 0 in success case
 # return 1 if an invalid preambl was read;
-# results are returned in global variables variantCount; variantList
+# results are returned in global variables variantCount, variantList, timeout
 function evalPreambl {
 	isDebug && printDebug "$FUNCNAME $1"
 	if [[ ! -r $1 ]]; then

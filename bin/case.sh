@@ -17,8 +17,8 @@ set -o errexit; set -o errtrace; set -o nounset; set -o pipefail
 shopt -s globstar nullglob
 
 # Shutdown and interrupt vars and functions
-declare -r TTXX_commandname="${0##*/}" #required in coreutils
- declare TTXX_interruptReceived="" #required in coreutils
+declare -r TTTI_commandname="${0##*/}" #required in coreutils
+ declare TTTI_interruptReceived="" #required in coreutils
 
 # Function errorTrapFunc
 #	global error exit function - prints the caller stack
@@ -78,37 +78,37 @@ function caseFinalization {
 	fi
 	if [[ -z $TTTT_caseFinalized ]]; then
 		TTTT_caseFinalized='true'
-		local TTXX_name_xyza
-		for TTXX_name_xyza in 'TTRO_finsCase' 'FINS'; do
-			if isExisting "$TTXX_name_xyza"; then
-				if isArray "$TTXX_name_xyza"; then
+		local TTTI_name_xyza
+		for TTTI_name_xyza in 'TTRO_finsCase' 'FINS'; do
+			if isExisting "$TTTI_name_xyza"; then
+				if isArray "$TTTI_name_xyza"; then
 					if isDebug; then
-						local TTXX_v=$(declare -p "$TTXX_name_xyza")
-						printDebug "$TTXX_v"
+						local TTTI_v=$(declare -p "$TTTI_name_xyza")
+						printDebug "$TTTI_v"
 					fi
-					local TTXX_l_xyza TTXX_i_xyza
-					eval "TTXX_l_xyza=\${#$TTXX_name_xyza[@]}"
-					for (( TTXX_i_xyza=0; TTXX_i_xyza<TTXX_l_xyza; TTXX_i_xyza++)); do
-						local TTXX_step_xyza
-						eval "TTXX_step_xyza=\${$TTXX_name_xyza[$TTXX_i_xyza]}"
+					local TTTI_l_xyza TTTI_i_xyza
+					eval "TTTI_l_xyza=\${#$TTTI_name_xyza[@]}"
+					for (( TTTI_i_xyza=0; TTTI_i_xyza<TTTI_l_xyza; TTTI_i_xyza++)); do
+						local TTTI_step_xyza
+						eval "TTTI_step_xyza=\${$TTTI_name_xyza[$TTTI_i_xyza]}"
 						if isExistingAndTrue 'TTPR_noFinsCase'; then
-							printInfo "Suppress Case Finalization: $TTXX_step_xyza"
+							printInfo "Suppress Case Finalization: $TTTI_step_xyza"
 						else
-							printInfo "Execute Case Finalization: $TTXX_step_xyza"
+							printInfo "Execute Case Finalization: $TTTI_step_xyza"
 							TTTT_executedTestFinSteps=$((TTTT_executedTestFinSteps+1))
-							eval "${TTXX_step_xyza}"
+							eval "${TTTI_step_xyza}"
 						fi
 					done
 				else
-					isDebug && printDebug "$TTXX_name_xyza=${!TTXX_name_xyza}"
-					local TTXX_x_xyza
-					for TTXX_x_xyza in ${!TTXX_name_xyza}; do
+					isDebug && printDebug "$TTTI_name_xyza=${!TTTI_name_xyza}"
+					local TTTI_x_xyza
+					for TTTI_x_xyza in ${!TTTI_name_xyza}; do
 						if isExistingAndTrue 'TTPR_noFinsCase'; then
-							printInfo "Suppress Case Finalization: $TTXX_x_xyza"
+							printInfo "Suppress Case Finalization: $TTTI_x_xyza"
 						else
-							printInfo "Execute Case Finalization: $TTXX_x_xyza"
+							printInfo "Execute Case Finalization: $TTTI_x_xyza"
 							TTTT_executedTestFinSteps=$((TTTT_executedTestFinSteps+1))
-							eval "${TTXX_x_xyza}"
+							eval "${TTTI_x_xyza}"
 						fi
 					done
 				fi
@@ -204,22 +204,22 @@ fi
 
 #-------------------------------------------------
 #source case file
-TTXX_tmp="${TTRO_inputDirCase}/${TEST_CASE_FILE}"
-if [[ -e $TTXX_tmp ]]; then
-	isVerbose && printVerbose  "Source Test Case file $TTXX_tmp"
-	source "$TTXX_tmp"
+TTTI_tmp="${TTRO_inputDirCase}/${TEST_CASE_FILE}"
+if [[ -e $TTTI_tmp ]]; then
+	isVerbose && printVerbose  "Source Test Case file $TTTI_tmp"
+	source "$TTTI_tmp"
 	fixPropsVars
 	writeProtectExportedFunctions
 else
-	printErrorAndExit "No Test Case file $TTXX_tmp" $errScript
+	printErrorAndExit "No Test Case file $TTTI_tmp" $errScript
 fi
 
 #------------------------------------------------
 # diagnostics
 isVerbose && printTestframeEnvironment
-TTXX_tmp="${TTRO_workDirCase}/${TEST_ENVIRONMET_LOG}"
-printTestframeEnvironment > "$TTXX_tmp"
-export >> "$TTXX_tmp"
+TTTI_tmp="${TTRO_workDirCase}/${TEST_ENVIRONMET_LOG}"
+printTestframeEnvironment > "$TTTI_tmp"
+export >> "$TTTI_tmp"
 
 #check category
 if ! checkCats; then
@@ -232,22 +232,22 @@ fi
 
 #test preparation
 TTTT_executionState='preparation'
-for TTXX_name_xyza in 'TTRO_prepsCase' 'PREPS'; do
-	if isExisting "$TTXX_name_xyza"; then
-		if isArray "$TTXX_name_xyza"; then
+for TTTI_name_xyza in 'TTRO_prepsCase' 'PREPS'; do
+	if isExisting "$TTTI_name_xyza"; then
+		if isArray "$TTTI_name_xyza"; then
 			if isDebug; then
-				TTXX_v=$(declare -p "$TTXX_name_xyza")
-				printDebug "$TTXX_v"
+				TTTI_v=$(declare -p "$TTTI_name_xyza")
+				printDebug "$TTTI_v"
 			fi
-			eval "TTXX_l_xyza=\${#$TTXX_name_xyza[@]}"
-			for (( TTXX_i_xyza=0; TTXX_i_xyza<TTXX_l_xyza; TTXX_i_xyza++)); do
-				eval "TTXX_step_xyza=\${$TTXX_name_xyza[$TTXX_i_xyza]}"
+			eval "TTTI_l_xyza=\${#$TTTI_name_xyza[@]}"
+			for (( TTTI_i_xyza=0; TTTI_i_xyza<TTTI_l_xyza; TTTI_i_xyza++)); do
+				eval "TTTI_step_xyza=\${$TTTI_name_xyza[$TTTI_i_xyza]}"
 				if isExistingAndTrue 'TTPR_noPrepsCase'; then
-					printInfo "Suppress Case Preparation: $TTXX_step_xyza"
+					printInfo "Suppress Case Preparation: $TTTI_step_xyza"
 				else
-					printInfo "Execute Case Preparation: $TTXX_step_xyza"
+					printInfo "Execute Case Preparation: $TTTI_step_xyza"
 					TTTT_executedTestPrepSteps=$((TTTT_executedTestPrepSteps+1))
-					eval "$TTXX_step_xyza"
+					eval "$TTTI_step_xyza"
 				fi
 				if [[ -n $TTTT_failureOccurred ]]; then
 					printError "Failure condition during case preparation: $TTTT_failureOccurred"
@@ -255,14 +255,14 @@ for TTXX_name_xyza in 'TTRO_prepsCase' 'PREPS'; do
 				fi
 			done
 		else
-			isDebug && printDebug "$TTXX_name_xyza=${!TTXX_name_xyza}"
-			for TTXX_x_xyza in ${!TTXX_name_xyza}; do
+			isDebug && printDebug "$TTTI_name_xyza=${!TTTI_name_xyza}"
+			for TTTI_x_xyza in ${!TTTI_name_xyza}; do
 				if isExistingAndTrue 'TTPR_noPrepsCase'; then
-					printInfo "Suppress Case Preparation: $TTXX_x_xyza"
+					printInfo "Suppress Case Preparation: $TTTI_x_xyza"
 				else
-					printInfo "Execute Case Preparation: $TTXX_x_xyza"
+					printInfo "Execute Case Preparation: $TTTI_x_xyza"
 					TTTT_executedTestPrepSteps=$((TTTT_executedTestPrepSteps+1))
-					eval "${TTXX_x_xyza}"
+					eval "${TTTI_x_xyza}"
 				fi
 				if [[ -n $TTTT_failureOccurred ]]; then
 					printError "Failure condition during case preparation: $TTTT_failureOccurred"
@@ -289,29 +289,29 @@ printInfo "$TTTT_executedTestPrepSteps Case Test Preparation steps executed"
 
 #test execution
 TTTT_executionState='execution'
-for TTXX_name_xyza in 'TTRO_stepsCase' 'STEPS'; do
-	if isExisting "$TTXX_name_xyza"; then
-		if isArray "$TTXX_name_xyza"; then
+for TTTI_name_xyza in 'TTRO_stepsCase' 'STEPS'; do
+	if isExisting "$TTTI_name_xyza"; then
+		if isArray "$TTTI_name_xyza"; then
 			if isDebug; then
-				TTXX_v=$(declare -p "$TTXX_name_xyza")
-				printDebug "$TTXX_v"
+				TTTI_v=$(declare -p "$TTTI_name_xyza")
+				printDebug "$TTTI_v"
 			fi
-			eval "TTXX_l_xyza=\${#$TTXX_name_xyza[@]}"
-			for (( TTXX_i_xyza=0; TTXX_i_xyza<TTXX_l_xyza; TTXX_i_xyza++)); do
-				eval "TTXX_step_xyza=\${$TTXX_name_xyza[$TTXX_i_xyza]}"
-				printInfo "Execute Case Test Step: $TTXX_step_xyza"
+			eval "TTTI_l_xyza=\${#$TTTI_name_xyza[@]}"
+			for (( TTTI_i_xyza=0; TTTI_i_xyza<TTTI_l_xyza; TTTI_i_xyza++)); do
+				eval "TTTI_step_xyza=\${$TTTI_name_xyza[$TTTI_i_xyza]}"
+				printInfo "Execute Case Test Step: $TTTI_step_xyza"
 				TTTT_executedTestSteps=$((TTTT_executedTestSteps+1))
-				eval "$TTXX_step_xyza"
+				eval "$TTTI_step_xyza"
 				if [[ -n $TTTT_failureOccurred ]]; then
 					break 2
 				fi
 			done
 		else
-			isDebug && printDebug "$TTXX_name_xyza=${!TTXX_name_xyza}"
-			for TTXX_x_xyza in ${!TTXX_name_xyza}; do
-				printInfo "Execute Case Test Step: $TTXX_x_xyza"
+			isDebug && printDebug "$TTTI_name_xyza=${!TTTI_name_xyza}"
+			for TTTI_x_xyza in ${!TTTI_name_xyza}; do
+				printInfo "Execute Case Test Step: $TTTI_x_xyza"
 				TTTT_executedTestSteps=$((TTTT_executedTestSteps+1))
-				eval "${TTXX_x_xyza}"
+				eval "${TTTI_x_xyza}"
 				if [[ -n $TTTT_failureOccurred ]]; then
 					break 2
 				fi

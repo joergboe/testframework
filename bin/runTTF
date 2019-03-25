@@ -20,14 +20,14 @@ declare -r currentDir=$(pwd)
 #realpath is not available in rhel6
 if [[ -h $0 ]]; then
 	declare -r realCommand=$(readlink -e "$0")
-	declare -r TTXX_commandname="${realCommand##*/}"
+	declare -r TTTI_commandname="${realCommand##*/}"
 	declare -r TTRO_scriptDir="${realCommand%/*}"
 else
 	tmp="${0%/*}"
 	cd "$tmp"
 	declare -r TTRO_scriptDir=$(pwd)
 	cd "${currentDir}"
-	declare -r TTXX_commandname="${0##*/}"
+	declare -r TTTI_commandname="${0##*/}"
 fi
 
 #---------------------------------------------------
@@ -40,13 +40,13 @@ source "${TTRO_scriptDir}/version.sh"
 
 #-----------------------------------------------------
 # Shutdown and interrupt vars and functions
-declare -i TTXX_interruptReceived=0
+declare -i TTTI_interruptReceived=0
 
 # Function interruptSignalMain
 function interruptSignalMain {
-	printInfo "SIGINT received in $TTXX_commandname ********************"
-	if [[ $TTXX_interruptReceived -eq 0 ]]; then
-		TTXX_interruptReceived=1
+	printInfo "SIGINT received in $TTTI_commandname ********************"
+	if [[ $TTTI_interruptReceived -eq 0 ]]; then
+		TTTI_interruptReceived=1
 	else
 		printInfo "Abort test"
 		exit $errSigint
@@ -667,10 +667,10 @@ export >> "$tmp"
 
 #--------------------------------------------
 #execution loop over suites and variants
-declare -i suiteVariants=0 suiteErrors=0 suiteSkip=0
-if [[ $TTXX_interruptReceived -eq 0 ]]; then
+declare -i TTTI_suiteVariants=0 TTTI_suiteErrors=0 TTTI_suiteSkip=0
+if [[ $TTTI_interruptReceived -eq 0 ]]; then
 	isVerbose && printVerbose "**** START Root Suite ************************************"
-	exeSuite "0" "" "-1" "" "" "${TTRO_workDir}" "";
+	exeSuite "0" "" "-1" "" "" "${TTRO_workDir}" "" "";
 	isVerbose && printVerbose "**** END Root Suite **************************************"
 fi
 
@@ -728,7 +728,7 @@ cat "$TTRO_workDir/SUMMARY.txt"
 createGlobalIndex "$indexfilename" "$TTTT_elapsedTime"
 
 declare mainResult=0
-if [[ $TTXX_interruptReceived -ne 0 ]]; then
+if [[ $TTTI_interruptReceived -ne 0 ]]; then
 	mainResult=$errSigint
 elif [[ $SUITE_ERRORCount -gt 0 ]]; then
 	mainResult=$errSuiteError
