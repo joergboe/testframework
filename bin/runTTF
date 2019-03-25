@@ -574,7 +574,7 @@ fi
 #echo "*******************************************************************************************************"
 declare -r collectionStartTime=$(date -u +%s)
 declare -xr TTRO_collection="${TTRO_inputDir##*/}"
-printInfo  "**** START: Test execution collection $TTRO_collection ******************************************************************"
+printInfo  "**** START Collection collection='$TTRO_collection' START ********************"
 #-----------------------
 #export execution lists
 export TTXX_suitesPath=$(declare -p TTTI_suitesPath)
@@ -675,7 +675,7 @@ if [[ $TTTI_interruptReceived -eq 0 ]]; then
 fi
 
 #print result lists
-printInfo  "**** END Test execution *******************************************************************************"
+printInfo  "**** END Collection collection='$TTRO_collection' END ********************"
 for x in CASE_EXECUTE CASE_SKIP CASE_FAILURE CASE_ERROR CASE_SUCCESS SUITE_EXECUTE SUITE_SKIP SUITE_ERROR; do
 	tmp="${TTRO_workDir}/${x}"
 	eval "${x}Count=0"
@@ -708,10 +708,11 @@ fi
 echo
 {
 	printf "*******************************************************************************************************\n"
+	printf "***** collection : %s\n" $TTRO_collection
 	printf "***** suites executed=%i errors=%i skipped=%i\n" $SUITE_EXECUTECount $SUITE_ERRORCount $SUITE_SKIPCount
 	printf "***** cases  executed=%i failures=%i errors=%i skipped=%i\n" $CASE_EXECUTECount $CASE_FAILURECount $CASE_ERRORCount $CASE_SKIPCount
-	printf "***** categories of this run: %s\n" "$cats"
-	printf "***** used workdir: %s\n" "$TTRO_workDir"
+	printf "***** categories of this run : %s\n" "$cats"
+	printf "***** used workdir : %s\n" "$TTRO_workDir"
 	printf "***** Index in %s\n" "$indexfilename"
 	getElapsedTime "$collectionStartTime"
 	printf "***** Elapsed time : %s\n" "$TTTT_elapsedTime"

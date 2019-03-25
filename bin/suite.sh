@@ -860,7 +860,7 @@ echo -e "SUITE_EXECUTE=$TTTI_suiteVariants\nSUITE_ERROR=$TTTI_suiteErrors\nSUITE
 
 #-------------------------------------------------------
 #Final verbose suite result printout
-echo "**** Results Suite: '$TTRO_suite' Variant: '$TTRO_variantSuite' ****"
+echo "**** Results Suite: suite='$TTRO_suite' variant='$TTRO_variantSuite' ****"
 for TTTI_x in CASE_EXECUTE CASE_SKIP CASE_FAILURE CASE_ERROR CASE_SUCCESS SUITE_EXECUTE SUITE_SKIP SUITE_ERROR; do
 	TTTI_tmp="${TTRO_workDirSuite}/${TTTI_x}"
 	eval "${TTTI_x}_NO=0"
@@ -891,7 +891,7 @@ if [[ $TTTI_interruptReceived -gt 0 ]]; then
 fi
 
 echo "**** cases=$TTTI_jobIndex failures=$TTTI_variantFailures errors=$TTTI_variantErrors skipped=$TTTI_variantSkiped *****"
-echo "**** Elapsed time $TTTT_elapsedTime *****"
+echo "**** Elapsed time : $TTTT_elapsedTime *****"
 echo "$TTTT_elapsedTime" > "${TTRO_workDirSuite}/ELAPSED"
 
 #---------------------------------------------------------------------------------

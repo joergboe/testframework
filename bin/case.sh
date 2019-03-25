@@ -144,18 +144,18 @@ trap caseExitFunction EXIT
 function successExit {
 	echo "SUCCESS" > "${TTRO_workDirCase}/RESULT"
 	caseFinalization
-	printInfo "**** END Case case=${TTRO_case} variant='${TTRO_variantCase}' SUCCESS *****"
+	printInfo "**** END Case case='${TTRO_case}' variant='${TTRO_variantCase}' SUCCESS ********************"
 	getElapsedTime "$TTTT_caseStartTime"
-	printInfo "**** Elapsed time $TTTT_elapsedTime state=$TTTT_executionState *****"
+	printInfo "**** Elapsed time : $TTTT_elapsedTime state=$TTTT_executionState *****"
 	echo "$TTTT_elapsedTime" > "${TTRO_workDirCase}/ELAPSED"
 	exit 0
 }
 function skipExit {
 	echo "SKIP" > "${TTRO_workDirCase}/RESULT"
 	echo "$TTPRN_skip" > "${TTRO_workDirCase}/REASON"
-	printInfo "**** END Case case=${TTRO_case} variant='${TTRO_variantCase}' SKIP **********"
+	printInfo "**** END Case case='${TTRO_case}' variant='${TTRO_variantCase}' SKIP ********************"
 	getElapsedTime "$TTTT_caseStartTime"
-	printInfo "**** Elapsed time $TTTT_elapsedTime state=$TTTT_executionState *****"
+	printInfo "**** Elapsed time : $TTTT_elapsedTime state=$TTTT_executionState *****"
 	echo "$TTTT_elapsedTime" > "${TTRO_workDirCase}/ELAPSED"
 	exit 0
 }
@@ -164,25 +164,25 @@ function failureExit {
 	echo "$TTTT_failureOccurred" > "${TTRO_workDirCase}/REASON"
 	caseFinalization
 	printError "**** FAILURE : $TTTT_failureOccurred ****"
-	printInfo "**** END Case case=${TTRO_case} variant='${TTRO_variantCase}' FAILURE ********" >&2
+	printInfo "**** END Case case='${TTRO_case}' variant='${TTRO_variantCase}' FAILURE ********************" >&2
 	getElapsedTime "$TTTT_caseStartTime"
-	printInfo "**** Elapsed time $TTTT_elapsedTime state=$TTTT_executionState *****"
+	printInfo "**** Elapsed time : $TTTT_elapsedTime state=$TTTT_executionState *****"
 	echo "$TTTT_elapsedTime" > "${TTRO_workDirCase}/ELAPSED"
 	exit 0
 }
 function errorExit {
 	echo "ERROR" > "${TTRO_workDirCase}/RESULT"
 	caseFinalization
-	printInfo "END Case case=${TTRO_case} variant='${TTRO_variantCase}' ERROR ***************" >&2
+	printInfo "**** END Case case='${TTRO_case}' variant='${TTRO_variantCase}' ERROR ********************" >&2
 	getElapsedTime "$TTTT_caseStartTime"
-	printInfo "**** Elapsed time $TTTT_elapsedTime state=$TTTT_executionState *****"
+	printInfo "**** Elapsed time : $TTTT_elapsedTime state=$TTTT_executionState *****"
 	echo "$TTTT_elapsedTime" > "${TTRO_workDirCase}/ELAPSED"
 	exit ${errTestError}
 }
 
 #####################################################################################################
 #Start of main testcase body
-printInfo "**** START Case $TTRO_case variant '$TTRO_variantCase' in workdir $TTRO_workDirCase pid $$ ********************"
+printInfo "**** START Case case='$TTRO_case' variant='$TTRO_variantCase' in workdir $TTRO_workDirCase pid $$ START ********************"
 echo "$TTTT_caseStartTime" > "$TTRO_workDirCase/STARTTIME"
 
 #----------------------------------
