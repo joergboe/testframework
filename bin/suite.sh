@@ -46,7 +46,6 @@ interruptSignalSuite() {
 	handleSigint
 	return 0
 }
-
 trap interruptSignalSuite SIGINT
 
 # Function errorTrapFunc
@@ -59,8 +58,14 @@ errorTrapFunc() {
 	done
 	echo -e "************************************************\033[0m"
 }
-
 trap errorTrapFunc ERR
+
+#check if one of the global vars is used in user code
+checkGlobalVarsUsed() {
+	if isExisting 'variantCount' || isExisting 'variantList' || isExisting 'timeout'; then
+		printErrorAndExit "On of variables variantCount, variantList or timeout is used in suite user code suite $TTRO_suite" $errSuiteError
+	fi
+}
 
 #-------------------------------------
 #include general files
@@ -147,6 +152,7 @@ if [[ $TTRO_suiteIndex -ne 0 ]]; then
 		printErrorAndExit "No Suite file $TTTI_tmp" $errScript
 	fi
 fi
+checkGlobalVarsUsed
 
 #------------------------------------------------
 # diagnostics
@@ -211,7 +217,7 @@ isDebug && printDebug "noCases=$TTTI_noCases"
 
 #extract test case variants from list and put all cases and variants into the lists
 function setTimeoutInArray {
-	if isExisting 'timeout'; then
+	if [[ -n $timeout ]]; then
 		TTTI_caseTimeout[$TTTI_noCaseVariants]="$timeout"
 		if [[ ${TTTI_caseTimeout[$TTTI_noCaseVariants]} -eq 0 ]]; then
 			printError "wrong timeout in case $TTTI_caseName. timeout='$timeout'"
@@ -227,15 +233,16 @@ declare -a TTTI_caseVariantWorkdirs=()	#the workdir of each variant
 declare -a TTTI_casePreambErrors=()		#true if case has peambl error
 declare -ai TTTI_caseTimeout=()			#the individual timeout
 declare -i TTTI_noCaseVariants=0			#the overall number of case variants
-declare variantCount='' variantList='' TTTI_preamblError=''
+declare variantCount='' variantList='' timeout='' TTTI_preamblError=''
 for ((TTTI_i=0; TTTI_i<TTTI_noCases; TTTI_i++)) do
 	TTTI_casePath="${TTTI_cases[$TTTI_i]}"
 	TTTI_caseName="${TTTI_casePath##*/}"
-	unset timeout
-	if evalPreambl "${TTTI_casePath}/${TEST_CASE_FILE}"; then
-		TTTI_preamblError=''
-	else
-		TTTI_preamblError='true'; variantCount=''; variantList=''
+	if ! evalPreambl "${TTTI_casePath}/${TEST_CASE_FILE}"; then
+		TTTI_preamblError='true'; variantCount=''; variantList=''; timeout=''
+	fi
+	if [[ ( -n $variantCount ) && ( -n $variantList ) ]]; then
+		printError "In case ${TTRO_suite}:$TTTI_caseName we have both variant variables variantCount=$variantCount and variantList=$variantList ! Case preamblError"
+		TTTI_preamblError='true'; variantCount=''; variantList=''; timeout=''
 	fi
 	#echo "variantCount=$variantCount variantList=$variantList"
 	if [[ -z $variantCount ]]; then
@@ -267,8 +274,6 @@ for ((TTTI_i=0; TTTI_i<TTTI_noCases; TTTI_i++)) do
 				TTTI_noCaseVariants=$((TTTI_noCaseVariants+1))
 			done
 			unset TTTI_j
-		else
-			printError "In case ${TTRO_suite}:$TTTI_caseName we have both variant variables variantCount=$variantCount and variantList=$variantList ! Case is skipped"
 		fi
 	fi
 done
@@ -738,6 +743,8 @@ fi
 #fin
 startSuiteList "$TTTI_indexfilename"
 
+checkGlobalVarsUsed
+
 ##execution loop over sub suites and variants
 declare -i TTTI_suiteVariants=0 TTTI_suiteErrors=0 TTTI_suiteSkip=0
 for TTTI_sindex_xyza in ${TTTI_childSuites[$TTRO_suiteIndex]}; do
@@ -748,9 +755,17 @@ for TTTI_sindex_xyza in ${TTTI_childSuites[$TTRO_suiteIndex]}; do
 		break
 	fi
 	isVerbose && printVerbose "**** START Nested Suite: $TTTI_suite ************************************"
-	variantCount=""; variantList=""; TTTI_preamblError=""
+	variantCount=""; variantList=""; timeout='' TTTI_preamblError=""
 	if ! evalPreambl "${TTTI_suitePath}/${TEST_SUITE_FILE}"; then
-		TTTI_preamblError='true'; variantCount=""; variantList=""
+		TTTI_preamblError='true'; variantCount=""; variantList=""; timeout=''
+	fi
+	if [[ ( -n $variantCount ) && ( -n $variantList ) ]]; then
+		printError "In suite $TTTI_suite we have both variant variables variantCount=$variantCount and variantList=$variantList ! Suite preamblError"
+		TTTI_preamblError='true'; variantCount=""; variantList=""; timeout=''
+	fi
+	if [[ -n $timeout ]]; then
+		printError "In suite $TTTI_suite timeout is not expected ! Suite preamblError"
+		TTTI_preamblError='true'; variantCount=""; variantList=""; timeout=''
 	fi
 	if [[ -z $variantCount ]]; then
 		if [[ -z $variantList ]]; then
@@ -776,8 +791,6 @@ for TTTI_sindex_xyza in ${TTTI_childSuites[$TTRO_suiteIndex]}; do
 				fi
 			done
 			unset TTTI_j_xyza
-		else
-			printError "In suite $TTTI_suite we have both variant variables variantCount=$variantCount and variantList=$variantList ! Suite is skipped"
 		fi
 	fi
 	isVerbose && printVerbose "**** END Nested Suite: $TTTI_suite **************************************"
@@ -787,6 +800,7 @@ for TTTI_sindex_xyza in ${TTTI_childSuites[$TTRO_suiteIndex]}; do
 	fi
 done
 unset TTTI_sindex_xyza
+unset timeout variantCount variantList
 
 #test suite finalization
 TTTT_executionState='finalization'

@@ -248,7 +248,7 @@ function evalPreambl {
 											return 1
 										fi
 										if ! isPureNumber "$timeout"; then
-											printError "${FUNCNAME} : timeout is no digit in file=$1 line=$lineno 'preamblLine'"
+											printError "${FUNCNAME} : timeout is no digit in file=$1 line=$lineno '$preamblLine'"
 											return 1
 										fi
 										isVerbose && printVerbose "timeout='${timeout}'"

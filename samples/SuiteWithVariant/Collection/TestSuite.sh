@@ -18,12 +18,13 @@ function testPreparation {
 		The variant errorSuite simulates an error during test suite execution
 		*********************************************************************************
 		*********************************************************************************
-	
+
 		Press enter to continue:
 		EOF
 		read
 	fi
 	if [[ "$TTRO_variantSuite" == "errorSuite" ]]; then
+		echo "**** Test suite error ****"
 		exit 55
 	fi
 	return 0
