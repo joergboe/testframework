@@ -112,12 +112,12 @@ declare -a TTTT_categoryArray=()
 # enter working dir
 cd "$TTRO_workDirSuite"
 
-#prepare index.html name
+#prepare index.html name and create index.html
 TTTI_indexfilename="${TTRO_workDirSuite}/suite.html"
+createSuiteIndex "$TTTI_indexfilename"
 
 #handle preambl error
 if [[ -n $TTTT_preamblError ]]; then
-	createSuiteIndex "$TTTI_indexfilename"
 	echo "ERROR Preambl Error" >> "$TTTI_indexfilename"
 	getElapsedTime "$TTTT_suiteStartTime"
 	endSuiteIndex "$TTTI_indexfilename" "$TTTT_elapsedTime"
@@ -129,7 +129,6 @@ if [[ $TTRO_suiteIndex -ne 0 ]]; then
 	if [[ ( -e "${TTRO_inputDirSuite}/SKIP" ) && ( -z $TTPRN_skipIgnore ) ]]; then
 		printInfo "SKIP file found suite=$TTRO_suite variant='$TTRO_variantSuite'"
 		setSkip 'SKIP file found'
-		createSuiteIndex "$TTTI_indexfilename"
 		echo "SKIPPED: $TTPRN_skip" >> "$TTTI_indexfilename"
 		getElapsedTime "$TTTT_suiteStartTime"
 		endSuiteIndex "$TTTI_indexfilename" "$TTTT_elapsedTime"
@@ -164,7 +163,6 @@ if [[ $TTRO_suiteIndex -ne 0 ]]; then
 	fi
 	if isSkip; then
 		printInfo "SKIP variable set; Skip execution suite=$TTRO_suite variant=$TTRO_variantSuite"
-		createSuiteIndex "$TTTI_indexfilename"
 		echo "SKIPPED: $TTPRN_skip" >> "$TTTI_indexfilename"
 		getElapsedTime "$TTTT_suiteStartTime"
 		endSuiteIndex "$TTTI_indexfilename" "$TTTT_elapsedTime"
@@ -193,9 +191,6 @@ if [[ -e $TTTI_tmp ]]; then
 	rm -rf "$TTTI_tmp"
 fi
 touch "$TTTI_tmp"
-
-#create index.html
-createSuiteIndex "$TTTI_indexfilename"
 
 #----------------------------------------------------------------------------------
 #make the linear list of cases pathes and cases names
