@@ -461,25 +461,25 @@ echo  "**** START test case collection *****************************************
 # search test suites. Suites are directories with a suite definition file $TEST_SUITE_FILE
 # globals for searches
 declare suitesIndex=0      #the global index of the next suite
-declare -a suitesPath=()   #the array with all suites pathes
-declare -a suitesName=()   #the logical name of the suite (is the r-path from parent element if no link is involved)
-declare -a executeSuite=() #true if this suite is to execute
-declare -a childSuites=()  #the array with the list of all sub-suite indexes for every suite index
+declare -a TTTI_suitesPath=()   #the array with all suites pathes
+declare -a TTTI_suitesName=()   #the logical name of the suite (is the r-path from parent element if no link is involved)
+declare -a TTTI_executeSuite=() #true if this suite is to execute
+declare -a TTTI_childSuites=()  #the array with the list of all sub-suite indexes for every suite index
 declare casesIndex=0       #the global index of the next case
-declare -a casesPath=()    #the array with all case pathes
-declare -a casesName=()    #the logical name of the case
-declare -a executeCase=()  #execute the case
-declare -a childCases=()   #the array with the list of all case indexes for each suite index
+declare -a TTTI_casesPath=()    #the array with all case pathes
+declare -a TTTI_casesName=()    #the logical name of the case
+declare -a TTTI_executeCase=()  #execute the case
+declare -a TTTI_childCases=()   #the array with the list of all case indexes for each suite index
 declare noCases=0          #number of found cases
 declare noSuites=0         #number of found suites
 if [[ -z $TTRO_reference ]]; then
 	#initialize the globals for dummy suite
 	suitesIndex=1             #dummy suite is index 0
-	suitesPath[0]="$TTRO_inputDir" #the dummy suite path
-	suitesName[0]=''
-	childSuites[0]=''
-	childCases[0]=''
-	executeSuite[0]=''
+	TTTI_suitesPath[0]="$TTRO_inputDir" #the dummy suite path
+	TTTI_suitesName[0]=''
+	TTTI_childSuites[0]=''
+	TTTI_childCases[0]=''
+	TTTI_executeSuite[0]=''
 	#global level 0 cild suites counter
 	declare childSuitesIndex=0
 	scan "$TTRO_inputDir" "0"
@@ -492,12 +492,12 @@ if isDebug; then
 	printDebug "******************* test suites/cases found in $TTRO_inputDir *******************"
 	printSuitesCases 0 0 '' 'true'
 	printDebug "*********************************************************************************"
-	declare -p suitesPath
-	declare -p suitesName
-	declare -p childSuites
-	declare -p childCases
-	declare -p casesPath
-	declare -p casesName
+	declare -p TTTI_suitesPath
+	declare -p TTTI_suitesName
+	declare -p TTTI_childSuites
+	declare -p TTTI_childCases
+	declare -p TTTI_casesPath
+	declare -p TTTI_casesName
 fi
 
 #------------------------------------------
@@ -509,25 +509,25 @@ declare usedCaseIndexList=''
 #otherwise all matching cases found are executed
 if [[ ${#cases[@]} -eq 0 ]]; then
 	#the command line specified no cases -> all found cases are executed and skip attributes are honoured
-	for ((i=0; i<${#executeSuite[@]}; i++)); do
-		executeSuite[$i]='true'
+	for ((i=0; i<${#TTTI_executeSuite[@]}; i++)); do
+		TTTI_executeSuite[$i]='true'
 	done
-	for ((i=0; i<${#executeCase[@]}; i++)); do
-		executeCase[$i]='true'
+	for ((i=0; i<${#TTTI_executeCase[@]}; i++)); do
+		TTTI_executeCase[$i]='true'
 	done
 else
 	declare caseToExecuteParent=''
 	checkCaseMatch '0' '0' '' ''
 	#if [[ -n $caseToExecuteParent ]]; then
 	#dummy suite is always executed
-	executeSuite[0]='true'
+	TTTI_executeSuite[0]='true'
 	#fi
 fi
-declare -p executeSuite
-declare -p executeCase
+declare -p TTTI_executeSuite
+declare -p TTTI_executeCase
 
-for ((i=0; i<${#executeSuite[@]}; i++)); do
-	if [[ -n ${executeSuite[$i]} ]]; then
+for ((i=0; i<${#TTTI_executeSuite[@]}; i++)); do
+	if [[ -n ${TTTI_executeSuite[$i]} ]]; then
 		noSuitesToExecute=$((noSuitesToExecute+1))
 	fi
 done
@@ -549,8 +549,8 @@ done
 
 #--------------------------------------------------
 #guard the lists
-readonly suitesIndex suitesPath suitesName executeSuite childSuites
-readonly casesPath casesName executeCase childCases
+readonly suitesIndex TTTI_suitesPath TTTI_suitesName TTTI_executeSuite TTTI_childSuites
+readonly TTTI_casesPath TTTI_casesName TTTI_executeCase TTTI_childCases
 
 readonly noCases noSuites noCasesToExecute noSuitesToExecute
 
@@ -577,14 +577,14 @@ declare -xr TTRO_collection="${TTRO_inputDir##*/}"
 printInfo  "**** START: Test execution collection $TTRO_collection ******************************************************************"
 #-----------------------
 #export execution lists
-export TTXX_suitesPath=$(declare -p suitesPath)
-export TTXX_suitesName=$(declare -p suitesName)
-export TTXX_executeSuite=$(declare -p executeSuite)
-export TTXX_childSuites=$(declare -p childSuites)
-export TTXX_casesPath=$(declare -p casesPath)
-export TTXX_casesName=$(declare -p casesName)
-export TTXX_executeCase=$(declare -p executeCase)
-export TTXX_childCases=$(declare -p childCases)
+export TTXX_suitesPath=$(declare -p TTTI_suitesPath)
+export TTXX_suitesName=$(declare -p TTTI_suitesName)
+export TTXX_executeSuite=$(declare -p TTTI_executeSuite)
+export TTXX_childSuites=$(declare -p TTTI_childSuites)
+export TTXX_casesPath=$(declare -p TTTI_casesPath)
+export TTXX_casesName=$(declare -p TTTI_casesName)
+export TTXX_executeCase=$(declare -p TTTI_executeCase)
+export TTXX_childCases=$(declare -p TTTI_childCases)
 
 #----------------
 #make output dir

@@ -105,8 +105,8 @@ eval "$TTXX_childCases"
 eval "$TTXX_runCategoryPatternArray"
 
 #more common vars
-declare -rx TTRO_suite="${suitesName[$TTRO_suiteIndex]}"
-declare -rx TTRO_inputDirSuite="${suitesPath[$TTRO_suiteIndex]}"
+declare -rx TTRO_suite="${TTTI_suitesName[$TTRO_suiteIndex]}"
+declare -rx TTRO_inputDirSuite="${TTTI_suitesPath[$TTRO_suiteIndex]}"
 declare -a TTTT_categoryArray=()
 
 # enter working dir
@@ -198,10 +198,10 @@ declare -a TTTI_cases=() # case pathes
 declare -a TTTI_casesNames=() # the short path
 declare -i TTTI_noCases=0
 declare TTTI_x
-for TTTI_x in ${childCases[$TTRO_suiteIndex]}; do
-	if [[ -n ${executeCase[$TTTI_x]} ]]; then
-		TTTI_cases+=( "${casesPath[$TTTI_x]}" )
-		TTTI_casesNames+=( "${casesName[$TTTI_x]}" )
+for TTTI_x in ${TTTI_childCases[$TTRO_suiteIndex]}; do
+	if [[ -n ${TTTI_executeCase[$TTTI_x]} ]]; then
+		TTTI_cases+=( "${TTTI_casesPath[$TTTI_x]}" )
+		TTTI_casesNames+=( "${TTTI_casesName[$TTTI_x]}" )
 		TTTI_noCases=$((TTTI_noCases+1))
 	fi
 done
@@ -740,9 +740,9 @@ startSuiteList "$TTTI_indexfilename"
 
 ##execution loop over sub suites and variants
 declare -i TTTI_suiteVariants=0 TTTI_suiteErrors=0 TTTI_suiteSkip=0
-for TTTI_sindex_xyza in ${childSuites[$TTRO_suiteIndex]}; do
-	TTTI_suitePath="${suitesPath[$TTTI_sindex_xyza]}"
-	TTTI_suite="${suitesName[$TTTI_sindex_xyza]}"
+for TTTI_sindex_xyza in ${TTTI_childSuites[$TTRO_suiteIndex]}; do
+	TTTI_suitePath="${TTTI_suitesPath[$TTTI_sindex_xyza]}"
+	TTTI_suite="${TTTI_suitesName[$TTTI_sindex_xyza]}"
 	if [[ $TTTI_interruptReceived -gt 0 ]]; then
 		printInfo "SIGINT: end Suites loop"
 		break

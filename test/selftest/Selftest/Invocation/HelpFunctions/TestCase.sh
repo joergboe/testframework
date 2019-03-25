@@ -17,7 +17,7 @@ case $TTRO_variantCase in
 					'-i|--directory VALUE     : The input directory - the test collection directory. There is no default. This option must be entered.'
 					'-p|--properties VALUE    : This specifies the file with the global property values. Default is file TestProperties.sh in input directory.'
 					'-t|--tools VALUE         : Includes (source) files with test tool scripts. This option can be given more than one time.'
-					'-c|--category VALUE      : Enter the category pattern for this test run. The pattern must not contain white spaces. '
+					'-c|--category VALUE      : Enter the category pattern for this test run. The pattern must not contain white spaces.'
 					'                           Quote the value or escape special characters. This option can be given more than one time.'
 					'--skip-ignore            : If this option is given the skip and category attributes of the cases and suite are ignored'
 					'-s|--sequential          : Sequential test execution. No parallel test execution is performed.'

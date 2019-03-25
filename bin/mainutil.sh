@@ -21,9 +21,9 @@ function usage {
 	--noprompt               : Do not prompt berfore an existing working directory is removed.
 	-i|--directory VALUE     : The input directory - the test collection directory. There is no default. This option must be entered.
 	-p|--properties VALUE    : This specifies the file with the global property values. Default is file $TEST_PROPERTIES in input directory.
-	                           This option can be given more than one time. This overwrites the environment \$TTRO_propertyFiles 
+	                           This option can be given more than one time. This overwrites the environment \$TTRO_propertyFiles
 	-t|--tools VALUE         : Includes (source) files with test tool scripts. This option can be given more than one time.
-	-c|--category VALUE      : Enter the category pattern for this test run. The pattern must not contain white spaces. 
+	-c|--category VALUE      : Enter the category pattern for this test run. The pattern must not contain white spaces.
 	                           Quote the value or escape special characters. This option can be given more than one time.
 	--skip-ignore            : If this option is given the skip and category attributes of the cases and suite are ignored
 	-s|--sequential          : Sequential test execution. No parallel test execution is performed.
@@ -47,14 +47,14 @@ function usage {
 	--no-start               : Supress the execution of the start sequence (Set TTPR_noStart, TTPR_noPrepsSuite to true)
 	--no-stop                : Supress the execution of the stop sequencd (Set TTPR_noStop, TTPR_noFinsSuite to true)
 	--bashhelp               : Print some hints for the use of bash
-	
-	
-	case                     : The list of the testcases to execute. Each pattern must be composed in the form Suite::Case. Where Suite and Case 
+
+
+	case                     : The list of the testcases to execute. Each pattern must be composed in the form Suite::Case. Where Suite and Case
 	                           are a patterns (like file glob). For cases without Suite context use the form ::Case. Quote * and ? characters.
-	                           The skip attributes are evaluated. If you want to execute the matching cases unconditionally, use also the 
+	                           The skip attributes are evaluated. If you want to execute the matching cases unconditionally, use also the
 	                           --skip-ignore parameter.
 	                           If the case list is omitted, all test suites/cases found in input directory are executed.
-	
+
 	Return Status:
 	0     : Test Success
 	1     : fatal error ( failed command etc. )
@@ -101,26 +101,25 @@ function optionInParamSection {
 # Function uses the global variables:
 # suitesIndex: It increments suitesIndex once the enterd directory is a suitesIndex
 #              suitesIndex=0 indicates the root suite
-# suitesPath: The array with the absolute pathes of the suites index=0 is the root
-# suitesRPath: The logical name of the suite
-# childSuites: The global map: key is the index of the suite and value is the space separated list of child suite indexes
-# childCases:  The global map: key is the index of the suite and value is the space separated list of (child) case indexes 
+# TTTI_suitesPath: The array with the absolute pathes of the suites index=0 is the root
+# TTTI_childSuites: The global map: key is the index of the suite and value is the space separated list of child suite indexes
+# TTTI_childCases:  The global map: key is the index of the suite and value is the space separated list of (child) case indexes
 # casesIndex: The global index of the next cases
-# casesPath:  The array with the absolute pathes to the cases
-# casesName:  The logical name of the case
+# TTTI_casesPath:  The array with the absolute pathes to the cases
+# TTTI_casesName:  The logical name of the case
 #
 # Function uses the variables of the actual parent
 # childSuitesIndex: the index of the next child suite in the current suite
-# 
+#
 function scan {
-	isDebug && printDebug "******* $FUNCNAME dir to scan='$1' index of the parent suite $2 path of the parent suite=${suitesPath[$2]}"
+	isDebug && printDebug "******* $FUNCNAME dir to scan='$1' index of the parent suite $2 path of the parent suite=${TTTI_suitesPath[$2]}"
 	local parentSuite="$2"
 	local mypath
 	local dirlist=()
 	local isSuite=''
 	local isCase=''
 	local mySuiteIndex="$2"
-	local parentPath="${suitesPath[$parentSuite]}"
+	local parentPath="${TTTI_suitesPath[$parentSuite]}"
 	if [[ $1 == *[[:space:]]* ]]; then
 		printErrorAndExit "Pathes must not have spaces! Wrong component is $1" ${errRt}
 	fi
@@ -136,20 +135,20 @@ function scan {
 				if [[ $mybase == $TTRO_inputDir ]]; then
 					#printWarning "$TEST_SUITE_FILE found in top level directory: Probably you start not from the root of your test collection $1"
 					printErrorAndExit "$TEST_SUITE_FILE is not allowed in top level directory $1" $errInvocation
-				else 
+				else
 					isSuite='true'
-					suitesPath[$suitesIndex]="$mybase"
+					TTTI_suitesPath[$suitesIndex]="$mybase"
 					childSuitesIndex=$((childSuitesIndex+1))
-					childSuites[$parentSuite]="${childSuites[$parentSuite]}$suitesIndex "
-					childSuites[$suitesIndex]=''
-					childCases[$suitesIndex]=''
+					TTTI_childSuites[$parentSuite]="${TTTI_childSuites[$parentSuite]}$suitesIndex "
+					TTTI_childSuites[$suitesIndex]=''
+					TTTI_childCases[$suitesIndex]=''
 					mySuiteIndex="$suitesIndex"
 					local rpath="${mybase#$parentPath/}"
-					suitesName[$suitesIndex]="$rpath"
-					executeSuite[$suitesIndex]=''
+					TTTI_suitesName[$suitesIndex]="$rpath"
+					TTTI_executeSuite[$suitesIndex]=''
 					suitesIndex=$((suitesIndex+1))
-					isDebug && printDebug "Suite found state of childSuites:"
-					#declare -p childSuites
+					isDebug && printDebug "Suite found state of TTTI_childSuites:"
+					#declare -p TTTI_childSuites
 				fi
 			elif [[ $filename == $TEST_CASE_FILE ]]; then
 				if [[ $mybase == $TTRO_inputDir ]]; then
@@ -159,14 +158,14 @@ function scan {
 					printError "ERROR ignore Suite and Case in one directory in $mybase"
 				else
 					isCase='true'
-					casesPath[$casesIndex]="$mybase"
-					childCases[$parentSuite]="${childCases[$parentSuite]}$casesIndex "
+					TTTI_casesPath[$casesIndex]="$mybase"
+					TTTI_childCases[$parentSuite]="${TTTI_childCases[$parentSuite]}$casesIndex "
 					local rpath="${mybase#$parentPath/}"
-					casesName[$casesIndex]="$rpath"
-					executeCase[$casesIndex]=''
+					TTTI_casesName[$casesIndex]="$rpath"
+					TTTI_executeCase[$casesIndex]=''
 					casesIndex=$((casesIndex+1))
-					isDebug && printDebug "Case found state of childCases:"
-					#declare -p childCases
+					isDebug && printDebug "Case found state of TTTI_childCases:"
+					#declare -p TTTI_childCases
 				fi
 			fi
 		fi
@@ -193,27 +192,27 @@ function printSuitesCases {
 	local ident="$2"
 	local spacer=''
 	local i
-	if [[ ${#suitesPath[@]} -gt $1 ]]; then
+	if [[ ${#TTTI_suitesPath[@]} -gt $1 ]]; then
 		for ((i=0; i<ident; i++)); do spacer="${spacer}"$'\t'; done
-		if [[ -z $3 || -n ${executeSuite[$1]} ]]; then
+		if [[ -z $3 || -n ${TTTI_executeSuite[$1]} ]]; then
 			if [[ -n $4 ]]; then
-				printDebug "${spacer}S: ${suitesPath[$1]} rpath=${suitesName[$1]}"
+				printDebug "${spacer}S: ${TTTI_suitesPath[$1]} rpath=${TTTI_suitesName[$1]}"
 			else
-				echo "${spacer}S: ${suitesName[$1]}"
+				echo "${spacer}S: ${TTTI_suitesName[$1]}"
 			fi
 		fi
-		local li=${childCases[$1]}
+		local li=${TTTI_childCases[$1]}
 		local x
 		for x in $li; do
-			if [[ -z $3 || -n ${executeCase[$x]} ]]; then
+			if [[ -z $3 || -n ${TTTI_executeCase[$x]} ]]; then
 				if [[ -n $4 ]]; then
-					printDebug "${spacer}    C: ${casesPath[$x]} rpath=${casesName[$x]}"
+					printDebug "${spacer}    C: ${TTTI_casesPath[$x]} rpath=${TTTI_casesName[$x]}"
 				else
-					echo "${spacer}    C: ${casesName[$x]}"
+					echo "${spacer}    C: ${TTTI_casesName[$x]}"
 				fi
 			fi
 		done
-		li=${childSuites[$1]}
+		li=${TTTI_childSuites[$1]}
 		local x
 		local i2=$((ident+1))
 		for x in $li; do
@@ -234,15 +233,15 @@ function checkCaseMatch {
 	local y x
 	local allSuiteIndexes="$4 $1"
 	local caseToExecuteHere=''
-	for i in ${childCases[$1]}; do
-		y="${3}::${casesName[$i]}"
+	for i in ${TTTI_childCases[$1]}; do
+		y="${3}::${TTTI_casesName[$i]}"
 		isDebug && printDebug "search patter for case=$y"
 		for ((j=0; j<${#cases[*]}; j++)); do
 			local pattern="${cases[$j]}"
 			isDebug && printDebug "check match for case: ${pattern}"
 			if [[ $y == $pattern ]]; then
 				isDebug && printDebug "match found for case: ${pattern}"
-				executeCase[$i]='true'
+				TTTI_executeCase[$i]='true'
 				usedCaseIndexList="$usedCaseIndexList $j"
 				noCasesToExecute=$((noCasesToExecute+1))
 				caseToExecuteHere='true'
@@ -252,19 +251,19 @@ function checkCaseMatch {
 	done
 	if [[ -n $caseToExecuteHere ]]; then
 		for x in $allSuiteIndexes; do
-			isDebug && printDebug "execute suite $x ${suitesName[$x]}"
-			executeSuite[$x]='true'
+			isDebug && printDebug "execute suite $x ${TTTI_suitesName[$x]}"
+			TTTI_executeSuite[$x]='true'
 		done
 	fi
 	local newDeth=$(($2+1))
-	for x in ${childSuites[$1]}; do
+	for x in ${TTTI_childSuites[$1]}; do
 		local spath="$3"
 		if [[ -z $spath ]]; then
-			spath="${suitesName[$x]}"
+			spath="${TTTI_suitesName[$x]}"
 		else
-			spath+="/${suitesName[$x]}"
+			spath+="/${TTTI_suitesName[$x]}"
 		fi
-		checkCaseMatch "$x" "$newDeth" "$spath" "$allSuiteIndexes" 
+		checkCaseMatch "$x" "$newDeth" "$spath" "$allSuiteIndexes"
 	done
 }
 
@@ -302,13 +301,13 @@ function printParams {
 }
 
 #
-# Create the css-file 
+# Create the css-file
 # $1 the file to create
 function createCSS {
 	cat <<-EOF > "$1"
 	/* Testframe CSS Document */
 	body {
-	font-family: Verdana, Arial, Helvetica, sans-serif; 
+	font-family: Verdana, Arial, Helvetica, sans-serif;
 	}
 
 	p, table, li {

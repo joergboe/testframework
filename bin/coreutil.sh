@@ -27,8 +27,8 @@ readonly -f isSkip
 # expect TTTI_suiteVariants TTTI_suiteErrors TTTI_suiteSkip
 function exeSuite {
 	isDebug && printDebug "******* $FUNCNAME $* number args $#"
-	local suite="${suitesName[$1]}"
-	local suitePath="${suitesPath[$1]}"
+	local suite="${TTTI_suitesName[$1]}"
+	local suitePath="${TTTI_suitesPath[$1]}"
 	local nestingLevel=$(($3+1))
 	local suiteNestingPath="$4"
 	local suiteNestingString="$5"
@@ -49,7 +49,7 @@ function exeSuite {
 	if [[ -n $2 ]]; then
 		suiteNestingString+=":$2"
 	fi
-	if [[ -z ${executeSuite[$1]} ]]; then
+	if [[ -z ${TTTI_executeSuite[$1]} ]]; then
 		isDebug && printDebug "$FUNCNAME: no execution of suite $suitePath: variant='$2'"
 		return 0
 	fi
