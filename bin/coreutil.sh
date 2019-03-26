@@ -1,18 +1,21 @@
 #####################################################
 # Utilities for the core testframework script code
+#
+# modul is sourced in runTTF, suite.sh and case.#!/bin/sh
+# user code conflicts are potential possible
 #####################################################
 
 #
-# isSkip
+# TTTF_isSkip
 # returns true if the script is to skip
-function isSkip {
+function TTTF_isSkip {
 	if [[ ( -n $TTPRN_skip ) && ( -z $TTPRN_skipIgnore ) ]]; then
 		return 0
 	else
 		return 1
 	fi
 }
-readonly -f isSkip
+readonly -f TTTF_isSkip
 
 #
 # function to execute the variants of suites
@@ -25,7 +28,7 @@ readonly -f isSkip
 # $7 preambl error
 # $8 html indexfilename
 # expect TTTI_suiteVariants TTTI_suiteErrors TTTI_suiteSkip
-function exeSuite {
+function TTTF_exeSuite {
 	isDebug && printDebug "******* $FUNCNAME $* number args $#"
 	local suite="${TTTI_suitesName[$1]}"
 	local suitePath="${TTTI_suitesPath[$1]}"
@@ -130,17 +133,17 @@ function exeSuite {
 
 	# html
 	if [[ $nestingLevel -gt 0 ]]; then
-		addSuiteEntry "$indexfilename" "$suiteNestingString" "$result" "$suitePath" "${sworkdir}"\
+		TTTF_addSuiteEntry "$indexfilename" "$suiteNestingString" "$result" "$suitePath" "${sworkdir}"\
 		$CASE_EXECUTE_Count $CASE_SKIP_Count $CASE_FAILURE_Count $CASE_ERROR_Count $SUITE_EXECUTE_Count $SUITE_SKIP_Count $SUITE_ERROR_Count
 	fi
 
 	printInfo "**** END Suite suite='${suite}' variant='$2' in ${suitePath} END ********************"
 	return 0
-} #/exeSuite
-readonly -f exeSuite
+} #/TTTF_exeSuite
+readonly -f TTTF_exeSuite
 
 #
-# Function fixPropsVars
+# Function TTTF_fixPropsVars
 #	This function fixes all ro-variables and propertie variables
 #	Property and variables setting is a two step action:
 #	Unset help variables if no reference is printed
@@ -148,7 +151,7 @@ readonly -f exeSuite
 #	returns:
 #		success (0)
 #		error	in exceptional cases
-function fixPropsVars {
+function TTTF_fixPropsVars {
 	local var=""
 	if [[ -z $TTRO_reference ]]; then
 		for var in "${!TTRO_help@}"; do
@@ -183,7 +186,7 @@ function fixPropsVars {
 		fi
 	done
 }
-readonly -f fixPropsVars
+readonly -f TTTF_fixPropsVars
 
 #
 # Read a test case or a test suite file and evaluate the preambl
@@ -192,7 +195,7 @@ readonly -f fixPropsVars
 # return 0 in success case
 # return 1 if an invalid preambl was read;
 # results are returned in global variables variantCount, variantList, timeout
-function evalPreambl {
+function TTTF_evalPreambl {
 	isDebug && printDebug "$FUNCNAME $1"
 	if [[ ! -r $1 ]]; then
 		printErrorAndExit "${FUNCNAME} : Can not open file=$1 for read" ${errRt}
@@ -220,7 +223,7 @@ function evalPreambl {
 					if [[ ( ${#preamblLine} -gt 0 ) && ( ${preamblLine:$len} == '\' ) ]]; then
 						preamblLine="${preamblLine:0:$len}"
 					else
-						if SplitPreamblAssign "$preamblLine"; then
+						if TTTF_SplitPreamblAssign "$preamblLine"; then
 							if [[ -n $varname ]] ; then
 								isDebug && printDebug "$FUNCNAME prepare for variant encoding varname=$varname value=$value"
 								case $varname in
@@ -281,10 +284,10 @@ function evalPreambl {
 	} < "$1"
 	return 0
 }
-readonly -f evalPreambl
+readonly -f TTTF_evalPreambl
 
 #
-# SplitPreamblAssign
+# TTTF_SplitPreamblAssign
 # Split the variable name and value part of an assignement in a preambl line
 # The assignemtnet must something matching [[:word:]]=
 # Ingnore all other lines
@@ -296,7 +299,7 @@ readonly -f evalPreambl
 #		success(0) if the line was sucessfully split
 #					the varname is empty if there is no valid assignement in the preambl line
 #		error(1)   if there was no prambl line'
-function SplitPreamblAssign {
+function TTTF_SplitPreamblAssign {
 	[[ $# -eq 1 ]] || printErrorAndExit "Wrong number of arguments $# in $FUNCNAME" $errRt
 	isDebug && printDebug "$FUNCNAME \$1='$1'"
 	if [[ $1 =~ ^([a-zA-Z0-9_]+)=(.*) ]]; then
@@ -311,11 +314,11 @@ function SplitPreamblAssign {
 		return 1
 	fi
 }
-readonly -f SplitPreamblAssign
+readonly -f TTTF_SplitPreamblAssign
 
 #
 # write protect all exported fuinctions
-function writeProtectExportedFunctions {
+function TTTF_writeProtectExportedFunctions {
 	local functions=$(declare -Fx)
 	local IFS=$'\n'
 	local x fname
@@ -324,7 +327,7 @@ function writeProtectExportedFunctions {
 		readonly -f "$fname"
 	done
 }
-readonly -f writeProtectExportedFunctions
+readonly -f TTTF_writeProtectExportedFunctions
 
 #
 # Check if test run category matches any of the atrifact categories
@@ -333,7 +336,7 @@ readonly -f writeProtectExportedFunctions
 # return true if one run category pattern matches any of the artifact cats
 #        or if catecory or eval TTTT_runCategoryPatternArray is empty
 #        false otherwise
-function checkCats {
+function TTTF_checkCats {
 	if isNotExisting 'TTTT_categoryArray'; then
 		printErrorAndExit "variable TTTT_categoryArray must exist" $errRt
 	fi
@@ -368,13 +371,13 @@ function checkCats {
 	printInfo "No run category pattern match found: $FUNCNAME returns false"
 	return 1
 }
-readonly -f checkCats
+readonly -f TTTF_checkCats
 
 #
 # Create the global index.html
 # $1 the file to create
 # $2 elapsed time
-function createGlobalIndex {
+function TTTF_createGlobalIndex {
 	local suiteErrorTxt
 	if [[ $SUITE_ERRORCount -ne 0 ]]; then
 		suiteErrorTxt="<span style=\"color: red\">errors=$SUITE_ERRORCount</span>"
@@ -438,12 +441,12 @@ function createGlobalIndex {
 	</html>
 	EOF
 }
-readonly -f createGlobalIndex
+readonly -f TTTF_createGlobalIndex
 
 #
 # Create the suite index file
 # $1 the index file name
-function createSuiteIndex {
+function TTTF_createSuiteIndex {
 	cat <<-EOF > "$1"
 	<!DOCTYPE html>
 	<html>
@@ -459,7 +462,7 @@ function createSuiteIndex {
 		<ul>
 	EOF
 }
-readonly -f createSuiteIndex
+readonly -f TTTF_createSuiteIndex
 
 #
 # Add Case entry to suite index.html and to summary text file
@@ -471,7 +474,7 @@ readonly -f createSuiteIndex
 # $6 Case work dir
 # $7 Elapsed time
 # $8 Summary file name
-function addCaseEntry {
+function TTTF_addCaseEntry {
 	local mycasename
 	local reason=''
 	local part1=''
@@ -515,12 +518,12 @@ function addCaseEntry {
 			printErrorAndExit "Wrong result string $4" $errRt
 	esac
 }
-readonly -f addCaseEntry
+readonly -f TTTF_addCaseEntry
 
 #
 # Start suite index and end case list
 # $1 File name
-function startSuiteList {
+function TTTF_startSuiteList {
 	cat <<-EOF >> "$1"
 		</ul>
 		</p>
@@ -529,7 +532,7 @@ function startSuiteList {
 		<ul>
 	EOF
 }
-readonly -f startSuiteList
+readonly -f TTTF_startSuiteList
 
 #
 # Add Suite entry to suite index.html
@@ -545,7 +548,7 @@ readonly -f startSuiteList
 # $10 Suites executed
 # $11 Suites skipped
 # S12 Suites error
-function addSuiteEntry {
+function TTTF_addSuiteEntry {
 	if [[ $# -ne 12 ]]; then printErrorAndExit "wrong no of arguments $#" $errRt; fi
 	case $3 in
 		0 )
@@ -590,13 +593,13 @@ function addSuiteEntry {
 		echo "      <br> ... </li>" >> "$1"
 	fi
 }
-readonly -f addSuiteEntry
+readonly -f TTTF_addSuiteEntry
 
 #
 # end suite index html
 # $1 file name
 # $2 elapsed time string
-function endSuiteIndex {
+function TTTF_endSuiteIndex {
 	cat <<-EOF >> "$1"
 		</ul>
 		</p>
@@ -612,5 +615,5 @@ function endSuiteIndex {
 	</html>
 	EOF
 }
-readonly -f endSuiteIndex
+readonly -f TTTF_endSuiteIndex
 :

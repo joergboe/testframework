@@ -119,13 +119,13 @@ cd "$TTRO_workDirSuite"
 
 #prepare index.html name and create index.html
 TTTI_indexfilename="${TTRO_workDirSuite}/suite.html"
-createSuiteIndex "$TTTI_indexfilename"
+TTTF_createSuiteIndex "$TTTI_indexfilename"
 
 #handle preambl error
 if [[ -n $TTTT_preamblError ]]; then
 	echo "ERROR Preambl Error" >> "$TTTI_indexfilename"
 	getElapsedTime "$TTTT_suiteStartTime"
-	endSuiteIndex "$TTTI_indexfilename" "$TTTT_elapsedTime"
+	TTTF_endSuiteIndex "$TTTI_indexfilename" "$TTTT_elapsedTime"
 	printErrorAndExit "Preambl Error" $errRt
 fi
 
@@ -136,7 +136,7 @@ if [[ $TTRO_suiteIndex -ne 0 ]]; then
 		setSkip 'SKIP file found'
 		echo "SKIPPED: $TTPRN_skip" >> "$TTTI_indexfilename"
 		getElapsedTime "$TTTT_suiteStartTime"
-		endSuiteIndex "$TTTI_indexfilename" "$TTTT_elapsedTime"
+		TTTF_endSuiteIndex "$TTTI_indexfilename" "$TTTT_elapsedTime"
 		echo "$TTPRN_skip" > "${TTRO_workDirSuite}/REASON"
 		exit $errSkip
 	fi
@@ -146,8 +146,8 @@ if [[ $TTRO_suiteIndex -ne 0 ]]; then
 	if [[ -e "$TTTI_tmp" ]]; then
 		isVerbose && printVerbose  "Source Suite file $TTTI_tmp"
 		source "$TTTI_tmp"
-		fixPropsVars
-		writeProtectExportedFunctions
+		TTTF_fixPropsVars
+		TTTF_writeProtectExportedFunctions
 	else
 		printErrorAndExit "No Suite file $TTTI_tmp" $errScript
 	fi
@@ -164,14 +164,14 @@ export >> "$TTTI_tmp"
 #check skip
 if [[ $TTRO_suiteIndex -ne 0 ]]; then
 	#check category
-	if ! checkCats; then
+	if ! TTTF_checkCats; then
 		setSkip 'No matching runtime category'
 	fi
-	if isSkip; then
+	if TTTF_isSkip; then
 		printInfo "SKIP variable set; Skip execution suite=$TTRO_suite variant=$TTRO_variantSuite"
 		echo "SKIPPED: $TTPRN_skip" >> "$TTTI_indexfilename"
 		getElapsedTime "$TTTT_suiteStartTime"
-		endSuiteIndex "$TTTI_indexfilename" "$TTTT_elapsedTime"
+		TTTF_endSuiteIndex "$TTTI_indexfilename" "$TTTT_elapsedTime"
 		echo "$TTPRN_skip" > "${TTRO_workDirSuite}/REASON"
 		exit $errSkip
 	fi
@@ -237,7 +237,7 @@ declare variantCount='' variantList='' timeout='' TTTI_preamblError=''
 for ((TTTI_i=0; TTTI_i<TTTI_noCases; TTTI_i++)) do
 	TTTI_casePath="${TTTI_cases[$TTTI_i]}"
 	TTTI_caseName="${TTTI_casePath##*/}"
-	if ! evalPreambl "${TTTI_casePath}/${TEST_CASE_FILE}"; then
+	if ! TTTF_evalPreambl "${TTTI_casePath}/${TEST_CASE_FILE}"; then
 		TTTI_preamblError='true'; variantCount=''; variantList=''; timeout=''
 	fi
 	if [[ ( -n $variantCount ) && ( -n $variantList ) ]]; then
@@ -533,32 +533,32 @@ handleJobEnd() {
 						SUCCESS )
 							echo "$tmpCaseAndVariant" >> "${TTRO_workDirSuite}/CASE_SUCCESS"
 							TTTI_variantSuccess=$((TTTI_variantSuccess+1))
-							addCaseEntry "$TTTI_indexfilename" "$tmpCase" "$tmpVariant" 'SUCCESS' "${TTTI_tcasePath[$i]}" "${TTTI_tcaseWorkDir[$i]}" "$caseElapsedTime" "$TTTI_tempSummayName"
+							TTTF_addCaseEntry "$TTTI_indexfilename" "$tmpCase" "$tmpVariant" 'SUCCESS' "${TTTI_tcasePath[$i]}" "${TTTI_tcaseWorkDir[$i]}" "$caseElapsedTime" "$TTTI_tempSummayName"
 						;;
 						SKIP )
 							{ if read -r; then :; fi; } < "${TTTI_tcaseWorkDir[$i]}/REASON" #read one line from reason
 							echo "$tmpCaseAndVariant: $REPLY" >> "${TTRO_workDirSuite}/CASE_SKIP"
 							TTTI_variantSkiped=$((TTTI_variantSkiped+1))
-							addCaseEntry "$TTTI_indexfilename" "$tmpCase" "$tmpVariant" 'SKIP' "${TTTI_tcasePath[$i]}" "${TTTI_tcaseWorkDir[$i]}" "$caseElapsedTime" "$TTTI_tempSummayName"
+							TTTF_addCaseEntry "$TTTI_indexfilename" "$tmpCase" "$tmpVariant" 'SKIP' "${TTTI_tcasePath[$i]}" "${TTTI_tcaseWorkDir[$i]}" "$caseElapsedTime" "$TTTI_tempSummayName"
 						;;
 						FAILURE )
 							{ if read -r; then :; fi; } < "${TTTI_tcaseWorkDir[$i]}/REASON" #read one line from reason
 							echo "$tmpCaseAndVariant: $REPLY" >> "${TTRO_workDirSuite}/CASE_FAILURE"
 							TTTI_variantFailures=$((TTTI_variantFailures+1))
-							addCaseEntry "$TTTI_indexfilename" "$tmpCase" "$tmpVariant" 'FAILURE' "${TTTI_tcasePath[$i]}" "${TTTI_tcaseWorkDir[$i]}" "$caseElapsedTime" "$TTTI_tempSummayName"
+							TTTF_addCaseEntry "$TTTI_indexfilename" "$tmpCase" "$tmpVariant" 'FAILURE' "${TTTI_tcasePath[$i]}" "${TTTI_tcaseWorkDir[$i]}" "$caseElapsedTime" "$TTTI_tempSummayName"
 							[[ ( -n $TTRO_xtraPrint ) && ( "$TTRO_noParallelCases" -ne 1 ) ]] && cat "${TTTI_tcaseWorkDir[$i]}/${TEST_LOG}"
 						;;
 						ERROR )
 							echo "$tmpCaseAndVariant" >> "${TTRO_workDirSuite}/CASE_ERROR"
 							TTTI_variantErrors=$((TTTI_variantErrors+1))
-							addCaseEntry "$TTTI_indexfilename" "$tmpCase" "$tmpVariant" 'ERROR' "${TTTI_tcasePath[$i]}" "${TTTI_tcaseWorkDir[$i]}" "$caseElapsedTime" "$TTTI_tempSummayName"
+							TTTF_addCaseEntry "$TTTI_indexfilename" "$tmpCase" "$tmpVariant" 'ERROR' "${TTTI_tcasePath[$i]}" "${TTTI_tcaseWorkDir[$i]}" "$caseElapsedTime" "$TTTI_tempSummayName"
 							[[ ( -n $TTRO_xtraPrint ) && ( "$TTRO_noParallelCases" -ne 1 ) ]] && cat "${TTTI_tcaseWorkDir[$i]}/${TEST_LOG}"
 						;;
 						* )
 							printError "${tmpCase}:${tmpVariant} : Invalid Case-variant result $jobsResult case workdir ${TTTI_tcaseWorkDir[$i]}"
 							echo "$tmpCaseAndVariant" >> "${TTRO_workDirSuite}/CASE_ERROR"
 							TTTI_variantErrors=$((TTTI_variantErrors+1))
-							addCaseEntry "$TTTI_indexfilename" "$tmpCase" "$tmpVariant" 'ERROR' "${TTTI_tcasePath[$i]}" "${TTTI_tcaseWorkDir[$i]}" "$caseElapsedTime" "$TTTI_tempSummayName"
+							TTTF_addCaseEntry "$TTTI_indexfilename" "$tmpCase" "$tmpVariant" 'ERROR' "${TTTI_tcasePath[$i]}" "${TTTI_tcaseWorkDir[$i]}" "$caseElapsedTime" "$TTTI_tempSummayName"
 							jobsResult="ERROR"
 							[[ ( -n $TTRO_xtraPrint ) && ( "$TTRO_noParallelCases" -ne 1 ) ]] && cat "${TTTI_tcaseWorkDir[$i]}/${TEST_LOG}"
 						;;
@@ -567,7 +567,7 @@ handleJobEnd() {
 					printError "No RESULT file in case workdir ${TTTI_tcaseWorkDir[$i]}"
 					echo "$tmpCaseAndVariant" >> "${TTRO_workDirSuite}/CASE_ERROR"
 					TTTI_variantErrors=$((TTTI_variantErrors+1))
-					addCaseEntry "$TTTI_indexfilename" "$tmpCase" "$tmpVariant" 'ERROR' "${TTTI_tcasePath[$i]}" "${TTTI_tcaseWorkDir[$i]}" "$caseElapsedTime" "$TTTI_tempSummayName"
+					TTTF_addCaseEntry "$TTTI_indexfilename" "$tmpCase" "$tmpVariant" 'ERROR' "${TTTI_tcasePath[$i]}" "${TTTI_tcaseWorkDir[$i]}" "$caseElapsedTime" "$TTTI_tempSummayName"
 					jobsResult="ERROR"
 					[[ ( -n $TTRO_xtraPrint ) && ( "$TTRO_noParallelCases" -ne 1 ) ]] && cat "${TTTI_tcaseWorkDir[$i]}/${TEST_LOG}"
 				fi
@@ -741,7 +741,7 @@ if [[ $TTTI_jobIndex -ne $TTTI_jobsEnded ]]; then
 fi
 
 #fin
-startSuiteList "$TTTI_indexfilename"
+TTTF_startSuiteList "$TTTI_indexfilename"
 
 checkGlobalVarsUsed
 
@@ -756,7 +756,7 @@ for TTTI_sindex_xyza in ${TTTI_childSuites[$TTRO_suiteIndex]}; do
 	fi
 	isVerbose && printVerbose "**** START Nested Suite: $TTTI_suite ************************************"
 	variantCount=""; variantList=""; timeout='' TTTI_preamblError=""
-	if ! evalPreambl "${TTTI_suitePath}/${TEST_SUITE_FILE}"; then
+	if ! TTTF_evalPreambl "${TTTI_suitePath}/${TEST_SUITE_FILE}"; then
 		TTTI_preamblError='true'; variantCount=""; variantList=""; timeout=''
 	fi
 	if [[ ( -n $variantCount ) && ( -n $variantList ) ]]; then
@@ -769,10 +769,10 @@ for TTTI_sindex_xyza in ${TTTI_childSuites[$TTRO_suiteIndex]}; do
 	fi
 	if [[ -z $variantCount ]]; then
 		if [[ -z $variantList ]]; then
- 			exeSuite "$TTTI_sindex_xyza" "" "$TTRO_suiteNestingLevel" "$TTRO_suiteNestingPath" "$TTRO_suiteNestingString" "$TTRO_workDirSuite" "$TTTI_preamblError" "$TTTI_indexfilename"
+ 			TTTF_exeSuite "$TTTI_sindex_xyza" "" "$TTRO_suiteNestingLevel" "$TTRO_suiteNestingPath" "$TTRO_suiteNestingString" "$TTRO_workDirSuite" "$TTTI_preamblError" "$TTTI_indexfilename"
 		else
 			for TTTI_x_xyza in $variantList; do
-				exeSuite "$TTTI_sindex_xyza" "$TTTI_x_xyza" "$TTRO_suiteNestingLevel" "$TTRO_suiteNestingPath" "$TTRO_suiteNestingString" "$TTRO_workDirSuite" "$TTTI_preamblError" "$TTTI_indexfilename"
+				TTTF_exeSuite "$TTTI_sindex_xyza" "$TTTI_x_xyza" "$TTRO_suiteNestingLevel" "$TTRO_suiteNestingPath" "$TTRO_suiteNestingString" "$TTRO_workDirSuite" "$TTTI_preamblError" "$TTTI_indexfilename"
 				if [[ $TTTI_interruptReceived -gt 0 ]]; then
 					printInfo "SIGINT: end Suites loop"
 					break
@@ -784,7 +784,7 @@ for TTTI_sindex_xyza in ${TTTI_childSuites[$TTRO_suiteIndex]}; do
 		if [[ -z $variantList ]]; then
 			declare -i TTTI_j_xyza
 			for ((TTTI_j_xyza=0; TTTI_j_xyza<variantCount; TTTI_j_xyza++)); do
-				exeSuite "$TTTI_sindex_xyza" "$TTTI_j_xyza" "$TTRO_suiteNestingLevel" "$TTRO_suiteNestingPath" "$TTRO_suiteNestingString" "$TTRO_workDirSuite" "$TTTI_preamblError" "$TTTI_indexfilename"
+				TTTF_exeSuite "$TTTI_sindex_xyza" "$TTTI_j_xyza" "$TTRO_suiteNestingLevel" "$TTRO_suiteNestingPath" "$TTRO_suiteNestingString" "$TTRO_workDirSuite" "$TTTI_preamblError" "$TTTI_indexfilename"
 				if [[ $TTTI_interruptReceived -gt 0 ]]; then
 					printInfo "SIGINT: end Suites loop"
 					break
@@ -883,7 +883,7 @@ done
 
 # html
 getElapsedTime "$TTTT_suiteStartTime"
-endSuiteIndex "$TTTI_indexfilename" "$TTTT_elapsedTime"
+TTTF_endSuiteIndex "$TTTI_indexfilename" "$TTTT_elapsedTime"
 
 declare TTTI_suiteResult=0
 if [[ $TTTI_interruptReceived -gt 0 ]]; then

@@ -437,7 +437,7 @@ if [[ -n ${skipIgnore} ]]; then
 else
 	setVar 'TTPRN_skipIgnore' ''
 fi
-fixPropsVars
+TTTF_fixPropsVars
 
 #--------------------------------
 # Programm entry
@@ -628,18 +628,18 @@ if [[ ${#propertyFiles[@]} -gt 0 ]]; then
 		x="${propertyFiles[$i]}"
 		printInfo "Include global properties $x"
 		source "${x}"
-		fixPropsVars
-		writeProtectExportedFunctions
+		TTTF_fixPropsVars
+		TTTF_writeProtectExportedFunctions
 	done
 elif [[ -e "$TTRO_inputDir/$TEST_PROPERTIES" ]]; then
 	printInfo "Include global properties $TTRO_inputDir/$TEST_PROPERTIES"
 	source "$TTRO_inputDir/$TEST_PROPERTIES"
-	fixPropsVars
-	writeProtectExportedFunctions
+	TTTF_fixPropsVars
+	TTTF_writeProtectExportedFunctions
 else
 	printInfo "No global properies file to evaluate"
-	fixPropsVars
-	writeProtectExportedFunctions
+	TTTF_fixPropsVars
+	TTTF_writeProtectExportedFunctions
 fi
 
 #------------------------------------------------
@@ -670,7 +670,7 @@ export >> "$tmp"
 declare -i TTTI_suiteVariants=0 TTTI_suiteErrors=0 TTTI_suiteSkip=0
 if [[ $TTTI_interruptReceived -eq 0 ]]; then
 	isVerbose && printVerbose "**** START Root Suite ************************************"
-	exeSuite "0" "" "-1" "" "" "${TTRO_workDir}" "" "";
+	TTTF_exeSuite "0" "" "-1" "" "" "${TTRO_workDir}" "" "";
 	isVerbose && printVerbose "**** END Root Suite **************************************"
 fi
 
@@ -726,7 +726,7 @@ cat "$TTRO_workDir/SUMMARY.txt"
 #--------------------------------------------
 # prepare html docs
 #createCSS "${TTRO_workDir}/testframe.css"
-createGlobalIndex "$indexfilename" "$TTTT_elapsedTime"
+TTTF_createGlobalIndex "$indexfilename" "$TTTT_elapsedTime"
 
 declare mainResult=0
 if [[ $TTTI_interruptReceived -ne 0 ]]; then

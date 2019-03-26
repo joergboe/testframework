@@ -17,5 +17,5 @@ getOptions() {
 }
 
 myEval() {
-  linewisePatternMatchInterceptAndSuccess "$TTRO_workDirCase/STDERROUT1.log" 'true' '*ERROR: evalPreambl : timeout is no digit*' '*ERROR: In case :variantCountAndVariantList we have both variant variables*' '*ERROR: evalPreambl : variantCount is no digit*'
+  linewisePatternMatchInterceptAndSuccess "$TTRO_workDirCase/STDERROUT1.log" 'true' '*ERROR: TTTF_evalPreambl : timeout is no digit*' '*ERROR: In case :variantCountAndVariantList we have both variant variables*' '*ERROR: TTTF_evalPreambl : variantCount is no digit*'
 }

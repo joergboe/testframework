@@ -1,5 +1,8 @@
 #####################################################
 # Utilities for the main testframework script runTTF
+#
+# functions are not exported
+# and user code conflicts are possible
 #####################################################
 
 #

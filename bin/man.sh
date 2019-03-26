@@ -186,6 +186,7 @@ function manpage () {
 	- TTPRN_: Global property (empty value may be overwritten) (environment)
 	- TTTI_ : Variables for testframework internal usage. Do not use those names in test case/suite script usercode.
 	- TTXX_ : Global variables for internal usage. Do not use those names in test case/suite script usercode. (No automatic export)
+	- TTTF_ : Function names for internal usage. Do not use those names in test case/suite script usercode. (No automatic export)
 
 	## Test Framework Variables and Properties
 	==========================================

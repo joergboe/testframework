@@ -132,7 +132,7 @@ function caseFinalization {
 
 function caseExitFunction {
 	isDebug && printDebug "$FUNCNAME"
-	if ! isSkip; then
+	if ! TTTF_isSkip; then
 		caseFinalization
 	fi
 }
@@ -208,8 +208,8 @@ TTTI_tmp="${TTRO_inputDirCase}/${TEST_CASE_FILE}"
 if [[ -e $TTTI_tmp ]]; then
 	isVerbose && printVerbose  "Source Test Case file $TTTI_tmp"
 	source "$TTTI_tmp"
-	fixPropsVars
-	writeProtectExportedFunctions
+	TTTF_fixPropsVars
+	TTTF_writeProtectExportedFunctions
 else
 	printErrorAndExit "No Test Case file $TTTI_tmp" $errScript
 fi
@@ -222,10 +222,10 @@ printTestframeEnvironment > "$TTTI_tmp"
 export >> "$TTTI_tmp"
 
 #check category
-if ! checkCats; then
+if ! TTTF_checkCats; then
 	setSkip 'No matching runtime category'
 fi
-if isSkip; then
+if TTTF_isSkip; then
 	printInfo "SKIP variable set; Skip execution reason $TTPRN_skip case=$TTRO_case variant=$TTRO_variantCase"
 	skipExit
 fi

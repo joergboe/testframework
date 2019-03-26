@@ -21,5 +21,5 @@ myEval() {
     '*ERROR: In suite timeout timeout is not expected ! Suite preamblError*'\
     '*ERROR: On of variables variantCount, variantList or timeout is used in suite user code*'\
     '*ERROR: In suite variantCountAndVariantList we have both variant variables*'\
-    '*ERROR: evalPreambl : variantCount is no digit*'
+    '*ERROR: TTTF_evalPreambl : variantCount is no digit*'
 }
