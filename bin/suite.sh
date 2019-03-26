@@ -113,6 +113,7 @@ eval "$TTXX_runCategoryPatternArray"
 declare -rx TTRO_suite="${TTTI_suitesName[$TTRO_suiteIndex]}"
 declare -rx TTRO_inputDirSuite="${TTTI_suitesPath[$TTRO_suiteIndex]}"
 declare -a TTTT_categoryArray=()
+TTTF_fixPropsVars
 
 # enter working dir
 cd "$TTRO_workDirSuite"
@@ -140,8 +141,19 @@ if [[ $TTRO_suiteIndex -ne 0 ]]; then
 		echo "$TTPRN_skip" > "${TTRO_workDirSuite}/REASON"
 		exit $errSkip
 	fi
+fi
 
-	#source suite file
+#------------------------------------------------
+# diagnostics
+isVerbose && printTestframeEnvironment
+TTTI_tmp="${TTRO_workDirSuite}/${TEST_ENVIRONMET_LOG}"
+printTestframeEnvironment > "$TTTI_tmp"
+set +o posix
+export >> "$TTTI_tmp"
+set -o posix
+
+#source suite file
+if [[ $TTRO_suiteIndex -ne 0 ]]; then
 	TTTI_tmp="${TTRO_inputDirSuite}/${TEST_SUITE_FILE}"
 	if [[ -e "$TTTI_tmp" ]]; then
 		isVerbose && printVerbose  "Source Suite file $TTTI_tmp"
@@ -153,13 +165,6 @@ if [[ $TTRO_suiteIndex -ne 0 ]]; then
 	fi
 fi
 checkGlobalVarsUsed
-
-#------------------------------------------------
-# diagnostics
-isVerbose && printTestframeEnvironment
-TTTI_tmp="${TTRO_workDirSuite}/${TEST_ENVIRONMET_LOG}"
-printTestframeEnvironment > "$TTTI_tmp"
-export >> "$TTTI_tmp"
 
 #check skip
 if [[ $TTRO_suiteIndex -ne 0 ]]; then
@@ -283,12 +288,6 @@ unset timeout variantCount variantList
 isVerbose && printVerbose "Execute Suite $TTRO_suite variant='$TTRO_variantSuite' in workdir $TTRO_workDirSuite number of cases=$TTTI_noCases number of case variants=$TTTI_noCaseVariants"
 
 #------------------------------------------------
-# diagnostics
-isVerbose && printTestframeEnvironment
-printTestframeEnvironment > "${TTRO_workDirSuite}/${TEST_ENVIRONMET_LOG}"
-export >> "${TTRO_workDirSuite}/${TEST_ENVIRONMET_LOG}"
-
-#------------------------------------------------
 #execute test suite preparation
 TTTT_executionState='preparation'
 declare -i TTTI_executedTestPrepSteps=0
@@ -334,6 +333,7 @@ if isFunction 'testPreparation'; then
 	fi
 fi
 printInfo "$TTTI_executedTestPrepSteps Test Suite Preparation steps executed"
+TTTF_fixPropsVars
 
 #-------------------------------------------------
 #test case execution

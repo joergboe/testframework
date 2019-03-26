@@ -152,37 +152,38 @@ readonly -f TTTF_exeSuite
 #		success (0)
 #		error	in exceptional cases
 function TTTF_fixPropsVars {
-	local var=""
+	#Workaround for bash bug local vars and global ro variable exists
+	local TTTT_var=""
 	if [[ -z $TTRO_reference ]]; then
-		for var in "${!TTRO_help@}"; do
-			unset "$var"
+		for TTTT_var in "${!TTRO_help@}"; do
+			unset "$TTTT_var"
 		done
 	fi
-	for var in "${!TT_@}"; do
-		isDebug && printDebug "${FUNCNAME} : TT_   $var=${!var}"
-		export "${var}"
+	for TTTT_var in "${!TT_@}"; do
+		isDebug && printDebug "${FUNCNAME} : TT_   $TTTT_var=${!TTTT_var}"
+		export "${TTTT_var}"
 	done
-	for var in "${!TTRO_@}"; do
-		isDebug && printDebug "${FUNCNAME} : TTRO_ $var=${!var}"
-		readonly "${var}"
-		export "${var}"
+	for TTTT_var in "${!TTRO_@}"; do
+		isDebug && printDebug "${FUNCNAME} : TTRO_ $TTTT_var=${!TTTT_var}"
+		readonly "${TTTT_var}"
+		export "${TTTT_var}"
 	done
-	for var in "${!TTPR_@}"; do
-		isDebug && printDebug "${FUNCNAME} : TTPR_  $var=${!var}"
-		readonly "${var}"
-		export "${var}"
+	for TTTT_var in "${!TTPR_@}"; do
+		isDebug && printDebug "${FUNCNAME} : TTPR_  $TTTT_var=${!TTTT_var}"
+		readonly "${TTTT_var}"
+		export "${TTTT_var}"
 	done
-	for var in "${!TTPRN_@}"; do
-		isDebug && printDebug "${FUNCNAME} : TTPRN_ $var=${!var}"
-		if [[ -n "${!var}" ]]; then
-			readonly "${var}"
+	for TTTT_var in "${!TTPRN_@}"; do
+		isDebug && printDebug "${FUNCNAME} : TTPRN_ $TTTT_var=${!TTTT_var}"
+		if [[ -n "${!TTTT_var}" ]]; then
+			readonly "${TTTT_var}"
 		fi
-		export "${var}"
+		export "${TTTT_var}"
 	done
 	#fix special local vars
-	for var in 'STEPS' 'PREPS' 'FINS'; do
-		if declare -p "$var" &> /dev/null; then
-			declare -r "$var"
+	for TTTT_var in 'STEPS' 'PREPS' 'FINS'; do
+		if declare -p "$TTTT_var" &> /dev/null; then
+			declare -r "$TTTT_var"
 		fi
 	done
 }

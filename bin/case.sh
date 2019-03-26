@@ -18,7 +18,7 @@ shopt -s globstar nullglob
 
 # Shutdown and interrupt vars and functions
 declare -r TTTI_commandname="${0##*/}" #required in coreutils
- declare TTTI_interruptReceived="" #required in coreutils
+declare TTTI_interruptReceived="" #required in coreutils
 
 # Function errorTrapFunc
 #	global error exit function - prints the caller stack
@@ -36,6 +36,7 @@ trap errorTrapFunc ERR
 source "${TTRO_scriptDir}/defs.sh"
 source "${TTRO_scriptDir}/util.sh"
 source "${TTRO_scriptDir}/coreutil.sh"
+TTTF_fixPropsVars
 
 #usage and parameters
 function usage {
@@ -202,6 +203,15 @@ if [[ ( -e "${TTRO_inputDirCase}/SKIP" ) && ( -z $TTPRN_skipIgnore ) ]]; then
 	skipExit
 fi
 
+#------------------------------------------------
+# diagnostics
+isVerbose && printTestframeEnvironment
+TTTI_tmp="${TTRO_workDirCase}/${TEST_ENVIRONMET_LOG}"
+printTestframeEnvironment > "$TTTI_tmp"
+set +o posix
+export >> "$TTTI_tmp"
+set -o posix
+
 #-------------------------------------------------
 #source case file
 TTTI_tmp="${TTRO_inputDirCase}/${TEST_CASE_FILE}"
@@ -213,13 +223,6 @@ if [[ -e $TTTI_tmp ]]; then
 else
 	printErrorAndExit "No Test Case file $TTTI_tmp" $errScript
 fi
-
-#------------------------------------------------
-# diagnostics
-isVerbose && printTestframeEnvironment
-TTTI_tmp="${TTRO_workDirCase}/${TEST_ENVIRONMET_LOG}"
-printTestframeEnvironment > "$TTTI_tmp"
-export >> "$TTTI_tmp"
 
 #check category
 if ! TTTF_checkCats; then
@@ -285,6 +288,8 @@ if isFunction 'testPreparation'; then
 		fi
 	fi
 fi
+TTTF_fixPropsVars
+
 printInfo "$TTTT_executedTestPrepSteps Case Test Preparation steps executed"
 
 #test execution
@@ -333,6 +338,7 @@ if [[ $TTTT_executedTestSteps -eq 0 ]]; then
 else
 	printInfo "$TTTT_executedTestSteps Case test steps executed"
 fi
+TTTF_fixPropsVars
 
 #open shell if required
 if [[ -n $TTXX_shell ]]; then

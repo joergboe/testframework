@@ -663,7 +663,9 @@ fi
 isVerbose && printTestframeEnvironment
 tmp="${TTRO_workDir}/${TEST_ENVIRONMET_LOG}"
 printTestframeEnvironment > "$tmp"
+set +o posix
 export >> "$tmp"
+set -o posix
 
 #--------------------------------------------
 #execution loop over suites and variants
