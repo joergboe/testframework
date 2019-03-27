@@ -150,6 +150,7 @@ TTTI_tmp="${TTRO_workDirSuite}/${TEST_ENVIRONMET_LOG}"
 printTestframeEnvironment > "$TTTI_tmp"
 set +o posix
 export >> "$TTTI_tmp"
+declare -F >> "$TTTI_tmp"
 set -o posix
 
 #source suite file

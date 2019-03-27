@@ -321,14 +321,35 @@ readonly -f TTTF_SplitPreamblAssign
 # write protect all exported fuinctions
 function TTTF_writeProtectExportedFunctions {
 	local functions=$(declare -Fx)
+	local IFSSave="$IFS"
+	local IFS=$'\n'
+	local x fname
+	local functionlist=''
+	for x in $functions; do
+		fname="${x##* }"
+		functionlist="$functionlist $fname"
+	done
+	IFS="$IFSSave"
+	for x in $functionlist; do
+		if ! isInList "$x" "$TTXX_initialExportedFunctions"; then
+			readonly -f "$x"
+		fi
+	done
+}
+readonly -f TTTF_writeProtectExportedFunctions
+
+# write list of exported functions to TTXX_initialExportedFunctions
+TTTF_listExportedFunctions() {
+	TTXX_initialExportedFunctions=''
+	local functions=$(declare -Fx)
 	local IFS=$'\n'
 	local x fname
 	for x in $functions; do
 		fname="${x##* }"
-		readonly -f "$fname"
+		TTXX_initialExportedFunctions="$TTXX_initialExportedFunctions $fname"
 	done
 }
-readonly -f TTTF_writeProtectExportedFunctions
+readonly -f TTTF_listExportedFunctions
 
 #
 # Check if test run category matches any of the atrifact categories

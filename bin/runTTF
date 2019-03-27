@@ -73,6 +73,12 @@ source "${TTRO_scriptDir}/mainutil.sh"
 source "${TTRO_scriptDir}/util.sh"
 source "${TTRO_scriptDir}/coreutil.sh"
 
+#-----------------------------------------------------
+#prepare list of initial exported functions to avoid that these
+#functions are write protected later
+TTTF_listExportedFunctions
+export TTXX_initialExportedFunctions
+
 #--------------------------------------------------------------------------------------
 #The export check - checks whethere there are already vaiables exported with TT prefix
 declare exportCheckFailed=""
@@ -669,6 +675,7 @@ tmp="${TTRO_workDir}/${TEST_ENVIRONMET_LOG}"
 printTestframeEnvironment > "$tmp"
 set +o posix
 export >> "$tmp"
+declare -F >> "$tmp"
 set -o posix
 
 #--------------------------------------------

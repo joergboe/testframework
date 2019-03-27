@@ -778,6 +778,7 @@ function copyAndTransform {
 	done
 	return 0
 }
+readonly -f copyAndTransform
 
 TTRO_help_copyAndMorph='
 # Function copyAndMorph
@@ -1839,7 +1840,7 @@ findTokenInFiles() {
 	fi
 	return 1
 }
-export -f findTokenInFiles
+readonly -f findTokenInFiles
 
 TTRO_help_findTokenInDirs='
 # Function findTokenInDirs
@@ -1882,7 +1883,7 @@ findTokenInDirs() {
 		return 1
 	fi
 }
-export -f findTokenInDirs
+readonly -f findTokenInDirs
 
 TTRO_help_checkTokenIsInFiles='
 # Function checkTokenIsInFiles
@@ -1910,7 +1911,7 @@ checkTokenIsInFiles() {
 		return 0
 	fi
 }
-export -f checkTokenIsInFiles
+readonly -f checkTokenIsInFiles
 
 TTRO_help_checkTokenIsNotInFiles='
 # Function checkTokenIsNotInFiles
@@ -1938,7 +1939,7 @@ checkTokenIsNotInFiles() {
 		return 0
 	fi
 }
-export -f checkTokenIsNotInFiles
+readonly -f checkTokenIsNotInFiles
 
 TTRO_help_checkTokenIsInDirs='
 # Function checkTokenIsInDirs
@@ -1968,7 +1969,7 @@ checkTokenIsInDirs() {
 		return 0
 	fi
 }
-export -f checkTokenIsInDirs
+readonly -f checkTokenIsInDirs
 
 TTRO_help_checkTokenIsNotInDirs='
 # Function checkTokenIsNotInDirs
@@ -1998,7 +1999,7 @@ checkTokenIsNotInDirs() {
 		return 0
 	fi
 }
-export -f checkTokenIsNotInDirs
+readonly -f checkTokenIsNotInDirs
 
 #Guard for the last statement - make returncode always 0
 :
