@@ -304,7 +304,7 @@ fi
 if [[ -z $threadsPerJob ]]; then
 	threadsPerJob=1
 fi
-if [[ $threadsPerJob -ge $threads ]]; then
+if [[ -z $sequential && ( $threadsPerJob -gt $threads ) ]]; then
 	printErrorAndExit "threads-per-job -ge threads $threadsPerJob -ge $threads : abort" $errInvocation
 fi
 #if [[ -z $loadLimit ]]; then
