@@ -1,1 +1,1 @@
-declare -xr TTRO_version="3.7.1__dev__"
+declare -xr TTRO_version="3.8.0"

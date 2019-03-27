@@ -214,3 +214,13 @@ Version 3.6.1:
 Version 3.7.0:
 - Add command option --shell
 - breakdown in browser pages
+
+Version 3.8.0:
+- New command line option --threads-per-job
+- Better varaible protection and environment print before test scripts is sourced
+- Rename functions of module coreutils to special namespace TTTF_
+- Better handling of preambl errors
+- Move all used variables which may interfere user variables to namespace TTTT_ or TTTI_
+- Better info output for suite start and end
+- Breakdown in cases loop in suite
+- Display elapsed time in suite index even in case of test case timeout
