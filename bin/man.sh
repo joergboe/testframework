@@ -295,8 +295,8 @@ function manpage () {
 
 	- TTRO_noCpus          - The number of detected cores
 	- TTRO_noParallelCases - The max number of parallel executed cases. If set to 1 all cases are executed back-to-back
-	- TTRO_treads          - The number of threads to be used during test case execution. Is set to 1 if parallel test case
-	                         execution is enabled. Is set to \$TTRO_noCpus if back-to-back test case execution is enabled.
+	- TTRO_treads          - The number of threads per job to be used during test case execution. If sequential test execution is enabled
+	                         one job takes all treads.
 	- TTPR_clean           -
 	- TTRO_reference       - The reference will be printed
 	- TTPR_noStart         - This property is provided with value "true" if the --no-start command line option is used. It is empty otherwise

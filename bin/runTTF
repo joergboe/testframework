@@ -33,10 +33,6 @@ fi
 #---------------------------------------------------
 #include the utils define the preliminary trace vars
 source "${TTRO_scriptDir}/version.sh"
-#declare -x TTPRN_debug=""
-#declare -x TTPRN_debugDisable=""
-#declare -x TTPRN_verbose=""
-#declare -x TTPRN_verboseDisable=""
 
 #-----------------------------------------------------
 # Shutdown and interrupt vars and functions
@@ -125,7 +121,8 @@ declare -r -A valueOptions=(
 	['directory']='-i --directory'
 	['threads']='-j --threads'
 	['reference']='--ref'
-	['loadLimit']='--load-limit --loadlimit'
+	['threadsPerJob']='-x --threads-per-job'
+	#['loadLimit']='--load-limit --loadlimit'
 )
 for x in ${!singleOptions[@]}; do
 	declare ${x}=""
@@ -304,13 +301,19 @@ if [[ -z $threads ]]; then
 		threads=$noCpus
 	fi
 fi
-if [[ -z $loadLimit ]]; then
-	if [[ -n $loadReduce ]]; then
-		loadLimit=$((noCpus/2))
-	else
-		loadLimit=$noCpus
-	fi
+if [[ -z $threadsPerJob ]]; then
+	threadsPerJob=1
 fi
+if [[ $threadsPerJob -ge $threads ]]; then
+	printErrorAndExit "threads-per-job -ge threads $threadsPerJob -ge $threads : abort" $errInvocation
+fi
+#if [[ -z $loadLimit ]]; then
+#	if [[ -n $loadReduce ]]; then
+#		loadLimit=$((noCpus/2))
+#	else
+#		loadLimit=$noCpus
+#	fi
+#fi
 #---------------------------------------------------------
 
 declare -rx TTXX_runCategoryPatternArray=$(declare -p TTTT_runCategoryPatternArray)
@@ -410,10 +413,10 @@ if [[ ( -n $sequential ) || ( -n $shell ) ]]; then
 	setVar 'TTRO_noParallelCases' 1
 	setVar 'TTRO_treads' "$threads"
 else
-	setVar 'TTRO_noParallelCases' "$threads"
-	setVar 'TTRO_treads' 1
+	setVar 'TTRO_noParallelCases' $((threads/threadsPerJob))
+	setVar 'TTRO_treads' "$threadsPerJob"
 fi
-setVar 'TTRO_loadLimit100' "$loadLimit"
+#setVar 'TTRO_loadLimit100' "$loadLimit"
 
 #some more property definitions
 for ((i=0; i<${#varNamesToSet[@]}; i++)); do
@@ -574,7 +577,8 @@ fi
 #echo "*******************************************************************************************************"
 declare -r collectionStartTime=$(date -u +%s)
 declare -xr TTRO_collection="${TTRO_inputDir##*/}"
-printInfo  "**** START Collection collection='$TTRO_collection' START ********************"
+printInfo "**** START Collection collection='$TTRO_collection' START ********************"
+printInfo "Use $TTRO_noParallelCases parallel jobs and $TTRO_treads threads per job on $noCpus cores"
 #-----------------------
 #export execution lists
 export TTXX_suitesPath=$(declare -p TTTI_suitesPath)

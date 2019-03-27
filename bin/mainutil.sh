@@ -31,8 +31,10 @@ function usage {
 	--skip-ignore            : If this option is given the skip and category attributes of the cases and suite are ignored
 	-s|--sequential          : Sequential test execution. No parallel test execution is performed.
 	-j|--threads VALUE       : The number of parallel threads used. (you have ${noCpus} (virtual) cores this is default)
-	                           If parallel job execution is enabled, this number is taken as number of parallel jobs and each job takes one thread.
-	                           If parallel job execution is disabled, each job takes all treads
+	                           If parallel job execution is enabled, then number of parallel jobs is threads/threads-per-job.
+	                           If sequential test execution is enabled, each job takes all treads.
+	-x|--threads-per-job VALUE : The number of threads used for one parallel job. This value is ignored if sequential test execution
+	                           is enabled. Default is 1.
 	-l|--link                : Content found in data directoy are linked to workspace not copied (Set TTPRN_link=true)
 	--no-browser             : Do not start browser after test execution.
 	                           If this parameter is not set, the programm opens the web browser with a summary
