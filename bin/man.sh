@@ -21,17 +21,16 @@ function manpage () {
 	A test suite is defined through a directory with the main suite file with name: '$TEST_SUITE_FILE'
 	The name of a test suite is the relative path from the containing entity to the main test suite file.
 	The test suite file contains the necessary definitions and the script code to execute the test suite preparation
-	and suite finalization. The test suite file may contain common suite code (you must register functions, that are to be
+	and suite finalization. The test suite file may contain common suite code (you must export functions, that are to be
 	used in sub-suites or test cases).
 	Test cases may exists without a suite.
 
 	One or more test suites and/or test cases form a Test Collection. A Test Collection is defined through a directory.
-	A test collection may execute common code (functions must be registered).
 	A test collection may have a test properties file $TEST_PROPERTIES which should contain the definition of variables and
 	properties which may be variable in different test environments.
 	The name of the test properties file may be changed by a command line parameter (--properties).
 
-	Common used script code may be placed in separate script files, which must be registered during test run (--tools command line option).
+	Common used script code may be placed in separate script files, which must be imported during test run (use the import function).
 
 	Test cases must not be nested in other test case directories.
 	All path names of test cases and suites must not contain any white space characters.
@@ -120,8 +119,8 @@ function manpage () {
 	the default. The properties file is a bash script.
 
 
-	## Test Tools
-	=============
+	## Test Tools/Modules
+	=====================
 	If your test collection requires special functions, you must import the appropriate script module in the initialization part of a
 	Test Suite or Test Case file. The test Tools Script may define user defined variables, properties and functions. The defined
 	functions in a Tools Script must be exported like:
@@ -133,9 +132,10 @@ function manpage () {
 
 	Especially the streamsutils.sh must be imported at the beginning of the main body of the outermost Test Suite file:
 
-	import "\$TTRO_scriptDir/streamsutils.sh"\n
+	import "streamsutils.sh"\n
 
-	An alternative way to import a Test Tools module is the command line options --tools, which imports one Tools script.
+	This modules are searched in the directory of the current TestCase/TestSuite, in all directories of enclosing suites,
+	in the directory of the Test Collection and in the bin-directory.
 
 
 	## Test File Preamble
@@ -407,13 +407,11 @@ function manpage () {
 	- Set programm defined props/vars
 	- Set properties and variables defined with command line parameter -D..
 	- Source properties file if required - set props and vars
-	- Source all defined tools scripts
 	- Execute root suite in inherited environment
 	- print result
 
 	The Test Suite:
 
-	- Source all defined tools scripts
 	- Source Test Suite file - executes initialization in the main body of the script / set props and vars
 	- Check is suite is to be skipped and end suite execution if required
 	- Execute all Test Suite preparation steps if required
@@ -432,9 +430,8 @@ function manpage () {
 
 	The Test Case
 
-	- Source all defined tools scripts
 	- Source Test Case file - executes initialization in the main body of the script / set props and vars
-	- Check is cuite is to be skipped and end cuite execution if required
+	- Check if case is to be skipped and end case execution if so
 	- Execute all Test Case preparation steps if required
 	- Execute all test steps
 	- Execute all test finalization steps

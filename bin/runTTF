@@ -136,7 +136,6 @@ done
 for x in ${!valueOptions[@]}; do
 	declare ${x}=""
 done
-declare -a toolsFiles=() #The with tools fies to include
 declare -a propertyFiles=() # The property files
 declare -a varNamesToSet=() #The list with variable names to set
 declare -a varValuesToSet=() #The list with variables values to set
@@ -153,6 +152,8 @@ if ! declare -p TTPRN_debug &> /dev/null; then TTPRN_debug=''; fi
 if ! declare -p TTPRN_debugDisable &> /dev/null; then TTPRN_debugDisable=''; fi
 if ! declare -p TTPRN_verbose &> /dev/null; then TTPRN_verbose=''; fi
 if ! declare -p TTPRN_verboseDisable &> /dev/null; then TTPRN_verboseDisable=''; fi
+
+declare -x TTXX_searchPath="$TTRO_scriptDir"
 
 #------------------------------------------------------
 # get parametes and set option variables and cases map
@@ -178,11 +179,6 @@ while [[ $# -ge 1 ]]; do
 		[[ -z $parametersection ]] || optionInParamSection $1
 		echo "$TTRO_version"
 		exit 0;;
-	-t|--tools)
-		[[ $# -ge 2 && $2 != -* ]] || missOptionArg $1;
-		tmp="${#toolsFiles[@]}"
-		toolsFiles[$tmp]="$2"
-		shift;;
 	-p|--properties)
 		[[ $# -ge 2 && $2 != -* ]] || missOptionArg $1;
 		tmp="${#propertyFiles[@]}"
@@ -227,7 +223,7 @@ while [[ $# -ge 1 ]]; do
 						if [[ -n ${!option} ]]; then duplicateOption "${1}"; fi
 						[[ $# -ge 2 && $2 != -* ]] || missOptionArg $1;
 						if [[ $option == reference && -z $2 ]]; then
-							reference="${TTRO_scriptDir}/util.sh"
+							reference="util.sh"
 						else
 							eval "${option}=$2"
 						fi
@@ -266,6 +262,7 @@ unset -v parametersection
 unset -v exportCheckFailed
 
 #-----------------------------------------------
+declare -x TTXX_modulesImported=''
 declare -x TTRO_reference=""
 if [[ -n $reference ]]; then
 	TTRO_reference='true'
@@ -274,8 +271,8 @@ readonly TTRO_reference
 if [[ -n $TTRO_reference ]]; then
 	list1=$(echo "${!TTRO_help@} " | sort)
 	list3=''
-	if [[ $reference != "${TTRO_scriptDir}/util.sh" ]]; then
-		source "$reference"
+	if [[ $reference != "util.sh" ]]; then
+		import "$reference"
 		list2=$(echo "${!TTRO_help@} " | sort)
 		for x in $list2; do
 			if ! isInList "$x" "$list1"; then
@@ -359,13 +356,15 @@ else
 fi
 cd "${currentDir}"
 #---------------------------------------------------------
-# get input directory and make it absolute
+# get input directory and make it absolute correct search path
 if [[ -z ${directory} ]]; then
 	printErrorAndExit "No input directory specified" ${errInvocation}
 else
 	if cd "${directory}"; then
 		directory=$(pwd -P)
 		declare -x TTRO_inputDir="$directory"
+		TTXX_searchPath="$TTRO_inputDir $TTXX_searchPath"
+		export TTXX_searchPath
 	else
 		printErrorAndExit "Invalid directory '${directory}' specified" ${errInvocation}
 	fi
@@ -394,15 +393,7 @@ for ((i=0; i<${#propertyFiles[@]}; i++)); do
 	tmp2=$(readlink -m "$tmp")
 	propertyFiles[$i]="$tmp2"
 done
-for ((i=0; i<${#toolsFiles[@]}; i++)); do
-	tmp="${toolsFiles[$i]}"
-	if [[ ${tmp:0:1} != "/" ]]; then
-		tmp="${currentDir}/${tmp}"
-	fi
-	tmp2=$(readlink -m "$tmp")
-	toolsFiles[$i]="$tmp2"
-done
-readonly propertyFiles toolsFiles
+readonly propertyFiles
 
 #----------------------------------
 #finally make option variables read only
@@ -632,7 +623,6 @@ cd "$TTRO_workDir"
 
 #-----------------------------------------------------------
 #check if properties file exists - read properties and fixup
-declare -x TTXX_tools='' # allow imports in property file
 if [[ ${#propertyFiles[@]} -gt 0 ]]; then
 	for ((i=0; i<${#propertyFiles[@]}; i++)); do
 		x="${propertyFiles[$i]}"
@@ -650,22 +640,6 @@ else
 	printInfo "No global properies file to evaluate"
 	TTTF_fixPropsVars
 	TTTF_writeProtectExportedFunctions
-fi
-
-#------------------------------------------------
-# source tools
-if [[ ${#toolsFiles[@]} -gt 0 ]]; then
-	for ((i=0; i<${#toolsFiles[@]}; i++)); do
-		x="${toolsFiles[$i]}"
-		printInfo "Source global tools file: $x"
-		if [[ -r $x ]]; then
-			import "$x"
-		else
-			printErrorAndExit "Tools file $x is required but this file is not readable" $errRt
-		fi
-	done
-else
-	isDebug && printDebug "No additional global test tools files defined"
 fi
 
 #------------------------------------------------

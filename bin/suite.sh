@@ -113,6 +113,11 @@ eval "$TTXX_runCategoryPatternArray"
 declare -rx TTRO_suite="${TTTI_suitesName[$TTRO_suiteIndex]}"
 declare -rx TTRO_inputDirSuite="${TTTI_suitesPath[$TTRO_suiteIndex]}"
 declare -a TTTT_categoryArray=()
+#append suite input dir to the top of the search pathes
+if [[ $TTRO_suiteIndex -ne 0 ]]; then
+	TTXX_searchPath="$TTRO_inputDirSuite $TTXX_searchPath"
+	export TTXX_searchPath
+fi
 TTTF_fixPropsVars
 
 # enter working dir

@@ -25,7 +25,6 @@ function usage {
 	-i|--directory VALUE     : The input directory - the test collection directory. There is no default. This option must be entered.
 	-p|--properties VALUE    : This specifies the file with the global property values. Default is file $TEST_PROPERTIES in input directory.
 	                           This option can be given more than one time. This overwrites the environment \$TTRO_propertyFiles
-	-t|--tools VALUE         : Includes (source) files with test tool scripts. This option can be given more than one time.
 	-c|--category VALUE      : Enter the category pattern for this test run. The pattern must not contain white spaces.
 	                           Quote the value or escape special characters. This option can be given more than one time.
 	--skip-ignore            : If this option is given the skip and category attributes of the cases and suite are ignored
@@ -289,9 +288,6 @@ function printParams {
 		local -i i
 		for ((i=0; i<${#propertyFiles[@]}; i++)); do
 			printDebug "propertyFiles[$i]=${propertyFiles[$i]}"
-		done
-		for ((i=0; i<${#toolsFiles[@]}; i++)); do
-			printDebug "toolsFiles[$i]=${toolsFiles[$i]}"
 		done
 		for ((i=0; i<${#varNamesToSet[@]}; i++)); do
 			printDebug "-D ${varNamesToSet[$i]}=${varValuesToSet[$i]}"

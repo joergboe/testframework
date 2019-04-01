@@ -71,6 +71,8 @@ declare TTTT_caseFinalized=''
 declare TTTT_failureOccurred=''
 eval "$TTXX_runCategoryPatternArray"
 declare -a TTTT_categoryArray=( 'default' )
+TTXX_searchPath="$TTRO_inputDirCase $TTXX_searchPath"
+export TTXX_searchPath
 
 #test finalization function
 function caseFinalization {

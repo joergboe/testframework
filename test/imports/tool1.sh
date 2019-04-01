@@ -1,14 +1,10 @@
 
 echo "######### tool1.sh ########"
+setVar 'TTPR_var11' 'set_from_tool1.sh'
 
 func1() {
-	echo "func1 xxxx"
-	echo "TTRO_var1=$TTRO_var1"
+	echo "######### func1 xxxx"
+	setVar 'TTPR_var11' 'set_from_func1'
+	setVar 'TTPR_var12' 'set_from_func1'
 }
 export -f func1
-
-func2() {
-	echo "func2 xxxx"
-	setVar 'TTRO_var2' 'func2'
-}
-export -f func2

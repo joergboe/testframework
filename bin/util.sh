@@ -1540,14 +1540,37 @@ TTRO_help_import='
 #	return the result code of the source command'
 function import {
 	isDebug && printDebug "$FUNCNAME $*"
-	local tmp=$(readlink -m "$1")
-	if isInList "$tmp" "$TTXX_tools"; then
-		printWarning "file $tmp is already registerd in TTXX_tools=$TTXX_tools"
+	[[ $# -ne 1 ]] && printErrorAndExit "$FUNCNAME invalid no of params. Number of Params is $#" $errRt
+	local TTTT_trim
+	trim "$1"
+	local componentName="${TTTT_trim##*/}"
+	if isInList "$componentName" "$TTXX_modulesImported"; then
+		printWarning "file $componentName is already registerd in TTXX_modulesImported=$TTXX_modulesImported"
 		return 0
+	fi
+	local filename=''
+	if [[ ${TTTT_trim:0:1} == '/' ]]; then
+		if [[ -r $TTTT_trim ]]; then
+			filename="$TTTT_trim"
+		fi
 	else
-		TTXX_tools="$TTXX_tools $tmp"
-		export TTXX_tools
-		source "$tmp"
+		isDebug && printDebug "\$TTXX_searchPath=$TTXX_searchPath"
+		local x
+		for x in $TTXX_searchPath; do
+			local composite="$x/$TTTT_trim"
+			if [[ -r $composite ]]; then
+				filename="$composite"
+				break
+			fi
+		done
+	fi
+	if [[ -z $filename ]]; then
+		printErrorAndExit "$FUNCNAME: no readable file found for module '$TTTT_trim' in search path '$TTXX_searchPath'" $errRt
+	else
+		printInfo "Module $componentName import found here: $filename"
+		TTXX_modulesImported="$TTXX_modulesImported $componentName"
+		export TTXX_modulesImported
+		source "$filename"
 		TTTF_fixPropsVars
 		TTTF_writeProtectExportedFunctions
 	fi
