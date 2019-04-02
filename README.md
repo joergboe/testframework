@@ -216,6 +216,9 @@ Version 3.7.0:
 - breakdown in browser pages
 
 Version 3.8.0:
+- Clearer output of function linewisePatternMatch
+- Introduce search path for modules
+- Removed command line option --tools
 - New command line option --threads-per-job
 - Better varaible protection and environment print before test scripts is sourced
 - Rename functions of module coreutils to special namespace TTTF_
