@@ -2,7 +2,7 @@
 function testPreparation {
 	echo "*********************************************************"
 	echo " this suite tests helper functions and expected result is"
-	echo "cases  executed=149 failures=20 errors=30 skipped=0"
+	echo "cases  executed=161 failures=22 errors=30 skipped=0"
 	echo "*********************************************************"
 	echo
 	echo "Expected failures are:"
@@ -27,8 +27,11 @@ echo "Functions::executeLogAndSuccess:fails"
 echo "Functions::executeLogAndSuccess:simpleCommands27"
 echo "Functions::findTokenInDirs:checkTokenIsInDirsFail: Token ERROXR was not in one of these directories:..."
 echo "Functions::findTokenInDirs:scheckTokenIsNotInDirsFail: Token ERROR was found in one of these directories:..."
-echo "Functions::findTokenInFiles:checkTokenIsInFilesFailure: Token ERROXR was not in one of these files:..." 
+echo "Functions::findTokenInFiles:checkTokenIsInFilesFailure: Token ERROXR was not in one of these files:..."
 echo "Functions::findTokenInFiles:checkTokenIsNotInFilesFailure: Token ERROR was not in one of these files:..."
+echo "Functions::linewisePatternMatch:matchSuccessFail: Not enough matches: 'linewisePatternMatchInterceptAndSuccess ...'"
+echo "Functions::linewisePatternMatch:matchErrorFail: Match found: 'linewisePatternMatchInterceptAndError ...'" 
+
 echo
 echo "**** CASE_ERROR List : ****"
 echo "#suite[:variant][::suite[:variant]..]::case[:variant]"

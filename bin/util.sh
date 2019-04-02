@@ -960,19 +960,19 @@ TTRO_help_linewisePatternMatch='
 #	$2 - if set to "true" all pattern must generate a match
 #	$3 .. - the pattern to match
 #	returns
-#		success(0)   if file exist and one patten matches ($2 -eq true)
-#	                 if file exist and one patten matches ($2 -eq true)
+#		success(0)   if file exist and one patten matches (if $2 is false)
+#		             if file exist and all patten matche  (if $2 is true)
 #	return false if no complete pattern match was found or the file not exists'
-declare -a patternList=()
+declare -a TTTT_patternList=()
 function linewisePatternMatch {
 	if [[ $# -lt 3 ]]; then printErrorAndExit "$FUNCNAME missing params. Number of Params is $#" $errRt; fi
 	isDebug && printDebug "$FUNCNAME $*"
 	local -i max=$#
 	local -i i
 	local -i noPattern=0
-	patternList=()
+	TTTT_patternList=()
 	for ((i=3; i<=max; i++)); do
-		patternList[$noPattern]="${!i}"
+		TTTT_patternList[$noPattern]="${!i}"
 		noPattern=$((noPattern+1))
 	done
 	if linewisePatternMatchArray "$1" "$2"; then
@@ -993,7 +993,7 @@ TTRO_help_linewisePatternMatchAndIntercept='
 #	returns succes
 #	and the result code from linewisePatternMatch in TTTT_result'
 function linewisePatternMatchAndIntercept {
-	if linewisePatternMatch "$@"; then
+	if linewisePatternMatch "$@" 2>&1; then
 		TTTT_result=0
 	else
 		TTTT_result=$?
@@ -1017,7 +1017,7 @@ function linewisePatternMatchInterceptAndSuccess {
 		TTTT_result=0
 	else
 		TTTT_result=$?
-		setFailure "Failed $FUNCNAME $*"
+		setFailure "Not enough matches: '$FUNCNAME $1 $2 ...'"
 	fi
 	return 0
 }
@@ -1034,9 +1034,9 @@ TTRO_help_linewisePatternMatchInterceptAndError='
 #	returns
 #	and the result code from linewisePatternMatch in TTTT_result'
 function linewisePatternMatchInterceptAndError {
-	if linewisePatternMatch "$@"; then
+	if linewisePatternMatch "$@" 3>&1 1>&2 2>&3; then
 		TTTT_result=0
-		setFailure "Failed: match found: $FUNCNAME $*"
+		setFailure "Match found: '$FUNCNAME $1 $2 ...'"
 	else
 		TTTT_result=$?
 	fi
@@ -1047,24 +1047,24 @@ readonly -f linewisePatternMatchInterceptAndError
 TTRO_help_linewisePatternMatchArray='
 # Function linewisePatternMatchArray
 #	Line pattern validator with array input variable
-#	the pattern to match as array 0..n are expected to be in patternList array variable
+#	the pattern to match as array 0..n are expected to be in TTTT_patternList array variable
 #	$1 - the input file
 #	$2 - if set to "true" all pattern must generate a match
-#	$patternList the indexed array with the pattern to search
-#		success(0)   if file exist and one patten matches ($2 -eq true)
-#	                 if file exist and one patten matches ($2 -eq true)
+#	$TTTT_patternList the indexed array with the pattern to search
+#		success(0)   if file exist and one patten matches (if $2 is false)
+#		             if file exist and all patten matche  (if $2 is true)
 #	return false if no complete pattern match was found or the file not exists'
 function linewisePatternMatchArray {
 	if [[ $# -ne 2 ]]; then printErrorAndExit "$FUNCNAME invalid no of params. Number of Params is $#" $errRt; fi
 	isDebug && printDebug "$FUNCNAME $*"
 	local -i i
-	local -i noPattern=${#patternList[@]}
+	local -i noPattern=${#TTTT_patternList[@]}
 	local -a patternMatched=()
 	for ((i=0; i<$noPattern; i++)); do
-		patternMatched[$i]=0
+		patternMatched[$i]=''
 	done
 	if isDebug; then
-		local display=$(declare -p patternList);
+		local display=$(declare -p TTTT_patternList);
 		printDebug "$display"
 	fi
 	if [[ -f $1 ]]; then
@@ -1079,10 +1079,10 @@ function linewisePatternMatchArray {
 					line=$((line+1))
 					isDebug && printDebug "$REPLY"
 					for ((i=0; i<$noPattern; i++)); do
-						if [[ patternMatched[$i] -eq 0 && $REPLY == ${patternList[$i]} ]]; then
-							patternMatched[$i]=1
+						if [[ -z ${patternMatched[$i]} && ( $REPLY == ${TTTT_patternList[$i]} ) ]]; then
+							patternMatched[$i]='true'
 							matches=$((matches+1))
-							echo "$FUNCNAME : Pattern='${patternList[$i]}' matches line=$line in file=$1"
+							echo "$FUNCNAME : Pattern[$i]='${TTTT_patternList[$i]}' matches line=$line in file=$1"
 							if [[ -z $2 ]]; then
 								break 2
 							fi
@@ -1094,14 +1094,19 @@ function linewisePatternMatchArray {
 				fi
 			done
 		} < "$1"
+		local noMatchIn=''
+		for ((i=0; i<$noPattern; i++)); do
+			if [[ -z ${patternMatched[$i]} ]]; then
+				noMatchIn="$noMatchIn $i"
+			fi
+		done
 		if [[ $2 == 'true' ]]; then
 			if [[ $matches -eq $noPattern ]]; then
 				echo "$FUNCNAME : $matches matches found in file=$1"
 				return 0
 			else
-				local display=$(declare -p patternList)
-				echo "$FUNCNAME : Only $matches of $noPattern pattern maches found in file=$1"
-				echo "Pattern=$display"
+				echo "$FUNCNAME : Only $matches of $noPattern pattern maches found in file=$1" >&2
+				echo "$FUNCNAME no matches for pattern $noMatchIn" >&2
 				return $errTestFail
 			fi
 		else
@@ -1109,14 +1114,12 @@ function linewisePatternMatchArray {
 				echo "$FUNCNAME : $matches matches found in file=$1"
 				return 0
 			else
-				local display=$(declare -p patternList)
 				echo "$FUNCNAME : No match found in file=$1"
-				echo "Pattern=$display"
 				return $errTestFail
 			fi
 		fi
 	else
-		echo "$FUNCNAME: can not open file $1"
+		echo "$FUNCNAME: can not open file $1" >&2
 		return $errTestFail
 	fi
 }
