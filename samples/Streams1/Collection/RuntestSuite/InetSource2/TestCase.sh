@@ -1,8 +1,17 @@
 # Submission test for Streams
 #--variantList='submitJob submitJobWithParam submitJobAndIntercept submitJobInterceptAndSuccess submitJobLogAndIntercept doubleJobCancel'
-PREPS='copyOnly splCompile'
-STEPS='mySubmit checkJobNo waitForFin myCancelJob myEvaluate'
+PREPS=( 'echo "${explainVariants[$TTRO_variantCase]}"' 'copyOnly' 'splCompile' )
+STEPS='mySubmit checkJobNo waitForFin cancelJob myCancelJob2 myEvaluate'
 FINS='cancelJob'
+
+declare -A explainVariants=( \
+	['submitJob']="Submit a job with a simple submit" \
+	['submitJobWithParam']="Submit a job with submission time parameters" \
+	['submitJobAndIntercept']="Submit a job guarded" \
+	['submitJobInterceptAndSuccess']="Submit a job and expect a successful submission" \
+	['submitJobLogAndIntercept']="Submit a job guarded and provide job output as evaluation file" \
+	['doubleJobCancel']="Submit a job and cancel job twice" \
+)
 
 myEvaluate() {
 	if ! linewisePatternMatch "$TT_dataDir/Tuples" '' '*http*://httpbin.org/get*'; then
@@ -12,7 +21,7 @@ myEvaluate() {
 
 mySubmit() {
 	case $TTRO_variantCase in
-	submitJob)
+	submitJob|doubleJobCancel)
 		submitJob
 		echo "-------- TTTT_jobno=$TTTT_jobno";;
 	submitJobWithParam)
@@ -32,21 +41,13 @@ mySubmit() {
 		echo "-------- TTTT_result=$TTTT_result"
 		echo "--------"
 		cat "$TT_evaluationFile";;
-	doubleJobCancel)
-		submitJobLogAndIntercept
-		echo "-------- TTTT_jobno=$TTTT_jobno"
-		echo "-------- TTTT_result=$TTTT_result"
-		cat "$TT_evaluationFile";;
 	esac
 }
 
-myCancelJob() {
+myCancelJob2() {
 	if [[ $TTRO_variantCase == 'doubleJobCancel' ]]; then
-		cancelJob
 		echo "-------- TTTT_jobno=$TTTT_jobno"
-		echo "--------- and one more cancel job"
-		cancelJob
-	else
+		echo "--------- and now one surplus cancel job"
 		cancelJob
 	fi
 }
