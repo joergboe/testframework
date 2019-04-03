@@ -1,5 +1,5 @@
 
-# runTTF 
+# runTTF
 
 The runTTF script is a framework for the control of test case execution.
 The execution of test case/suite variants and the parallel execution is inherently supported.
@@ -19,18 +19,17 @@ A test suite is a collection of test cases, test suites and artifacts to prepare
 The directory sub tree of the test suite may have an arbitrary depth.
 A test suite is defined through a directory with the main suite file with name: 'TestSuite.sh'
 The name of a test suite is the relative path from the containing entity to the main test suite file.
-The test suite file contains the necessary definitions and the script code to execute the test suite preparation 
-and suite finalization. The test suite file may contain common suite code (you must register functions, that are to be
+The test suite file contains the necessary definitions and the script code to execute the test suite preparation
+and suite finalization. The test suite file may contain common suite code (you must export functions, that are to be
 used in sub-suites or test cases).
 Test cases may exists without a suite.
 
-One or more test suites and/or test cases form a Test Collection. A Test Collection is defined through a directory. 
-A test collection may execute common code (functions must be registered).
-A test collection may have a test properties file TestProperties.sh which should contain the definition of variables and 
+One or more test suites and/or test cases form a Test Collection. A Test Collection is defined through a directory.
+A test collection may have a test properties file TestProperties.sh which should contain the definition of variables and
 properties which may be variable in different test environments.
 The name of the test properties file may be changed by a command line parameter (--properties).
 
-Common used script code may be placed in separate script files, which must be registered during test run (--tools command line option).
+Common used script code may be placed in separate script files, which must be imported during test run (use the import function).
 
 Test cases must not be nested in other test case directories.
 All path names of test cases and suites must not contain any white space characters.
@@ -45,8 +44,8 @@ The test framework starts with the analysis of the input directory (directory li
 If no list with case wildcards is given as command line parameter, all found test suites and test cases which are not marked as 'skipped'
 property are executed. In this case all suites (also empty suites) are executed.
 
-If a cases list is given from the command line, all test cases with match the cases list are executed (pattern match). 
-Additionally all suites are executed, which are necessary to reatch the cases with a pattern match. In this mode suites that 
+If a cases list is given from the command line, all test cases with match the cases list are executed (pattern match).
+Additionally all suites are executed, which are necessary to reatch the cases with a pattern match. In this mode suites that
 do not include an active case are not executed.
 
 There is always an enveloping 'dummy' suite, which is always executed.
@@ -65,7 +64,7 @@ A preamble statement starts with the character sequence '#--'. A preamble line m
 \ before nl. The continuation line must start also with sequence '#--'
 
 The script code section is a bash script. In the script section, you can define required code for the initialization
-and the custom functions for the test preparation, for the test step execution and the test finalization. 
+and the custom functions for the test preparation, for the test step execution and the test finalization.
 
 In general all collections, suites and test cases are executed in 4 phases:
 - Initialization
@@ -86,7 +85,7 @@ defined in the appropriate script file.
 
 During execution phase of the Test Collection the framework iterates recursively though all defined Test Suites.
 
-During execution phase of the Test Suite the framework iterates though all Test Cases and then all defined Sub-Suites are executed. 
+During execution phase of the Test Suite the framework iterates though all Test Cases and then all defined Sub-Suites are executed.
 Test Case execution may use parallel execution. Test Suites are always sequentially executed.
 
 During execution phase of the Test Case the framework iterates sequentially though all Test Cases Steps.
@@ -104,21 +103,21 @@ The variables TTRO_finsSuite and TTRO_finsCase have global meaning. They may be 
 during the the execution of the appropriate artifact. The variable FINS and the function testFinalization have local meaning and are
 defined in the appropriate script file.
 
-If the variables TTPR_noPrepsSuite TTPR_noPrepsCase TTPR_noFinsSuite TTPR_noFinsCase are set to a 
+If the variables TTPR_noPrepsSuite TTPR_noPrepsCase TTPR_noFinsSuite TTPR_noFinsCase are set to a
 non empty value the preparation and the finalization of the appropriate artifact is supressed.
 
 
 ## Test Property File TestProperties.sh
-This file may contain global property and variable definitions. This file should no contain script code. This file is intended 
-to store stuff which may change when the test collection is executed in different environments. The default name of this 
-file is 'TestProperties.sh' and it is expected in the Test collection directory. An alternative file name may be assigned with 
-command line parameter --properties or the environment TTRO_propertyFiles is evaluated. The command line option overwrites environment and 
+This file may contain global property and variable definitions. This file should no contain script code. This file is intended
+to store stuff which may change when the test collection is executed in different environments. The default name of this
+file is 'TestProperties.sh' and it is expected in the Test collection directory. An alternative file name may be assigned with
+command line parameter --properties or the environment TTRO_propertyFiles is evaluated. The command line option overwrites environment and
 the default. The properties file is a bash script.
 
 
-## Test Tools
-If your test collection requires special functions, you must import the appropriate script module in the initialization part of a 
-Test Suite or Test Case file. The test Tools Script may define user defined variables, properties and functions. The defined 
+## Test Tools/Modules
+If your test collection requires special functions, you must import the appropriate script module in the initialization part of a
+Test Suite or Test Case file. The test Tools Script may define user defined variables, properties and functions. The defined
 functions in a Tools Script must be exported like:
 
 export -f fname
@@ -128,9 +127,10 @@ Once a function has been defined, it can not be re-defined in a nested element.
 
 Especially the streamsutils.sh must be imported at the beginning of the main body of the outermost Test Suite file:
 
-import "$TTRO_scriptDir/streamsutils.sh"\n
+import "streamsutils.sh"\n
 
-An alternative way to import a Test Tools module is the command line options --tools, which imports one Tools script.
+This modules are searched in the directory of the current TestCase/TestSuite, in all directories of enclosing suites,
+in the directory of the Test Collection and in the bin-directory.
 
 
 ## Test File Preamble
@@ -151,12 +151,12 @@ The variantCount must be in the form:
 The variantList must be a space separated list of identifiers:
 #--variantList='space separated list of variant identifiers'
 An identifier should be composed from following characters : 0-9a-zA-Z-_
-Make sure that the variant identifiers can be easily used in pattern matching 
+Make sure that the variant identifiers can be easily used in pattern matching
 expressions. Thus avoid characters: *?[]-:!^
 
 ## Test Case timeouts
-The test case execution is superviced and when the timeout (TTPR_timeout in seconds) is reached, 
-the job is killed with SIGTERM (15). If the job still runs after additional time (TTPR_additionalTime), 
+The test case execution is superviced and when the timeout (TTPR_timeout in seconds) is reached,
+the job is killed with SIGTERM (15). If the job still runs after additional time (TTPR_additionalTime),
 the job is killed with SIGKILL (9).
 
 The test case timeout can be controlled with property TTPR_timeout. If this property is not set, the value 120 is used.
@@ -170,22 +170,23 @@ The individual test case timeout is used if the value is greater than TTPR_timeo
 ## Reserved Variable Name Ranges
 Variables used for the framework have special prefixes.
 
-- TTTT_ : Varaible names starting with TTTT_ are reserved for testframework usage. These variables are not exported. Do not use those 
-names in test case/suite script usercode.
+- TTTT_ : Varaible names starting with TTTT_ are reserved for testframework and tools usage. These variables are not exported.
+- TT_   : Global r/w variable (environment)
+- TTRO_ : Global r/o variable (environment)
+- TTPR_ : Global property (empty value defines this property) (environment)
+- TTPRN_: Global property (empty value may be overwritten) (environment)
+- TTTI_ : Variables for testframework internal usage. Do not use those names in test case/suite script usercode.
 - TTXX_ : Global variables for internal usage. Do not use those names in test case/suite script usercode. (No automatic export)
-- TT_   : Global r/w variable
-- TTRO_ : Global r/o variable
-- TTPR_ : Global property (empty value defines this property)
-- TTPRN_: Global property (empty value may be overwritten)
+- TTTF_ : Function names for internal usage. Do not use those names in test case/suite script usercode. (No automatic export)
 
 ## Test Framework Variables and Properties
-Variables with the prefix TT_, TTRO_, TTPR_ or TTPRN_ are treated as global definitions and they are exported from 
+Variables with the prefix TT_, TTRO_, TTPR_ or TTPRN_ are treated as global definitions and they are exported from
 Test Collection to Test Suite and from Test Suite to Test Case.
 
 In the script code section, variables and properties can be assigned with function setVar 'name' "value".
 
 ## Property Variables
-Property variables are not changed once they have been defined. Re-definition of property variables will be ignored. 
+Property variables are not changed once they have been defined. Re-definition of property variables will be ignored.
 An pure assignment to a property in a test suite/case script may cause a script failure. Use function setVar instead.
 The name of a property must be prefixed with TTPR_ or TTPRN_
 
@@ -197,17 +198,17 @@ NOTE: The TTPRN_ version is used as switch which can be used only once to become
 
 
 ## Simple Global Variables and Global Read-only Variables
-Global variables may be defined in the script code section of the test artifacts. 
-Simple variables and can be re-written in suite- or test-case-script and must have the prefix TT_. 
-Read-only variables can not be re-written once they have been defined and must have the prefix TTRO_. 
-In script code use function setVar to define such a variable. To re-write a global variable (TT_) 
+Global variables may be defined in the script code section of the test artifacts.
+Simple variables and can be re-written in suite- or test-case-script and must have the prefix TT_.
+Read-only variables can not be re-written once they have been defined and must have the prefix TTRO_.
+In script code use function setVar to define such a variable. To re-write a global variable (TT_)
 a plain assignment is sufficient. A re-write of an read-only variable will cause a script/test failure.
 
 
 
 ## Trueness and Falseness
-Logical variables with the semantics of an boolean are considered 'true' if these variables are set to something different than 
-the empty value (null). An empty (null) variable or an unset variable is considered 'false'. Care must be taken if a 
+Logical variables with the semantics of an boolean are considered 'true' if these variables are set to something different than
+the empty value (null). An empty (null) variable or an unset variable is considered 'false'. Care must be taken if a
 variable is unset. In general the usage of an unset variable will cause a script failure.
 Use function 'isExisting' or 'isNotExisting' to avoid script aborts.
 
@@ -225,7 +226,7 @@ Additionally the verbosity can be controlled with existence of the properties:
 - TTPRN_verbose          - enables verbosity
 - TTPRN_verboseDisable   - disables verbosity (overrides TTPRN_verbose)
 
-NOTE: The check if an existing variable is empty or not is much faster then the check against existance of an variable. Therefore 
+NOTE: The check if an existing variable is empty or not is much faster then the check against existance of an variable. Therefore
 we use here the empty value an consider it as unset property.
 
 ## Variables Used
@@ -233,30 +234,30 @@ we use here the empty value an consider it as unset property.
                           This variable is set by function setSkip
 - TTPRN_skipIgnore      - if this varaible not empty, the skip variable is ignored.
 
-- STEPS                 - The space separated list or an array of test step commands with local meaning. If one command returns an failure (return code != 0), 
+- STEPS                 - The space separated list or an array of test step commands with local meaning. If one command returns an failure (return code != 0),
                           the test execution is stopped
 - TTRO_stepsCase        - This variable is designed to store a space separated list of test step commands.
-                          and the test case variant is considered an error. When the execution of all test commands return success the 
+                          and the test case variant is considered an error. When the execution of all test commands return success the
                           test case variant is considered a success.
-                        
-- TTRO_prepsSuite       - This variable stores the list of test suite preparation commands. If one command returns an failure (return code != 0), 
+
+- TTRO_prepsSuite       - This variable stores the list of test suite preparation commands. If one command returns an failure (return code != 0),
                           the test execution ot the suite is stopped.
-- TTRO_prepsCase        - The space separated list of test case preparation commands. If one command returns an failure (return code != 0), 
+- TTRO_prepsCase        - The space separated list of test case preparation commands. If one command returns an failure (return code != 0),
                           the test execution is stopped and the test is considered an error.
 - PREPS                 - The space separated list or an array of test preparation commands with local meaning.
 
-- TTRO_finsSuite        - This variables stores the list of test suite finalization commands. If one command returns an failure (return code != 0), 
+- TTRO_finsSuite        - This variables stores the list of test suite finalization commands. If one command returns an failure (return code != 0),
                           the error is logged and the execution is stopped
-- TTRO_finsCase         - This variable is designed to store the list of test case finalization commands. If one command returns an failure (return code != 0), 
+- TTRO_finsCase         - This variable is designed to store the list of test case finalization commands. If one command returns an failure (return code != 0),
                           the error is logged and the execution is stopped. The result of the case is not affected.
 - FINS                  - The space separated list or an array of test finalization commands.
-                         
-- TTPR_timeout          - The default test case timeout in seconds. default is 120 sec. This variable must be defined in the 
-                          description section of test case file or anywhere in the Test Suite or Test Property file. A definition 
+
+- TTPR_timeout          - The default test case timeout in seconds. default is 120 sec. This variable must be defined in the
+                          description section of test case file or anywhere in the Test Suite or Test Property file. A definition
                           in the script section of a Test Case has no effect.
-- TTPR_additionalTime    - The extra wait time after the test case time out. If the test case does not end after this 
-                          time a SIGKILL is issued and the test case is stopped. The default is 45 sec. This variable 
-                          must be defined in the description section of test case file or anywhere in the Test Suite or Test Property file. 
+- TTPR_additionalTime    - The extra wait time after the test case time out. If the test case does not end after this
+                          time a SIGKILL is issued and the test case is stopped. The default is 45 sec. This variable
+                          must be defined in the description section of test case file or anywhere in the Test Suite or Test Property file.
                           A definition in the script section of a Test Case has no effect.
 
 
@@ -277,9 +278,9 @@ we use here the empty value an consider it as unset property.
 
 - TTRO_noCpus          - The number of detected cores
 - TTRO_noParallelCases - The max number of parallel executed cases. If set to 1 all cases are executed back-to-back
-- TTRO_treads          - The number of threads to be used during test case execution. Is set to 1 if parallel test case
-                         execution is enabled. Is set to $TTRO_noCpus if back-to-back test case execution is enabled.
-- TTPR_clean           - 
+- TTRO_treads          - The number of threads per job to be used during test case execution. If sequential test execution is enabled
+                         one job takes all treads.
+- TTPR_clean           -
 - TTRO_reference       - The reference will be printed
 - TTPR_noStart         - This property is provided with value "true" if the --no-start command line option is used. It is empty otherwise
 - TTPR_noStop          - This  property is provided with value "true" if the --no-stop command line option is used. It is empty otherwise
@@ -288,7 +289,7 @@ we use here the empty value an consider it as unset property.
 - TTPR_noPrepsCase     - This property is not provided. If the property is true no Test Case preparation is called
 - TTPR_noFinsSuite     - This property is provided with value "true" if the --no-stop command line option is used. If the property is true no Test Suite finalization is called
 - TTPR_noFinsCase      - This property is not provided. If the property is true no Test Case finalization is called
-                         
+
 - TTTT_categoryArray   - The indexed array with the categories of the current Case/Suite
 - TTTT_runCategoryPatternArray - The indexed array with the run-category patterns of the current test run
 - TTTT_failureOccurred - The failure condition in test case execution
@@ -299,31 +300,31 @@ we use here the empty value an consider it as unset property.
 ## Special Script Execution options
 To maintain the correctness of the test execution all scripts are executed with special options set:
 
-errexit: Exit immediately if a pipeline (which may consist of a single simple command),  a sub-shell command enclosed 
-in parentheses, or one of the commands executed as part of a command  list  enclosed  by  braces exits with a non-zero 
+errexit: Exit immediately if a pipeline (which may consist of a single simple command),  a sub-shell command enclosed
+in parentheses, or one of the commands executed as part of a command  list  enclosed  by  braces exits with a non-zero
 status.
-The shell does not exit if the command that fails is part of the command list immediately following a while or until keyword, 
-part of the test following the if or elif reserved words, part of any command executed in a && or || list except the 
-command  following the final && or ||, any command in a pipeline but the last, or if the command's return value is 
+The shell does not exit if the command that fails is part of the command list immediately following a while or until keyword,
+part of the test following the if or elif reserved words, part of any command executed in a && or || list except the
+command  following the final && or ||, any command in a pipeline but the last, or if the command's return value is
 being inverted with !.
 
-pipefail: If  set, the return value of a pipeline is the value of the last (rightmost) command to exit with a non-zero 
+pipefail: If  set, the return value of a pipeline is the value of the last (rightmost) command to exit with a non-zero
 status, or zero if all commands in the pipeline exit successfully.
 
 posix:  Change the behavior of bash where the default operation differs from the POSIX standard to match the standard.
 
-nounset: Treat unset variables and parameters other than the special parameters "@" and "*" as an error when performing 
-parameter expansion. If expansion is attempted on an unset variable or parameter, the shell prints an error message, 
+nounset: Treat unset variables and parameters other than the special parameters "@" and "*" as an error when performing
+parameter expansion. If expansion is attempted on an unset variable or parameter, the shell prints an error message,
 and exits with a non-zero status.
 
 nullglob: bash allows patterns which match no files to expand to a null string, rather than themselves.
 
-globstar: The pattern ** used in a path-name expansion context will match all files and zero or more directories and 
+globstar: The pattern ** used in a path-name expansion context will match all files and zero or more directories and
 sub-directories. If the pattern is followed by a /, only directories and sub-directories match
 
 If a test case requires the execution of a command that fails intentionally, you should use one of the functions:
 echoExecuteAndIntercept          - echo command and parameters; execute command guarded; return value in TTTT_result
-echoExecuteAndIntercept2,      
+echoExecuteAndIntercept2,
 echoExecuteInterceptAndSuccess,  - echo command and parameters; execute command guarded; return value in TTTT_result;
                                    expect cmd success set failure otherwise
 echoExecuteInterceptAndError,    - echo command and parameters; execute command guarded; return value in TTTT_result;
@@ -351,7 +352,7 @@ To signal the success of a test case just leave the function with success 'retur
 The test frame environment atempts to execute the test finalization functions in case of error and in case of failure.
 
 ## Skip Test Cases - Category Control
-A test case or a test suite is skipped if the function setSkip is called during initialization phase of the artifact. 
+A test case or a test suite is skipped if the function setSkip is called during initialization phase of the artifact.
 This function sets the property TTPRN_skip with the supplied non-empty reason string.
 
 A test case is skipped if the property TTPRN_skip is defined and not empty. This property may be set :
@@ -365,7 +366,7 @@ If the function 'setCategory' is not called during Case initialization the Case 
 If the function 'setCategory' is not called during Suite initialization the Suite has no category.
 If the function 'setCategory' is called with an empty parameter list, all catagories are cleaned.
 The categories are checked before the Case- or Suite- preparation is executed.
-The run-categories of the a test run can be defined with command line parameter -c|--category VALUE. The run-categories 
+The run-categories of the a test run can be defined with command line parameter -c|--category VALUE. The run-categories
 are considered to be patterns.
 If one of the run-category pattern matches any of the categories of the artifact, the Case/Suite is executed. Otherwise it is skipped.
 A test Case or Suite without a defined categorie is always executed independently from the run-categories.
@@ -374,7 +375,7 @@ If the run-caegory 'default' is specified, all Cases and Suites are executed tha
 
 
 ## Sequence Control
-The Test Collection, each Test Suite variant and each Test Case variant are executed in an own environment. 
+The Test Collection, each Test Suite variant and each Test Case variant are executed in an own environment.
 The global variables and properties (TT.. variables) are inherited from Test Collection to Suite and to Case.
 
 The test execution is done in the following order:
@@ -385,13 +386,11 @@ The Test Collection:
 - Set programm defined props/vars
 - Set properties and variables defined with command line parameter -D..
 - Source properties file if required - set props and vars
-- Source all defined tools scripts
 - Execute root suite in inherited environment
 - print result
 
 The Test Suite:
 
-- Source all defined tools scripts
 - Source Test Suite file - executes initialization in the main body of the script / set props and vars
 - Check is suite is to be skipped and end suite execution if required
 - Execute all Test Suite preparation steps if required
@@ -410,9 +409,8 @@ The Test Suite:
 
 The Test Case
 
-- Source all defined tools scripts
 - Source Test Case file - executes initialization in the main body of the script / set props and vars
-- Check is cuite is to be skipped and end cuite execution if required
+- Check if case is to be skipped and end case execution if so
 - Execute all Test Case preparation steps if required
 - Execute all test steps
 - Execute all test finalization steps

@@ -210,7 +210,7 @@ if no files are scanned and $3 was true
  Function echoExecuteAndIntercept2
 	echo and execute the command line
 	additionally the expected returncode is checked
-	if the expected result is not received the failure condition is set 
+	if the expected result is not received the failure condition is set
 	the function returns success(0)
 	the function exits if an input parameter is wrong
  Parameters:
@@ -590,8 +590,8 @@ if no files are scanned and $3 was true
 	$2 - if set to "true" all pattern must generate a match
 	$3 .. - the pattern to match
 	returns
-		success(0)   if file exist and one patten matches ($2 -eq true)
-	                 if file exist and one patten matches ($2 -eq true)
+		success(0)   if file exist and one patten matches (if $2 is false)
+		             if file exist and all patten matche  (if $2 is true)
 	return false if no complete pattern match was found or the file not exists
 
 
@@ -611,12 +611,12 @@ if no files are scanned and $3 was true
 		linewisePatternMatchArray
  Function linewisePatternMatchArray
 	Line pattern validator with array input variable
-	the pattern to match as array 0..n are expected to be in patternList array variable
+	the pattern to match as array 0..n are expected to be in TTTT_patternList array variable
 	$1 - the input file
 	$2 - if set to "true" all pattern must generate a match
-	$patternList the indexed array with the pattern to search
-		success(0)   if file exist and one patten matches ($2 -eq true)
-	                 if file exist and one patten matches ($2 -eq true)
+	$TTTT_patternList the indexed array with the pattern to search
+		success(0)   if file exist and one patten matches (if $2 is false)
+		             if file exist and all patten matche  (if $2 is true)
 	return false if no complete pattern match was found or the file not exists
 
 
@@ -629,7 +629,7 @@ if no files are scanned and $3 was true
 	$1 - the input file
 	$2 - if set to "true" all pattern must generate a match
 	$3 .. - the pattern to match
-	returns 
+	returns
 	and the result code from linewisePatternMatch in TTTT_result
 
 
@@ -642,7 +642,7 @@ if no files are scanned and $3 was true
 	$1 - the input file
 	$2 - if set to "true" all pattern must generate a match
 	$3 .. - the pattern to match
-	returns 
+	returns
 	and the result code from linewisePatternMatch in TTTT_result
 
 
@@ -844,7 +844,7 @@ if no files are scanned and $3 was true
 	returns a formated string hh:mm:ss from seconds
 	parameters
 		$1   input in seconds
-	return	
+	return
 		TTTT_timeFromSeconds the formated string
 		success
 
