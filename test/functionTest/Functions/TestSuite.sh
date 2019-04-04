@@ -2,7 +2,7 @@
 function testPreparation {
 	echo "*********************************************************"
 	echo " this suite tests helper functions and expected result is"
-	echo "cases  executed=161 failures=22 errors=30 skipped=0"
+	echo "cases  executed=172 failures=22 errors=31 skipped=0"
 	echo "*********************************************************"
 	echo
 	echo "Expected failures are:"
@@ -30,11 +30,12 @@ echo "Functions::findTokenInDirs:scheckTokenIsNotInDirsFail: Token ERROR was fou
 echo "Functions::findTokenInFiles:checkTokenIsInFilesFailure: Token ERROXR was not in one of these files:..."
 echo "Functions::findTokenInFiles:checkTokenIsNotInFilesFailure: Token ERROR was not in one of these files:..."
 echo "Functions::linewisePatternMatch:matchSuccessFail: Not enough matches: 'linewisePatternMatchInterceptAndSuccess ...'"
-echo "Functions::linewisePatternMatch:matchErrorFail: Match found: 'linewisePatternMatchInterceptAndError ...'" 
+echo "Functions::linewisePatternMatch:matchErrorFail: Match found: 'linewisePatternMatchInterceptAndError ...'"
 
 echo
 echo "**** CASE_ERROR List : ****"
 echo "#suite[:variant][::suite[:variant]..]::case[:variant]"
+echo "Functions::arrayInsert:pasteEnd"
 echo "Functions::echoAndExecute:noParm"
 echo "Functions::echoAndExecute:emptyCommand"
 echo "Functions::echoAndExecute:false"

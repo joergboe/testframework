@@ -1689,19 +1689,6 @@ function getSystemLoad100 {
 }
 readonly -f getSystemLoad100
 
-TTRO_help_trim='
-# Function trim removes leading trailing whitespace characters
-#	$1	the input string
-#	returns the result string in TTTT_trim'
-function trim {
-	if [[ $# -ne 1 ]]; then printErrorAndExit "$FUNCNAME invalid no of params. Number of Params is $#" $errRt; fi
-	local locvar="$1"
-	locvar="${locvar#${locvar%%[![:space:]]*}}"
-	TTTT_trim="${locvar%${locvar##*[![:space:]]}}"
-	return 0
-}
-readonly -f trim
-
 TTRO_help_timeFromSeconds='
 # Function timeFromSeconds
 #	returns a formated string hh:mm:ss from seconds
@@ -2026,6 +2013,94 @@ checkTokenIsNotInDirs() {
 	fi
 }
 readonly -f checkTokenIsNotInDirs
+
+TTRO_help_arrayAppend='
+# Function arrayAppend appends values on an indexed array
+# Parameters:
+#	$1 The name of the array to append
+# $2 First value to appends
+# ... optional more values to append may follow'
+arrayAppend() {
+	[[ $# -lt 2 ]] && printErrorAndExit "$FUNCNAME: not enough parameters" $errRt
+	isArray "$1" || printErrorAndExit "$FUNCNAME: $1 must be an indexed array" $errRt
+	local arrname="$1"
+	shift
+	while [[ $# -gt 0 ]]; do
+		eval "$arrname+=( \"\$1\" )"
+		shift
+	done
+}
+readonly -f arrayAppend
+
+TTRO_help_arrayInsert='
+# Function arrayInsert inserts values into an indexed array
+# Parameters:
+#	$1 The name of the array
+# $2 Index where to insert (this element is replaced with the first value to insert)
+# $3 First value to inserts
+# ... optional more elements to insert'
+arrayInsert() {
+	[[ $# -lt 3 ]] && printErrorAndExit "$FUNCNAME: parameters!" $errRt
+	isArray "$1" || printErrorAndExit "$FUNCNAME: $1 must be an indexed array" $errRt
+	local arrname="$1"
+	local first="$2"
+	local num=$(( $# - 2 ))
+	eval "local arrlen=\${#$arrname[@]}"
+	[[ $first -gt $arrlen ]] && printErrorAndExit "$FUNCNAME index to insert $first must not be greater than array len $arrlen" $errRt
+	# move elements num places forward
+	local i
+	local fromIndex=$first
+	local toIndex=$(( first + num ))
+	for ((i=arrlen-1; i>=first; i--)); do
+		local newIndex=$((i+num))
+		eval "$arrname[\$newIndex]=\${$arrname[\$i]}"
+	done
+	# insert
+	shift; shift
+	while [[ $# -gt 0 ]]; do
+		eval "$arrname[\$first]=\"\$1\""
+		first=$((first+1))
+		shift
+	done
+}
+readonly -f arrayInsert
+
+TTRO_help_arrayDelete='
+# Function arrayDelete deletes a value from an indexed array
+# Parameters:
+#	$1 The name of the array
+# $2 Index to delete'
+arrayDelete() {
+	[[ $# -ne 2 ]] && printErrorAndExit "$FUNCNAME: parameters!" $errRt
+	isArray "$1" || printErrorAndExit "$FUNCNAME: $1 must be an indexed array" $errRt
+	local arrname="$1"
+	local first="$2"
+	eval "local arrlen=\${#$arrname[@]}"
+	[[ $first -ge $arrlen ]] && printWarning "$FUNCNAME index to delete $first must not be greater or equal the array len $arrlen"
+	local i
+	for ((i=first; i<arrlen; i++)); do
+		local nextindex=$((i+1))
+		if [[ $nextindex -lt $arrlen ]]; then
+			eval "${arrname}[\$i]=\${${arrname}[\${nextindex}]}"
+		else
+			eval "unset -v '${arrname}[\$i]'"
+		fi
+	done
+}
+readonly -f arrayDelete
+
+TTRO_help_trim='
+# Function trim removes leading trailing whitespace characters
+#	$1	the input string
+#	returns the result string in TTTT_trim'
+function trim {
+	if [[ $# -ne 1 ]]; then printErrorAndExit "$FUNCNAME invalid no of params. Number of Params is $#" $errRt; fi
+	local locvar="$1"
+	locvar="${locvar#${locvar%%[![:space:]]*}}"
+	TTTT_trim="${locvar%${locvar##*[![:space:]]}}"
+	return 0
+}
+readonly -f trim
 
 #Guard for the last statement - make returncode always 0
 :
