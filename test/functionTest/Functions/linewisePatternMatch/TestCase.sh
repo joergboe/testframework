@@ -1,4 +1,4 @@
-#--variantList='matchAllOk matchAllOk2 matchAllNotOk matchOneOk matchOneNotOk matchNoFile matchIntercept1 matchIntercept2 matchSuccess matchError matchSuccessFail matchErrorFail'
+#--variantList='matchAllOk matchAllOk2 matchAllNotOk matchOneOk matchOneNotOk matchNoFile matchIntercept1 matchIntercept2 matchSuccess matchError matchSuccessFail matchErrorFail matchArray'
 
 STEPS='myTest'
 
@@ -67,6 +67,15 @@ myTest() {
       echo "Test end";;
     matchErrorFail)
       linewisePatternMatchInterceptAndError "$TTRO_inputDirCase/file" 'true' "${arrayMatchAllOk[@]}"
+      echo "Test end";;
+    matchArray)
+      TTTT_patternList=(
+        "A test case is comprised of a directory with the main test case file with name: 'TestCase.sh' and other necessary artifacts"
+        'which are necessary for the test execution.'
+        'The name of a test case is the relative path from the containing entity to the main test case file.'
+        'The test case file contains the necessary definitions and the script code to execute the test.'
+      )
+      linewisePatternMatchArray "$TTRO_inputDirCase/file" 'true'
       echo "Test end";;
     *)
       printErrorAndExit "Wrong variant '$TTRO_variantCase'" $errRt;;

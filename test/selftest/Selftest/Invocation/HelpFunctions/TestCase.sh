@@ -6,14 +6,14 @@ declare -A outputValidation=()
 
 case $TTRO_variantCase in
 	help)
-		patternList=('usage: run*'
+		TTTT_patternList=('usage: run*'
 					'OPTIONS:*'
 					'-h|--help                : display this help'
 					'--man                    : display man page'
 					'--ref VALUE              : display function reference. If value is the empty value, the reference of the internal functions is displayed.'
 					'-w|--workdir  VALUE      : The working directory. Here are all work files and results are stored. Default is ./runTTFWorkdir .'
 					'-f|--flat                : Use flat working directory - does not include the date/time string into the workdir path'
-					'--noprompt               : Do not prompt berfore an existing working directory is removed.'
+					'--no-prompt|--noprompt   : Do not prompt berfore an existing working directory is removed.'
 					'-i|--directory VALUE     : The input directory - the test collection directory. There is no default. This option must be entered.'
 					'-p|--properties VALUE    : This specifies the file with the global property values. Default is file TestProperties.sh in input directory.'
 					'-c|--category VALUE      : Enter the category pattern for this test run. The pattern must not contain white spaces.'
@@ -33,7 +33,7 @@ case $TTRO_variantCase in
 
 		;;
 	man)
-		patternList=('The runTTF script is a framework for the control of test case execution.*'
+		TTTT_patternList=('The runTTF script is a framework for the control of test case execution.*'
 					 'The execution of test case/suite variants and the parallel execution is inherently supported.*'
 					 '## Test Cases, Test Suites and Test Collections*'
 					 '==============================================='
@@ -43,12 +43,12 @@ case $TTRO_variantCase in
 					 "The test case file contains the necessary definitions and the script code to execute the test.")
 		;;
 	bashhelp)
-		patternList=('Export Variables*'
+		TTTT_patternList=('Export Variables*'
 					 '================*'
 					 'The ro attribute (and others) is not availble in the child shell*')
 		;;
 	ref)
-		patternList=('############################*')
+		TTTT_patternList=('############################*')
 		;;
 esac
 

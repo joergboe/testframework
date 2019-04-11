@@ -1053,13 +1053,15 @@ TTRO_help_linewisePatternMatchArray='
 #	$TTTT_patternList the indexed array with the pattern to search
 #		success(0)   if file exist and one patten matches (if $2 is false)
 #		             if file exist and all patten matche  (if $2 is true)
-#	return false if no complete pattern match was found or the file not exists'
+#	return false if no complete pattern match was found or the file not exists
+#	exits if TTTT_patternList is empty or not existent'
 function linewisePatternMatchArray {
 	if [[ $# -ne 2 ]]; then printErrorAndExit "$FUNCNAME invalid no of params. Number of Params is $#" $errRt; fi
 	isDebug && printDebug "$FUNCNAME $*"
 	local -i i
 	local -i noPattern=${#TTTT_patternList[@]}
 	local -a patternMatched=()
+	if [[ $noPattern -eq 0 ]]; then printErrorAndExit "$FUNCNAME TTTT_patternList must not be empty" $errRt; fi
 	for ((i=0; i<$noPattern; i++)); do
 		patternMatched[$i]=''
 	done

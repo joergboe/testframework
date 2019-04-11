@@ -2,7 +2,7 @@
 function testPreparation {
 	echo "*********************************************************"
 	echo " this suite tests helper functions and expected result is"
-	echo "cases  executed=172 failures=22 errors=31 skipped=0"
+	echo "cases  executed=173 failures=22 errors=31 skipped=0"
 	echo "*********************************************************"
 	echo
 	echo "Expected failures are:"
