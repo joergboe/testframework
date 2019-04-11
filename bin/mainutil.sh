@@ -21,7 +21,7 @@ function usage {
 	                           If value assigns a Test Tools module the reference of the module is displayed.
 	-w|--workdir  VALUE      : The working directory. Here are all work files and results are stored. Default is ./${DEFAULT_WORKDIR} .
 	-f|--flat                : Use flat working directory - does not include the date/time string into the workdir path
-	--noprompt               : Do not prompt berfore an existing working directory is removed.
+	--no-prompt|--noprompt   : Do not prompt berfore an existing working directory is removed.
 	-i|--directory VALUE     : The input directory - the test collection directory. There is no default. This option must be entered.
 	-p|--properties VALUE    : This specifies the file with the global property values. Default is file $TEST_PROPERTIES in input directory.
 	                           This option can be given more than one time. This overwrites the environment \$TTRO_propertyFiles
