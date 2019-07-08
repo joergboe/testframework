@@ -36,17 +36,12 @@ handleSigint() {
 	elif [[ $TTTI_interruptReceived -gt 3 ]]; then
 		printWarning "SIGINT: Abort Suite"
 		exit $errSigint
+	else
+		printErrorAndExit "SIGINT: received - wrong TTTI_interruptReceived=$TTTI_interruptReceived" $errRt
 	fi
 	return 0
 }
-
-# Function interruptSignalSuite
-interruptSignalSuite() {
-	printInfo "SIGINT received in test suite execution programm $TTTI_commandname ********************"
-	handleSigint
-	return 0
-}
-trap interruptSignalSuite SIGINT
+trap handleSigint SIGINT
 
 # Function errorTrapFunc
 #	global error exit function - prints the caller stack

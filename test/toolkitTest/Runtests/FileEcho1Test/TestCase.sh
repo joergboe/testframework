@@ -3,7 +3,7 @@
 #--variantList='default'
 PREPS='copyAndMorphSpl'
 STEPS='splCompile submitJobInterceptAndSuccess checkJobNo myWaitForFin cancelJobAndLog myEvaluate1 checkLogsNoError'
-FINS='cancelJob'
+FINS='cancelJobAndLog'
 
 myWaitForFin() {
 	if [[ $TTRO_variantCase == 'noFin' ]]; then
