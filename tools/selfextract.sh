@@ -80,7 +80,7 @@ if [[ -n $interactive ]]; then
 		elif [[ $REPLY == "n" || $REPLY == "N" || $REPLY == "no" ]]; then
 			read -p "Enter installation directory:"
 			eval tempdir="$REPLY"
-			if [[ $tempdir == .* ]]; then
+			if [[ $tempdir != /* ]]; then
 				echo "Use a absolute path not $tempdir"
 			else
 				destination="$tempdir"
@@ -99,7 +99,7 @@ if [[ -n $interactive ]]; then
 	done
 fi
 
-if [[ $destination == .* ]]; then
+if [[ $destination != /* ]]; then
 	echo "Use a absolute path not $destination" >&2
 	exit 1
 fi
