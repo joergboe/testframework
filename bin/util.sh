@@ -93,17 +93,19 @@ TTRO_help_printErrorAndExit="
 # Function printErrorAndExit
 # 	prints an error message and exits
 #	\$1 the error message to print
-#	\$2 the exit code
+#	\$2 optional exit code, default is $errRt
 #	returns: never"
 function printErrorAndExit {
 	printError "$1"
-	echo -e "\033[31m EXIT: $2 ***************"
+	local errcode=$errRt
+	if [[ $# -gt 1 ]]; then errcode="$2"; fi
+	echo -e "\033[31m EXIT: $errcode ***************"
 	local -i i=0;
 	while caller $i; do
 		i=$((i+1))
 	done
 	echo -e "************************************************\033[0m"
-	exit $2
+	exit $errcode
 }
 readonly -f printErrorAndExit
 
