@@ -1104,6 +1104,40 @@ function waitForFinAndHealth {
 }
 export -f waitForFinAndHealth
 
+TTRO_help_waitForFinAndCheckHealth='
+# Function waitForFinAndCheckHealth
+#	waits until the final file appears and the job remains healthy
+#	set failure condition if job changes state from healthy to non healthy
+#	Parameters:
+#		$TTTT_jobno - the job number
+#		$TT_waitForFileName - the name of the file to wait for
+#		$TT_waitForFileInterval - the interval
+# Returns:
+#		success
+#	Exits
+#		if the streamtool lsjob return wrong information
+# Side Effects:
+#		TTTT_state - the state of the job
+#		TTTT_healthy the health information of the job
+#		Failure condition is set if the job becomes unhelathy'
+waitForFinAndCheckHealth() {
+	if ! jobHealthy; then
+		setFailure "The jobno=$TTTT_jobno becomes unhealty State=$TTTT_state Healthy=$TTTT_healthy"
+		return 0
+	fi
+	while ! [[ -e "$TT_waitForFileName" ]]; do
+		printInfo "Wait for file to appear $TT_waitForFileName"
+		sleep "$TT_waitForFileInterval"
+		if ! jobHealthy; then
+			setFailure "The jobno=$TTTT_jobno becomes unhealty State=$TTTT_state Healthy=$TTTT_healthy"
+			return 0
+		fi
+	done
+	printInfo "File to appear $TT_waitForFileName exists"
+	return 0
+}
+export -f waitForFinAndCheckHealth
+
 TTRO_help_checkLogsNoError='
 # Function checkLogsNoError
 #	Check if log files have no error Token ERROR
