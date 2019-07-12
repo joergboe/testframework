@@ -195,13 +195,13 @@ readonly -f TTTF_fixPropsVars
 # $1 is the filename to read
 # return 0 in success case
 # return 1 if an invalid preambl was read;
-# results are returned in global variables variantCount, variantList, timeout
+# results are returned in global variables variantCount, variantList, timeout, exclusive
 function TTTF_evalPreambl {
 	isDebug && printDebug "$FUNCNAME $1"
 	if [[ ! -r $1 ]]; then
 		printErrorAndExit "${FUNCNAME} : Can not open file=$1 for read" ${errRt}
 	fi
-	variantCount=""; variantList=""
+	variantCount=""; variantList=""; timeout=''; exclusive=''
 	declare -i lineno=1
 	{
 		local varname=
@@ -256,6 +256,13 @@ function TTTF_evalPreambl {
 											return 1
 										fi
 										isVerbose && printVerbose "timeout='${timeout}'"
+									;;
+									exclusive )
+										if ! eval "exclusive=${value}"; then
+											printError "${FUNCNAME} : Invalid value in file=$1 line=$lineno '$preamblLine'"
+											return 1
+										fi
+										isVerbose && printVerbose "exclusive='${exclusive}'"
 									;;
 									* )
 										#other property or variable

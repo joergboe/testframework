@@ -57,8 +57,8 @@ trap errorTrapFunc ERR
 
 #check if one of the global vars is used in user code
 checkGlobalVarsUsed() {
-	if isExisting 'variantCount' || isExisting 'variantList' || isExisting 'timeout'; then
-		printErrorAndExit "On of variables variantCount, variantList or timeout is used in suite user code suite $TTRO_suite" $errSuiteError
+	if isExisting 'variantCount' || isExisting 'variantList' || isExisting 'timeout' || isExisting 'exclusive'; then
+		printErrorAndExit "On of variables variantCount, variantList, timeout or exclusive is used in suite user code suite $TTRO_suite" $errSuiteError
 	fi
 }
 
@@ -237,18 +237,20 @@ declare -a TTTI_caseVariantPathes=()		#the case path of all case variants
 declare -a TTTI_caseVariantIds=()		#the variant id of all cases
 declare -a TTTI_caseVariantWorkdirs=()	#the workdir of each variant
 declare -a TTTI_casePreambErrors=()		#true if case has peambl error
+declare -a TTTI_caseExclusiveExecution=()		#if true the case requires exclusive execution
 declare -ai TTTI_caseTimeout=()			#the individual timeout
 declare -i TTTI_noCaseVariants=0			#the overall number of case variants
-declare variantCount='' variantList='' timeout='' TTTI_preamblError=''
+declare variantCount='' variantList='' timeout='' exclusive='' TTTI_preamblError=''
 for ((TTTI_i=0; TTTI_i<TTTI_noCases; TTTI_i++)) do
 	TTTI_casePath="${TTTI_cases[$TTTI_i]}"
 	TTTI_caseName="${TTTI_casePath##*/}"
+	variantCount=''; variantList=''; timeout=''; exclusive=''; TTTI_preamblError=''
 	if ! TTTF_evalPreambl "${TTTI_casePath}/${TEST_CASE_FILE}"; then
-		TTTI_preamblError='true'; variantCount=''; variantList=''; timeout=''
+		TTTI_preamblError='true'; variantCount=''; variantList=''; timeout=''; exclusive=''
 	fi
 	if [[ ( -n $variantCount ) && ( -n $variantList ) ]]; then
 		printError "In case ${TTRO_suite}:$TTTI_caseName we have both variant variables variantCount=$variantCount and variantList=$variantList ! Case preamblError"
-		TTTI_preamblError='true'; variantCount=''; variantList=''; timeout=''
+		TTTI_preamblError='true'; variantCount=''; variantList=''; timeout=''; exclusive=''
 	fi
 	#echo "variantCount=$variantCount variantList=$variantList"
 	if [[ -z $variantCount ]]; then
@@ -258,6 +260,7 @@ for ((TTTI_i=0; TTTI_i<TTTI_noCases; TTTI_i++)) do
 			TTTI_caseVariantWorkdirs[$TTTI_noCaseVariants]="${TTRO_workDirSuite}/${TTTI_caseName}"
 			TTTI_casePreambErrors[$TTTI_noCaseVariants]="$TTTI_preamblError"
 			setTimeoutInArray
+			TTTI_caseExclusiveExecution[$TTTI_noCaseVariants]="$exclusive"
 			TTTI_noCaseVariants=$((TTTI_noCaseVariants+1))
 		else
 			for TTTI_x in $variantList; do
@@ -266,6 +269,7 @@ for ((TTTI_i=0; TTTI_i<TTTI_noCases; TTTI_i++)) do
 				TTTI_caseVariantWorkdirs[$TTTI_noCaseVariants]="${TTRO_workDirSuite}/${TTTI_caseName}/${TTTI_x}"
 				TTTI_casePreambErrors[$TTTI_noCaseVariants]="$TTTI_preamblError"
 				setTimeoutInArray
+				TTTI_caseExclusiveExecution[$TTTI_noCaseVariants]="$exclusive"
 				TTTI_noCaseVariants=$((TTTI_noCaseVariants+1))
 			done
 		fi
@@ -277,6 +281,7 @@ for ((TTTI_i=0; TTTI_i<TTTI_noCases; TTTI_i++)) do
 				TTTI_caseVariantWorkdirs[$TTTI_noCaseVariants]="${TTRO_workDirSuite}/${TTTI_caseName}/${TTTI_j}"
 				TTTI_casePreambErrors[$TTTI_noCaseVariants]="$TTTI_preamblError"
 				setTimeoutInArray
+				TTTI_caseExclusiveExecution[$TTTI_noCaseVariants]="$exclusive"
 				TTTI_noCaseVariants=$((TTTI_noCaseVariants+1))
 			done
 			unset TTTI_j
@@ -284,7 +289,7 @@ for ((TTTI_i=0; TTTI_i<TTTI_noCases; TTTI_i++)) do
 	fi
 done
 unset TTTI_i TTTI_casePath TTTI_caseName
-unset timeout variantCount variantList
+unset timeout variantCount variantList exclusive
 
 isVerbose && printVerbose "Execute Suite $TTRO_suite variant='$TTRO_variantSuite' in workdir $TTRO_workDirSuite number of cases=$TTTI_noCases number of case variants=$TTTI_noCaseVariants"
 
@@ -366,6 +371,7 @@ else
 	declare -ri TTTI_maxParralelJobs=$((TTRO_noParallelCases*2))
 fi
 declare -i TTTI_currentParralelJobs=TTRO_noParallelCases
+declare -i TTTI_currentParralelJobsEffective
 
 # do not set timer props here to avoid that nested suites have these props set
 declare TTTT_casesTimeout="$defaultTimeout"
@@ -387,6 +393,7 @@ declare -a TTTI_ttimeout=()
 declare -a TTTI_tendTime=()
 declare -a TTTI_tkilled=()
 declare -a TTTI_tcaseWorkDir=()
+declare -a TTTI_texclusiveExecution=()
 declare -a TTTI_freeSlots=()	# the list of the free slots in txxxx arrays
 declare TTTI_allJobsGone=""
 declare TTTI_highLoad=''	#true if the system is in high load state
@@ -526,6 +533,7 @@ handleJobEnd() {
 				printInfon "END: i=$i pid=$pid jobspec=%$jobid case=${tmpCase} variant='${tmpVariant}' running=$TTTI_numberJobsRunning systemLoad=$TTTT_systemLoad"
 				TTTI_tpid[$i]=""
 				TTTI_tjobid[$i]=""
+				TTTI_texclusiveExecution[$i]=''
 				#collect variant result
 				local jobsResultFile="${TTTI_tcaseWorkDir[$i]}/RESULT"
 				if [[ -e ${jobsResultFile} ]]; then
@@ -576,6 +584,7 @@ handleJobEnd() {
 			fi
 		else
 			TTTI_freeSlots+=( $i )
+			TTTI_texclusiveExecution[$i]=''
 		fi
 	done
 	if [[ -n $oneJobStopFound ]]; then
@@ -585,7 +594,7 @@ handleJobEnd() {
 
 #wait if no slot is free an not allJobsGone
 sleepIf() {
-	if [[ ( -n $TTTI_nextJobIndexToStart && ( $TTTI_numberJobsRunning -ge $TTTI_currentParralelJobs ) ) || ( -z $TTTI_nextJobIndexToStart && -z $TTTI_allJobsGone ) ]]; then
+	if [[ ( -n $TTTI_nextJobIndexToStart && ( $TTTI_numberJobsRunning -ge $TTTI_currentParralelJobsEffective ) ) || ( -z $TTTI_nextJobIndexToStart && -z $TTTI_allJobsGone ) ]]; then
 		local waitTime='0.2'
 		if [[ $TTTI_sleepCyclesAndNoJobEnds -ge 10 ]]; then
 			TTTI_sleepCyclesAndNoJobEnds=$((TTTI_sleepCyclesAndNoJobEnds+1))
@@ -617,7 +626,8 @@ sleepIf() {
 # expect TTTI_now is actual time
 startNewJobs() {
 	local freeSlotIndx=0
-	while [[ -n $TTTI_nextJobIndexToStart && ( $TTTI_numberJobsRunning -lt $TTTI_currentParralelJobs ) ]]; do
+	if checkExclusiveRequest; then TTTI_currentParralelJobsEffective=1; else TTTI_currentParralelJobsEffective="$TTTI_currentParralelJobs"; fi
+	while [[ -n $TTTI_nextJobIndexToStart && ( $TTTI_numberJobsRunning -lt $TTTI_currentParralelJobsEffective ) ]]; do
 		if [[ $freeSlotIndx -ge ${#TTTI_freeSlots[*]} ]]; then printErrorAndExit "No free slot but one job to start freeSlotIndx=$freeSlotIndx free slots=${#TTTI_freeSlots[*]}" $errRt; fi
 		local freeSlot="${TTTI_freeSlots[$freeSlotIndx]}"; freeSlotIndx=$((freeSlotIndx+1));
 		local casePath="${TTTI_caseVariantPathes[$TTTI_nextJobIndexToStart]}"
@@ -625,6 +635,7 @@ startNewJobs() {
 		local caseVariant="${TTTI_caseVariantIds[$TTTI_nextJobIndexToStart]}"
 		local cworkdir="${TTTI_caseVariantWorkdirs[$TTTI_nextJobIndexToStart]}"
 		local cpreamblError="${TTTI_casePreambErrors[$TTTI_nextJobIndexToStart]}"
+		local caseExclusiveExecution="${TTTI_caseExclusiveExecution[$TTTI_nextJobIndexToStart]}"
 		#make and cleanup case work dir
 		if [[ -e $cworkdir ]]; then
 			printErrorAndExit "Case workdir exists! Probably duplicate variant. workdir: $cworkdir" $errSuiteError
@@ -632,7 +643,7 @@ startNewJobs() {
 		mkdir -p "$cworkdir"
 		local cmd="${TTRO_scriptDir}/case.sh"
 		TTTI_numberJobsRunning=$((TTTI_numberJobsRunning+1))
-		printInfon "START: jobIndex=$TTTI_nextJobIndexToStart case=$caseName variant=$caseVariant i=$freeSlot running=$TTTI_numberJobsRunning systemLoad=$TTTT_systemLoad"
+		printInfon "START: jobIndex=$TTTI_nextJobIndexToStart case=$caseName variant=$caseVariant i=$freeSlot running=$TTTI_numberJobsRunning systemLoad=$TTTT_systemLoad maxJobs=$TTTI_currentParralelJobsEffective"
 		#Start job connect output to stdout in single thread case
 		if [[ "$TTRO_noParallelCases" -eq 1 ]]; then
 			$cmd "$casePath" "$cworkdir" "$caseVariant" "$cpreamblError" 2>&1 | tee -i "${cworkdir}/${TEST_LOG}" &
@@ -674,12 +685,14 @@ startNewJobs() {
 		TTTI_tendTime[$freeSlot]=$((TTTI_now+jobTimeout))
 		TTTI_ttimeout[$freeSlot]="$jobTimeout"
 		TTTI_tcaseWorkDir[$freeSlot]="$cworkdir"
+		TTTI_texclusiveExecution[$freeSlot]="$caseExclusiveExecution"
 		TTTI_jobIndex=$((TTTI_jobIndex+1))
 		if [[ ( $TTTI_interruptReceived -gt 0 ) || ( $TTTI_jobIndex -ge $TTTI_noCaseVariants ) ]]; then
 			TTTI_nextJobIndexToStart=''
 		else
 			TTTI_nextJobIndexToStart="$TTTI_jobIndex"
 		fi
+		if checkExclusiveRequest; then TTTI_currentParralelJobsEffective=1; else TTTI_currentParralelJobsEffective="$TTTI_currentParralelJobs"; fi
 	done
 } #/startNewJobs
 
@@ -689,11 +702,31 @@ startNewJobs() {
 checkSystemLoad() {
 	:
 }
+
+# check whether exclusive execution is active
+# return true if so
+checkExclusiveRequest() {
+	if [[ -n $TTTI_nextJobIndexToStart ]]; then
+		if [[ -n ${TTTI_caseExclusiveExecution[$TTTI_nextJobIndexToStart]} ]]; then
+			isDebug && printDebug "next job to start $TTTI_nextJobIndexToStart requires exclusive execution"
+			return 0
+		fi
+	fi
+	local i
+	for ((i=0; i<TTTI_maxParralelJobs; i++)); do
+		if [[ -n ${TTTI_texclusiveExecution[$i]} ]]; then
+			isDebug && printDebug "curren running job at index $i requires exclusive execution"
+			return 0
+		fi
+	done
+	return 1
+}
+
 #init the work structure for maxParralelJobs
 for ((TTTI_i=0; TTTI_i<TTTI_maxParralelJobs; TTTI_i++)); do
 	TTTI_tjobid[$TTTI_i]=""; TTTI_tpid[$TTTI_i]=""; TTTI_tcase[$TTTI_i]=""; TTTI_tvariant[$TTTI_i]=""; TTTI_tcasePath[$TTTI_i]=""
 	TTTI_tstartTime[$TTTI_i]=""; TTTI_ttimeout[$TTTI_i]=""; TTTI_tstartTime[$TTTI_i]=""; TTTI_tendTime[$TTTI_i]=""
-	TTTI_tkilled[$TTTI_i]=""; TTTI_tcaseWorkDir[$TTTI_i]=""
+	TTTI_tkilled[$TTTI_i]=""; TTTI_tcaseWorkDir[$TTTI_i]=""; TTTI_texclusiveExecution[$TTTI_i]=''
 	TTTI_freeSlots+=( $TTTI_i )
 done
 
@@ -708,11 +741,13 @@ if [[ $TTTI_noCaseVariants -gt 0 ]]; then
 else
 	TTTI_nextJobIndexToStart=''
 fi
+TTTI_currentParralelJobsEffective="$TTTI_currentParralelJobs"
 while [[ -z $TTTI_allJobsGone ]]; do
 	isDebug && printDebug "Loop precond allJobsGone='${TTTI_allJobsGone}' jobIndex='${TTTI_nextJobIndexToStart}'"
 	# loop either not the final job and no job slot is available or the final job and not all jobs gone
-	while [[ ( -n $TTTI_nextJobIndexToStart && ( $TTTI_numberJobsRunning -ge  $TTTI_currentParralelJobs ) || ( ${#TTTI_freeSlots[*]} -eq 0 ) ) || ( -z $TTTI_nextJobIndexToStart && -z $TTTI_allJobsGone ) ]]; do
-		isDebug && printDebug "Loop cond numberJobsRunning='$TTTI_numberJobsRunning' currentParralelJobs='$TTTI_currentParralelJobs' allJobsGone='$TTTI_allJobsGone' nextJobIndexToStart='$TTTI_nextJobIndexToStart'"
+	if checkExclusiveRequest; then TTTI_currentParralelJobsEffective=1; else TTTI_currentParralelJobsEffective="$TTTI_currentParralelJobs"; fi
+	while [[ ( -n $TTTI_nextJobIndexToStart && ( $TTTI_numberJobsRunning -ge $TTTI_currentParralelJobsEffective ) || ( ${#TTTI_freeSlots[*]} -eq 0 ) ) || ( -z $TTTI_nextJobIndexToStart && -z $TTTI_allJobsGone ) ]]; do
+		isDebug && printDebug "Loop cond numberJobsRunning='$TTTI_numberJobsRunning' currentParralelJobs='$TTTI_currentParralelJobs' allJobsGone='$TTTI_allJobsGone' nextJobIndexToStart='$TTTI_nextJobIndexToStart' currentParralelJobsEffective=$TTTI_currentParralelJobsEffective"
 		while ! TTTI_now="$(date +'%-s')"; do :; done #guard external command if sigint is received TODO: is signal received from this job too?
 		checkJobTimeouts
 		getSystemLoad100
@@ -728,8 +763,9 @@ while [[ -z $TTTI_allJobsGone ]]; do
 			#echo "ALL JOBS GONE"
 			TTTI_allJobsGone="true"
 		fi
+		if checkExclusiveRequest; then TTTI_currentParralelJobsEffective=1; else TTTI_currentParralelJobsEffective="$TTTI_currentParralelJobs"; fi
 		sleepIf
-		isDebug && printDebug "Loop POST cond numberJobsRunning='$TTTI_numberJobsRunning' currentParralelJobs='$TTTI_currentParralelJobs' allJobsGone='$TTTI_allJobsGone' nextJobIndexToStart='$TTTI_nextJobIndexToStart'"
+		isDebug && printDebug "Loop POST cond numberJobsRunning='$TTTI_numberJobsRunning' currentParralelJobs='$TTTI_currentParralelJobs' allJobsGone='$TTTI_allJobsGone' nextJobIndexToStart='$TTTI_nextJobIndexToStart' currentParralelJobsEffective=$TTTI_currentParralelJobsEffective"
 	done
 	while ! TTTI_now="$(date +'%-s')"; do :; done #guard external command if sigint is received
 	getSystemLoad100
@@ -756,17 +792,17 @@ for TTTI_sindex_xyza in ${TTTI_childSuites[$TTRO_suiteIndex]}; do
 		break
 	fi
 	isVerbose && printVerbose "**** START Nested Suite: $TTTI_suite ************************************"
-	variantCount=""; variantList=""; timeout='' TTTI_preamblError=""
+	variantCount=""; variantList=""; timeout=''; TTTI_preamblError=""; exclusive=''
 	if ! TTTF_evalPreambl "${TTTI_suitePath}/${TEST_SUITE_FILE}"; then
-		TTTI_preamblError='true'; variantCount=""; variantList=""; timeout=''
+		TTTI_preamblError='true'; variantCount=""; variantList=""; timeout=''; exclusive=''
 	fi
 	if [[ ( -n $variantCount ) && ( -n $variantList ) ]]; then
 		printError "In suite $TTTI_suite we have both variant variables variantCount=$variantCount and variantList=$variantList ! Suite preamblError"
-		TTTI_preamblError='true'; variantCount=""; variantList=""; timeout=''
+		TTTI_preamblError='true'; variantCount=""; variantList=""; timeout=''; exclusive=''
 	fi
-	if [[ -n $timeout ]]; then
-		printError "In suite $TTTI_suite timeout is not expected ! Suite preamblError"
-		TTTI_preamblError='true'; variantCount=""; variantList=""; timeout=''
+	if [[ -n $timeout || -n $exclusive ]]; then
+		printError "In suite $TTTI_suite timeout or exclusive is not expected in Suite preambl! Suite preamblError"
+		TTTI_preamblError='true'; variantCount=""; variantList=""; timeout=''; exclusive=''
 	fi
 	if [[ -z $variantCount ]]; then
 		if [[ -z $variantList ]]; then

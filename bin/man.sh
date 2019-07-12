@@ -145,7 +145,8 @@ function manpage () {
 	No spaces are allowed between name '=' and value. The assignement requires the same quoting as a reqular bash assignement.
 	The assignment can use a continuation line if the line ends with an escaped newline character (backlslash before newline)
 	The continuation line must also start with #--
-	The preamble may define the variants of the test artifact and in case of a test case, the timeout value for the test case.
+	The preamble may define the variants of the test artifact and in case of a test case, the timeout value and
+	boolean property exclusiveExecution for the test case.
 
 	## Test Collection, Test Case and Test Suite variants
 	=====================================================
@@ -173,7 +174,13 @@ function manpage () {
 	Each test Case can define an individual test Case timeout. This can be done in the Test Case File Preamble like:
 	#--timeout=600
 
-	The individual test case timeout is used if the value is greater than TTPR_timeout or if the value is greater than $defaultTimeout.
+	The individual test case timeout is used if the value is greater than TTPR_timeout (if exists) or if the value is greater than $defaultTimeout.
+
+	## Test Case exclusive execution property
+	=========================================
+	If the preamble contains a line
+	#--exclusiveExecution=true
+	the test case is always executed as a single case and no parallel execution is done.
 
 	## Reserved Variable Name Ranges
 	===============================

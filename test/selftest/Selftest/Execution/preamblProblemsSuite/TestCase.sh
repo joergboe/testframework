@@ -18,8 +18,8 @@ getOptions() {
 
 myEval() {
   linewisePatternMatchInterceptAndSuccess "$TTRO_workDirCase/STDERROUT1.log" 'true'\
-    '*ERROR: In suite timeout timeout is not expected ! Suite preamblError*'\
-    '*ERROR: On of variables variantCount, variantList or timeout is used in suite user code*'\
+    '*ERROR: In suite timeout timeout or exclusive is not expected in Suite preambl! Suite preamblError*'\
+    '*ERROR: On of variables variantCount, variantList, timeout or exclusive is used in suite user code*'\
     '*ERROR: In suite variantCountAndVariantList we have both variant variables*'\
     '*ERROR: TTTF_evalPreambl : variantCount is no digit*'
 }
