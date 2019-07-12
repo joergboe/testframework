@@ -45,7 +45,7 @@ fi
 # variables required for functions
 setVar 'TTRO_testframeToolkitDir' "$TTRO_scriptDir/../streamsx.testframe"
 setVar 'TT_mainComposite' 'Main'
-setVar 'TT_sabFile' './output/Main.sab' 
+setVar 'TT_sabFile' './output/Main.sab'
 setVar 'TT_jobFile' './jobno.log'
 setVar 'TT_traceLevel' 'trace'
 setVar 'TT_dataDir' 'data'
@@ -209,7 +209,7 @@ function mkDomain {
 	mkDomainVariable "$TTPR_streamsZkConnect" "$TTPRN_streamsDomainId" "$TTPRN_swsPort" "$TTPRN_jmxPort" "$TTPR_checkpointRepository" "$TTPR_fileStoragePath"
 
 }
-export -f mkDomain 
+export -f mkDomain
 
 TTRO_help_mkDomainVariable='
 # Function mkDomainVariable
@@ -260,7 +260,7 @@ TTRO_help_startDomain='
 function startDomain {
 	startDomainVariable "$TTPRN_streamsDomainId"
 }
-export -f startDomain 
+export -f startDomain
 
 TTRO_help_startDomainVariable='
 # Function startDomainVariable
@@ -345,7 +345,7 @@ TTRO_help_getHostList='
 # Function getHostList
 #	get the list of hosts in TT_hostList'
 getHostList() {
-	getHostListVariable "$TTPRN_streamsDomainId" "$TTPRN_streamsInstanceId" 
+	getHostListVariable "$TTPRN_streamsDomainId" "$TTPRN_streamsInstanceId"
 }
 export -f getHostList
 
@@ -462,7 +462,7 @@ function cleanUpInstAndDomainAtStartVariable {
 		else
 			runCleanup='true'
 		fi
-	fi 
+	fi
 	if [[ -n $runCleanup ]]; then
 		cleanUpInstAndDomainVariable "$1" "$2" "$3"
 	fi
@@ -497,7 +497,7 @@ function cleanUpInstAndDomainAtStopVariable {
 		printInfo "$FUNCNAME : function supressed"
 		return 0
 	fi
-	if isExistingAndTrue 'TTPR_clean'; then 
+	if isExistingAndTrue 'TTPR_clean'; then
 		cleanUpInstAndDomainVariable "$1" "$2" "$3"
 	fi
 	return 0
@@ -1048,16 +1048,21 @@ function waitForFin {
 }
 export -f waitForFin
 
-TTRO_help_waitForFinAndHealth='
-# Function waitForFinAndHealth
-#	waits until a job becomes healthy and
-#	waits until the final file appears and the job remains healthy
-#	set failure condition if job changes state from healthy to non healthy
-#	$TTPR_waitForJobHealth - the maximum time to wait until the job becomes healthy
-#	$TT_waitForFileName - the name of the file to wait for
-#	$TT_waitForFileInterval - the interval
-#	returns success if the file was found'
-function waitForFinAndHealth {
+TTRO_waitForJobHealth='
+# Function waitForJobHealth
+#	waits until the job becomes healthy and sets the failure condition if the time expires
+#	Parameters:
+#		$TTPR_waitForJobHealth - the maximum time to wait until the job becomes healthy
+#		$TT_waitForFileInterval - the interval
+#	Returns
+#		true
+#	Exits
+#		if the streamtool lsjob return wrong information
+# Side Effects:
+#		TTTT_state - the state of the job
+#		TTTT_healthy the health information of the job
+#		Failure condition is set if the time has expired'
+waitForJobHealth() {
 	local start=$(date -u +%s)
 	local now
 	local difftime
@@ -1072,6 +1077,20 @@ function waitForFinAndHealth {
 		fi
 	done
 	printInfo "jobno=$TTTT_jobno becomes healthy State=$TTTT_state Healthy=$TTTT_healthy"
+}
+export -f waitForJobHealth
+
+TTRO_help_waitForFinAndHealth='
+# Function waitForFinAndHealth
+#	waits until a job becomes healthy and
+#	waits until the final file appears and the job remains healthy
+#	set failure condition if job changes state from healthy to non healthy
+#	$TTPR_waitForJobHealth - the maximum time to wait until the job becomes healthy
+#	$TT_waitForFileName - the name of the file to wait for
+#	$TT_waitForFileInterval - the interval
+#	returns success if the file was found'
+function waitForFinAndHealth {
+	waitForJobHealth
 	while ! [[ -e "$TT_waitForFileName" ]]; do
 		printInfo "Wait for file to appear $TT_waitForFileName"
 		sleep "$TT_waitForFileInterval"
