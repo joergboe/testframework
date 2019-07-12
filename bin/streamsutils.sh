@@ -1048,7 +1048,7 @@ function waitForFin {
 }
 export -f waitForFin
 
-TTRO_waitForJobHealth='
+TTRO_help_waitForJobHealth='
 # Function waitForJobHealth
 #	waits until the job becomes healthy and sets the failure condition if the time expires
 #	Parameters:

@@ -393,6 +393,8 @@ function manpage () {
 	If no run-category pattern is entered, all Cases and Suite are executed, regardless of the defined categories.
 	If the run-caegory 'default' is specified, all Cases and Suites are executed that have no explicit category set.
 
+	Category Control is disables if a test case wildcard list was entered from command line.
+
 
 	## Sequence Control
 	===================

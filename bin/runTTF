@@ -317,8 +317,13 @@ fi
 #		loadLimit=$noCpus
 #	fi
 #fi
-#---------------------------------------------------------
 
+#---------------------------------------------------------
+# reset the catergories if a command list was given
+if [[ ( ${#cases[*]} -gt 0 ) && ( ${#TTTT_runCategoryPatternArray[*]} -gt 0 ) ]]; then
+	printWarning "Categories are ignored since a case wildcard list was detected"
+	TTTT_runCategoryPatternArray=()
+fi
 declare -rx TTXX_runCategoryPatternArray=$(declare -p TTTT_runCategoryPatternArray)
 
 setVar 'TTPRN_debug' "$debug"
