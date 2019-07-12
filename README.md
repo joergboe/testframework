@@ -227,3 +227,14 @@ Version 3.8.0:
 - Better info output for suite start and end
 - Breakdown in cases loop in suite
 - Display elapsed time in suite index even in case of test case timeout
+
+Version 3.9.0:
+- Introduce new utils function arrayAppend, arrayInsert and arrayDelete
+- Allow --no-prompt and --noprompt command line option
+- Utils function linewisePatternMatchArray exits if input array is empty
+- New toolkit operator Echo
+- Utils function printErrorAndExit param #2 is now optional and runntime error is default
+- New streamsutils function waitForJobHealth
+- New streamsutils function waitForFinAndCheckHealth
+- Category Control is disables if a test case wildcard list was entered
+-  New preambl feature exclusive execution property
