@@ -393,9 +393,9 @@ declare -a TTTI_ttimeout=()
 declare -a TTTI_tendTime=()
 declare -a TTTI_tkilled=()
 declare -a TTTI_tcaseWorkDir=()
-declare -a TTTI_texclusiveExecution=()
 declare -a TTTI_freeSlots=()	# the list of the free slots in txxxx arrays
 declare TTTI_allJobsGone=""
+declare TTTI_texclusiveExecution=''
 declare TTTI_highLoad=''	#true if the system is in high load state
 declare -i TTTI_jobIndex=0 #index of next job to start
 declare TTTI_nextJobIndexToStart=''	#the index of the next job to start if any, empty if no more job is available (or interrupt)
@@ -533,7 +533,7 @@ handleJobEnd() {
 				printInfon "END: i=$i pid=$pid jobspec=%$jobid case=${tmpCase} variant='${tmpVariant}' running=$TTTI_numberJobsRunning systemLoad=$TTTT_systemLoad"
 				TTTI_tpid[$i]=""
 				TTTI_tjobid[$i]=""
-				TTTI_texclusiveExecution[$i]=''
+				TTTI_texclusiveExecution=''
 				#collect variant result
 				local jobsResultFile="${TTTI_tcaseWorkDir[$i]}/RESULT"
 				if [[ -e ${jobsResultFile} ]]; then
@@ -584,7 +584,6 @@ handleJobEnd() {
 			fi
 		else
 			TTTI_freeSlots+=( $i )
-			TTTI_texclusiveExecution[$i]=''
 		fi
 	done
 	if [[ -n $oneJobStopFound ]]; then
@@ -685,7 +684,7 @@ startNewJobs() {
 		TTTI_tendTime[$freeSlot]=$((TTTI_now+jobTimeout))
 		TTTI_ttimeout[$freeSlot]="$jobTimeout"
 		TTTI_tcaseWorkDir[$freeSlot]="$cworkdir"
-		TTTI_texclusiveExecution[$freeSlot]="$caseExclusiveExecution"
+		TTTI_texclusiveExecution="$caseExclusiveExecution"
 		TTTI_jobIndex=$((TTTI_jobIndex+1))
 		if [[ ( $TTTI_interruptReceived -gt 0 ) || ( $TTTI_jobIndex -ge $TTTI_noCaseVariants ) ]]; then
 			TTTI_nextJobIndexToStart=''
@@ -712,13 +711,10 @@ checkExclusiveRequest() {
 			return 0
 		fi
 	fi
-	local i
-	for ((i=0; i<TTTI_maxParralelJobs; i++)); do
-		if [[ -n ${TTTI_texclusiveExecution[$i]} ]]; then
-			isDebug && printDebug "curren running job at index $i requires exclusive execution"
-			return 0
-		fi
-	done
+	if [[ -n ${TTTI_texclusiveExecution} ]]; then
+		isDebug && printDebug "curren running job requires exclusive execution"
+		return 0
+	fi
 	return 1
 }
 
@@ -726,7 +722,7 @@ checkExclusiveRequest() {
 for ((TTTI_i=0; TTTI_i<TTTI_maxParralelJobs; TTTI_i++)); do
 	TTTI_tjobid[$TTTI_i]=""; TTTI_tpid[$TTTI_i]=""; TTTI_tcase[$TTTI_i]=""; TTTI_tvariant[$TTTI_i]=""; TTTI_tcasePath[$TTTI_i]=""
 	TTTI_tstartTime[$TTTI_i]=""; TTTI_ttimeout[$TTTI_i]=""; TTTI_tstartTime[$TTTI_i]=""; TTTI_tendTime[$TTTI_i]=""
-	TTTI_tkilled[$TTTI_i]=""; TTTI_tcaseWorkDir[$TTTI_i]=""; TTTI_texclusiveExecution[$TTTI_i]=''
+	TTTI_tkilled[$TTTI_i]=""; TTTI_tcaseWorkDir[$TTTI_i]=""
 	TTTI_freeSlots+=( $TTTI_i )
 done
 
