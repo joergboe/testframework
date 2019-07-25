@@ -1,9 +1,9 @@
-#--variantCount=15
+#--variantCount=2
+#--exclusive=true
 
 setVar 'TTRO_stepsCase' 'myStep'
 
-declare -a durations=(30 20 22 44 30 60 30 30 33 34
-                      55 66 88 11 30)
+declare -a durations=(15 14)
 function myStep {
 	useCpu ${durations[$TTRO_variantCase]} $TTRO_variantCase "false"
 }
