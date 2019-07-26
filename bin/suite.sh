@@ -513,7 +513,6 @@ handleJobEnd() {
 				#echo "JOB END"
 				local tmpCase="${TTTI_tcase[$i]}"
 				local tmpVariant="${TTTI_tvariant[$i]}"
-				#tmpCaseAndVariant="${tmpCase##*/}"
 				local tmpCaseAndVariant="${TTRO_suiteNestingString}::${tmpCase}"
 				if [[ -n $tmpVariant ]]; then
 					tmpCaseAndVariant="${tmpCaseAndVariant}:${tmpVariant}"
@@ -529,8 +528,7 @@ handleJobEnd() {
 					fi
 				fi
 				echo "$tmpCaseAndVariant : $caseElapsedTime" >> "${TTRO_workDirSuite}/CASE_EXECUTE"
-				#executeList+=("$tmpCaseAndVariant")
-				printInfon "END: i=$i pid=$pid jobspec=%$jobid case=${tmpCase} variant='${tmpVariant}' running=$TTTI_numberJobsRunning systemLoad=$TTTT_systemLoad"
+				printInfon "END:   case=${tmpCase} variant='${tmpVariant}'           i=$i running=$TTTI_numberJobsRunning systemLoad=$TTTT_systemLoad maxJobs=$TTTI_currentParralelJobsEffective jobspec=%$jobid pid=$pid"
 				TTTI_tpid[$i]=""
 				TTTI_tjobid[$i]=""
 				TTTI_texclusiveExecution=''
@@ -642,7 +640,7 @@ startNewJobs() {
 		mkdir -p "$cworkdir"
 		local cmd="${TTRO_scriptDir}/case.sh"
 		TTTI_numberJobsRunning=$((TTTI_numberJobsRunning+1))
-		printInfon "START: jobIndex=$TTTI_nextJobIndexToStart case=$caseName variant=$caseVariant i=$freeSlot running=$TTTI_numberJobsRunning systemLoad=$TTTT_systemLoad maxJobs=$TTTI_currentParralelJobsEffective"
+		printInfon "START: case=$caseName variant='$caseVariant' jobIndex=$TTTI_nextJobIndexToStart i=$freeSlot running=$TTTI_numberJobsRunning systemLoad=$TTTT_systemLoad maxJobs=$TTTI_currentParralelJobsEffective"
 		#Start job connect output to stdout in single thread case
 		if [[ "$TTRO_noParallelCases" -eq 1 ]]; then
 			$cmd "$casePath" "$cworkdir" "$caseVariant" "$cpreamblError" 2>&1 | tee -i "${cworkdir}/${TEST_LOG}" &
