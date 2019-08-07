@@ -1724,7 +1724,12 @@ TTRO_help_getElapsedTime='
 #		TTTT_elapsedTime'
 function getElapsedTime {
 	if [[ $# -ne 1 ]]; then printErrorAndExit "$FUNCNAME : wrong no of arguments $#" $errRt; fi
-	local now=$(date -u +%s)
+	local psres="$errSigint"
+	local now=''
+	while [[ $psres -eq $errSigint ]]; do
+		psres=0
+		now=$(date -u +%s) || psres="$?"
+	done
 	local diff=$((now-$1))
 	timeFromSeconds "$diff"
 	TTTT_elapsedTime="$TTTT_timeFromSeconds"
@@ -2094,7 +2099,7 @@ arrayDelete() {
 readonly -f arrayDelete
 
 TTRO_help_trim='
-# Function trim removes leading trailing whitespace characters
+# Function trim removes leading and trailing whitespace characters
 #	$1	the input string
 #	returns the result string in TTTT_trim'
 function trim {

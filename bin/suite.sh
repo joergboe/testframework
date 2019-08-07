@@ -14,13 +14,15 @@ unset -f command
 #more setting to be save
 set -o posix;
 set -o errexit; set -o errtrace; set -o nounset; set -o pipefail
+#set -o monitor #enables job monitor -> synchron (endless) commands started from cases are terminated with this option
+#but is has consequences for read commands issued from suite -> return 149 means it receives SIGTTIN
 shopt -s globstar nullglob
 
 #-----------------------------------------------------
 # Shutdown and interrut vars and functions
 declare -i TTTI_interruptReceived=0
 declare -r TTTI_commandname="${0##*/}"
-#declare caseExecutionLoopRunning=''
+declare -r TTTI_sigspec='TERM'
 #start time
 declare -r TTTT_suiteStartTime=$(date -u +%s)
 #state
@@ -30,9 +32,9 @@ declare TTTT_executionState='initializing'
 handleSigint() {
 	TTTI_interruptReceived=$((TTTI_interruptReceived+1))
 	if [[ $TTTI_interruptReceived -eq 1 ]]; then
-		printWarning "SIGINT: Test Suite will be stopped. To interrupt running test cases press ^C again"
+		printWarning "SIGINT #1: Test Suite will be stopped. To interrupt running test cases press ^C again"
 	elif [[ $TTTI_interruptReceived -eq 2 ]]; then
-		printWarning "SIGINT: Test cases will be stopped"
+		printWarning "SIGINT #2: Test cases will be stopped"
 	elif [[ $TTTI_interruptReceived -gt 3 ]]; then
 		printWarning "SIGINT: Abort Suite"
 		exit $errSigint
@@ -346,6 +348,7 @@ TTTF_fixPropsVars
 TTTT_executionState='execution'
 
 # check for duplicate jobspec in running jobs list
+# set jobspec to delete if duplicate was started
 function checkDuplicateJobspec {
 	local i
 	local js
@@ -355,8 +358,8 @@ function checkDuplicateJobspec {
 			#echo "Check index $i list entry $js - value to be inserted $1"
 			if [[ -n $js ]]; then #and as a jobspec assigned
 				if [[ $js -eq $1 ]]; then
-					printWarning "Jobspec $1 is already in running jobs list at index i=$i ! Delete the jobspec"
-					TTTI_tjobid[$i]=''
+					printError "Jobspec $1 is already in running jobs list at index i=$i ! Delete the jobspec"
+					TTTI_tjobid[$i]='delete'
 				fi
 			fi
 		fi
@@ -423,9 +426,9 @@ checkJobTimeouts() {
 					else
 						tempjobspec="%${TTTI_tjobid[$i]}"
 					fi
-					printWarning "Timeout Kill i=${i} jobspec=${tempjobspec} with SIGTERM case=${TTTI_tcase[$i]} variant=${TTTI_tvariant[$i]} pid=${TTTI_tpid[$i]}"
+					printWarning "Timeout Kill jobspec=${tempjobspec} with SIG${TTTI_sigspec} i=${i} pid=${TTTI_tpid[$i]} case=${TTTI_tcase[$i]} variant=${TTTI_tvariant[$i]}"
 					#SIGINT and SIGHUP seems not to work can not install handler for both signals in case.sh
-					if kill "${tempjobspec}"; then
+					if kill -s $TTTI_sigspec "${tempjobspec}"; then
 						echo "timeout" > "${TTTI_tcaseWorkDir[$i]}/TIMEOUT"
 					else
 						printWarning "Can not kill i=${i} jobspec=${tempjobspec} Gone?"
@@ -441,9 +444,9 @@ checkJobTimeouts() {
 					else
 						tempjobspec="%${TTTI_tjobid[$i]}"
 					fi
-					printError "Forced Kill i=${i} jobspec=${tempjobspec} case=${TTTI_tcase[$i]} variant=${TTTI_tvariant[$i]} pid=${TTTI_tpid[$i]}"
+					printError "Forced kill -s KILL i=${i} jobspec=${tempjobspec} case=${TTTI_tcase[$i]} variant=${TTTI_tvariant[$i]} pid=${TTTI_tpid[$i]}"
 					if ! kill -9 "${tempjobspec}"; then
-						printWarning "Can not force kill i=${i} jobspec=${tempjobspec} pid=${TTTI_tpid[$i]} Gone?"
+						printWarning "Can not force kill -s SIGKILL i=${i} jobspec=${tempjobspec} pid=${TTTI_tpid[$i]} Gone?"
 					fi
 				fi
 			fi
@@ -466,43 +469,52 @@ handleJobEnd() {
 		if [[ -n $pid ]]; then
 			isDebug && printDebug "check wether job is still running i=$i pid=$pid jobspec=%$jobid"
 			local thisJobRuns='true'
-			if [[ -z $jobid ]]; then
+			local jobState=''
+			if [[ ( "$jobid" == "error" ) || ( "$jobid" == "delete" ) ]]; then
+				printWarning "Check (expired) job running i=$i jobid=$jobid pid=$pid"
+				if ps --pid "$pid"; then
+					printErrorAndExit "Check (expired) job running i=$i jobid=$jobid pid=$pid true"
+				fi
 				thisJobRuns=''
-				echo "JOB Gone jobid is re-used $jobid"
-				isDebug && printDebug "Job is Gone jobid is re-used $jobid"
+				jobState="$jobid"
+				printInfo "Job (expired) is gone i=$i jobid=$jobid pid=$pid"
 			else
 				#if ps --pid "$pid" &> /dev/null; then
 				#if jobsOutput=$(LC_ALL=en_US jobs "%$jobid" 2>/dev/null); then ... this does not work in rhel 6 (bash 4.1.2)
-				local jobsOutput
-				if jobsOutput=$(export LC_ALL='en_US.UTF-8'; jobs "%$jobid" 2>/dev/null); then
-					#echo "***** $jobsOutput"
-					local tmp1=$(cut -d ' ' -f1 <<< $jobsOutput)
-					local tmp2=$(cut -d ' ' -f2 <<< $jobsOutput)
-					if [[ $tmp1 =~ \[(.*)\] ]]; then
-						local tmp3="${BASH_REMATCH[1]}"
-						if [[ $tmp2 == 'Done' ]]; then
-							thisJobRuns=''
-							#echo "JOB DONE $tmp3"
-							isDebug && printDebug "Job is Done $tmp3"
-						elif [[ $tmp2 == 'Running' ]]; then
-							#echo "JOB RUNS $tmp3"
-							isDebug && printDebug "Job is Running $tmp3"
-						else
-							printError "Invalid job state $tmp2 jobspec=%$tmp3"
-							thisJobRuns=''
-						fi
+				local jobsOutput=''
+				local psres="$errSigint"
+				while [[ $psres -eq $errSigint ]]; do
+					psres=0
+					jobsOutput=$(export LC_ALL='en_US.UTF-8'; jobs "%$jobid" 2>/dev/null) || psres="$?"
+				done
+				if [[ ( $psres -eq 0 ) && ( -n $jobsOutput ) ]]; then
+					local part1="${jobsOutput%%[[:space:]]*}"
+					local rest1="${jobsOutput#*[[:space:]]}"
+					local TTTT_trim
+					trim "$rest1"
+					local tmp2="${TTTT_trim%%[[:space:]]*}"
+					[[ $part1 =~ \[(.*)\] ]] || printErrorAndExit "Wrong output of jobs command $jobsOutput"
+					local tmp3="${BASH_REMATCH[1]}"
+					[[ $tmp3 == $jobid ]] || printErrorAndExit "jobid from command jobs $tmp3 is not eq jobid $jobid"
+					if [[ $tmp2 == Done* ]]; then
+						thisJobRuns=''
+						jobState="$tmp2"
+						isDebug && printDebug "Job is Done $tmp3"
+					elif [[ $tmp2 == 'Running' ]]; then
+						isDebug && printDebug "Job is Running $tmp3"
 					else
-						printError "Wrong output of jobs command $jobsOutput"
+						printError "Invalid job state $tmp2 jobspec=%$tmp3"
+						thisJobRuns=''
+						jobState="$tmp2"
 					fi
 				else
-					local psres=$?
-					if [[ $psres -eq $errSigint ]]; then
-						isDebug && printDebug "SIGINT: during jobs"
+					thisJobRuns=''
+					if [[ $psres -eq 0 ]]; then
+						jobState="''"
 					else
-						thisJobRuns=''
-						#echo "JOB Gone $jobid"
-						isDebug && printDebug "Job is Gone $jobid"
+						jobState="exit $psres"
 					fi
+					isDebug && printDebug "Job is Gone $jobid"
 				fi
 			fi
 			if [[ -z $thisJobRuns ]]; then
@@ -528,7 +540,7 @@ handleJobEnd() {
 					fi
 				fi
 				echo "$tmpCaseAndVariant : $caseElapsedTime" >> "${TTRO_workDirSuite}/CASE_EXECUTE"
-				printInfon "END:   case=${tmpCase} variant='${tmpVariant}'           i=$i running=$TTTI_numberJobsRunning systemLoad=$TTTT_systemLoad maxJobs=$TTTI_currentParralelJobsEffective jobspec=%$jobid pid=$pid"
+				printInfon "END:   case=${tmpCase} variant='${tmpVariant}'           i=$i running=$TTTI_numberJobsRunning systemLoad=$TTTT_systemLoad maxJobs=$TTTI_currentParralelJobsEffective jobspec=%$jobid pid=$pid state=$jobState"
 				TTTI_tpid[$i]=""
 				TTTI_tjobid[$i]=""
 				TTTI_texclusiveExecution=''
@@ -642,37 +654,59 @@ startNewJobs() {
 		TTTI_numberJobsRunning=$((TTTI_numberJobsRunning+1))
 		printInfon "START: case=$caseName variant='$caseVariant' jobIndex=$TTTI_nextJobIndexToStart i=$freeSlot running=$TTTI_numberJobsRunning systemLoad=$TTTT_systemLoad maxJobs=$TTTI_currentParralelJobsEffective"
 		#Start job connect output to stdout in single thread case
+		local commandString
 		if [[ "$TTRO_noParallelCases" -eq 1 ]]; then
+			commandString="$cmd $casePath $cworkdir $caseVariant $cpreamblError 2>&1 | tee -i ${cworkdir}/${TEST_LOG}"
 			$cmd "$casePath" "$cworkdir" "$caseVariant" "$cpreamblError" 2>&1 | tee -i "${cworkdir}/${TEST_LOG}" &
 			local newPid=$!
 		else
+			commandString="$cmd $casePath $cworkdir $caseVariant $cpreamblError &> ${cworkdir}/${TEST_LOG}"
 			$cmd "$casePath" "$cworkdir" "$caseVariant" "$cpreamblError" &> "${cworkdir}/${TEST_LOG}" &
 			local newPid=$!
 		fi
 		#jobsOutput=$(LC_ALL=en_US jobs %+)  ... this does not work in rhel 6 (bash 4.1.2)
-		local jobsOutput=$(export LC_ALL='en_US.UTF-8'; jobs %+)
-		echo "$jobsOutput" > "$cworkdir/JOBS"
-		echo "Full Job list" >> "$cworkdir/JOBS"
-		LC_ALL='en_US.UTF-8' jobs -l >> "$cworkdir/JOBS"
-		isDebug && printDebug "jobspec:$jobsOutput"
-		local tmp1=$(cut -d ' ' -f1 <<< $jobsOutput)
-		local jobState=$(cut -d ' ' -f2 <<< $jobsOutput)
-		if [[ $tmp1 =~ \[(.*)\]\+ ]]; then
-			local tmp5="${BASH_REMATCH[1]}"
-			echo " jobspec=%$tmp5 pid=$newPid state=$jobState"
-			checkDuplicateJobspec "$tmp5"
+		local jobsOutput=''
+		local newPidLead=''
+		local jobState=''
+		local thisJobspec=''
+		local psres="$errSigint"
+		while [[ $psres -eq $errSigint ]]; do
+			psres=0;
+			jobsOutput=$(export LC_ALL='en_US.UTF-8'; jobs -l %+) || psres=$?
+		done
+		if [[ ( $psres -eq 0 ) && ( -n "$jobsOutput" ) ]]; then
+			echo "$jobsOutput" > "$cworkdir/JOBS"
+			echo "Full Job list" >> "$cworkdir/JOBS"
+			LC_ALL='en_US.UTF-8' jobs -l >> "$cworkdir/JOBS"
+			isDebug && printDebug "jobspec:$jobsOutput"
+			local part1="${jobsOutput%%[[:space:]]*}"
+			local rest1="${jobsOutput#*[[:space:]]}"
+			local TTTT_trim
+			trim "$rest1"
+			newPidLead="${TTTT_trim%%[[:space:]]*}"
+			rest1="${TTTT_trim#*[[:space:]]}"
+			trim "$rest1"
+			jobState="${TTTT_trim%%[[:space:]]*}"
+			if [[ $part1 =~ \[(.*)\]\+ ]]; then
+				thisJobspec="${BASH_REMATCH[1]}"
+				echo " jobspec=%$thisJobspec pid=$newPidLead state=$jobState"
+				checkDuplicateJobspec "$thisJobspec"
+			else
+				echo
+				printErrorAndExit "No jobindex extract from jobs output '$jobsOutput'" $errRt
+			fi
 		else
-			echo
-			TTTI_tjobid[$freeSlot]=""
-			printErrorAndExit "No jobindex extract from jobs output '$jobsOutput'" $errRt
+			newPidLead="$newPid"
+			thisJobspec='error'
 		fi
-		TTTI_tpid[$freeSlot]="$newPid"
-		TTTI_tjobid[$freeSlot]="$tmp5"
+		TTTI_tpid[$freeSlot]="$newPidLead"
+		TTTI_tjobid[$freeSlot]="$thisJobspec"
 		TTTI_tcase[$freeSlot]="$caseName"
 		TTTI_tvariant[$freeSlot]="$caseVariant"
 		TTTI_tcasePath[$freeSlot]="$casePath"
+		TTTI_tcaseWorkDir[$freeSlot]="$cworkdir"
 		TTTI_tkilled[$freeSlot]=""
-		isDebug && printDebug "Enter tjobid[$freeSlot]=${TTTI_tjobid[$freeSlot]} state=$jobState tpid[${freeSlot}]=$newPid time=${TTTI_now} state=$jobState"
+		isDebug && printDebug "Enter free slot=$freeSlot tjobid[$freeSlot]=${thisJobspec} tpid[${freeSlot}]=$newPidLead time=${TTTI_now} state=$jobState"
 		TTTI_tstartTime[$freeSlot]="$TTTI_now"
 		local jobTimeout=${TTTI_caseTimeout[$TTTI_jobIndex]}
 		if [[ $jobTimeout -lt $TTTT_casesTimeout ]]; then
@@ -681,7 +715,6 @@ startNewJobs() {
 		isVerbose && printVerbose "Job timeout $jobTimeout"
 		TTTI_tendTime[$freeSlot]=$((TTTI_now+jobTimeout))
 		TTTI_ttimeout[$freeSlot]="$jobTimeout"
-		TTTI_tcaseWorkDir[$freeSlot]="$cworkdir"
 		TTTI_texclusiveExecution="$caseExclusiveExecution"
 		TTTI_jobIndex=$((TTTI_jobIndex+1))
 		if [[ ( $TTTI_interruptReceived -gt 0 ) || ( $TTTI_jobIndex -ge $TTTI_noCaseVariants ) ]]; then

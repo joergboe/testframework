@@ -17,8 +17,8 @@ set -o errexit; set -o errtrace; set -o nounset; set -o pipefail
 shopt -s globstar nullglob
 
 # Shutdown and interrupt vars and functions
-declare -r TTTI_commandname="${0##*/}" #required in coreutils
-declare TTTI_interruptReceived="" #required in coreutils
+declare -r TTTI_commandname="${0##*/}" #not used here but required in coreutils
+declare TTTI_interruptReceived="" #not used here but required in coreutils
 
 # Function errorTrapFunc
 #	global error exit function - prints the caller stack
@@ -31,6 +31,15 @@ function errorTrapFunc {
 	echo -e "************************************************\033[0m"
 }
 trap errorTrapFunc ERR
+
+# Function abortTrapFunc
+#	exits test case
+#abortTrapFunc() {
+#	printError "Abort trap received stop test case"
+#	caseFinalization
+#	errorExit
+#}
+#trap abortTrapFunc SIGABRT
 
 #includes
 source "${TTRO_scriptDir}/defs.sh"
@@ -76,6 +85,7 @@ export TTXX_searchPath
 
 #test finalization function
 function caseFinalization {
+	isDebug && printDebug "$FUNCNAME"
 	if [[ $TTTT_executionState == 'initializing' ]]; then
 		return 0
 	fi
@@ -134,13 +144,18 @@ function caseFinalization {
 }
 
 function caseExitFunction {
-	isDebug && printDebug "$FUNCNAME"
+	printInfo "$FUNCNAME"
 	if ! TTTF_isSkip; then
 		caseFinalization
 	fi
 }
 trap caseExitFunction EXIT
 
+#handleSigUsr1() {
+#	echo "SIGUSR1"
+#}
+#trap handleSigUsr1 USR1
+#trap -p
 #
 # success exit / failure exit and error exit
 # do not use this functions directly
