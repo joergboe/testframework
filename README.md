@@ -238,3 +238,9 @@ Version 3.9.0:
 - New streamsutils function waitForFinAndCheckHealth
 - Category Control is disables if a test case wildcard list was entered
 -  New preambl feature exclusive execution property
+
+Version 3.9.1:
+- Corrections in sigint handling in test suite
+- Better printout format for job start-and job-end
+- Cleanup in job control logic
+
