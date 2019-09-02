@@ -139,7 +139,8 @@ The definition of the variables and properties must have the form:
 No spaces are allowed between name '=' and value. The assignement requires the same quoting as a reqular bash assignement.
 The assignment can use a continuation line if the line ends with an escaped newline character (backlslash before newline)
 The continuation line must also start with #--
-The preamble may define the variants of the test artifact and in case of a test case, the timeout value for the test case.
+The preamble may define the variants of the test artifact and in case of a test case, the timeout value and
+boolean property exclusiveExecution for the test case.
 
 ## Test Collection, Test Case and Test Suite variants
 The variants of cases, suites and collections are defined in the preamble of the 'TestCase.sh' or the 'TestSuite.sh' file.
@@ -159,13 +160,18 @@ The test case execution is superviced and when the timeout (TTPR_timeout in seco
 the job is killed with SIGTERM (15). If the job still runs after additional time (TTPR_additionalTime),
 the job is killed with SIGKILL (9).
 
-The test case timeout can be controlled with property TTPR_timeout. If this property is not set, the value 120 is used.
-The additional time is controlled property TTPR_additionalTime. If this property is not set, the vaue 45 is used.
+The test case timeout can be controlled with property TTPR_timeout. If this property is not set, the value 240 is used.
+The additional time is controlled property TTPR_additionalTime. If this property is not set, the vaue 60 is used.
 
 Each test Case can define an individual test Case timeout. This can be done in the Test Case File Preamble like:
 #--timeout=600
 
-The individual test case timeout is used if the value is greater than TTPR_timeout or if the value is greater than 120.
+The individual test case timeout is used if the value is greater than TTPR_timeout (if exists) or if the value is greater than 240.
+
+## Test Case exclusive execution property
+If the preamble contains a line
+#--exclusiveExecution=true
+the test case is always executed as a single case and no parallel execution is done.
 
 ## Reserved Variable Name Ranges
 Variables used for the framework have special prefixes.
@@ -372,6 +378,8 @@ If one of the run-category pattern matches any of the categories of the artifact
 A test Case or Suite without a defined categorie is always executed independently from the run-categories.
 If no run-category pattern is entered, all Cases and Suite are executed, regardless of the defined categories.
 If the run-caegory 'default' is specified, all Cases and Suites are executed that have no explicit category set.
+
+Category Control is disables if a test case wildcard list was entered from command line.
 
 
 ## Sequence Control

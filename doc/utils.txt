@@ -1,4 +1,21 @@
 #######################################
+		arrayAppend
+ Function arrayAppend appends values on an indexed array
+ Parameters:
+	$1 The name of the array to append
+ $2 First value to appends
+ ... optional more values to append may follow
+
+
+#######################################
+		arrayDelete
+ Function arrayDelete deletes a value from an indexed array
+ Parameters:
+	$1 The name of the array
+ $2 Index to delete
+
+
+#######################################
 		arrayHasKey
  Function arrayHasKey
 	check is an array has key
@@ -10,6 +27,16 @@
 	error(1)   -   otherwise
  Exits:
 	exits if called with wrong number of arguments
+
+
+#######################################
+		arrayInsert
+ Function arrayInsert inserts values into an indexed array
+ Parameters:
+	$1 The name of the array
+ $2 Index where to insert (this element is replaced with the first value to insert)
+ $3 First value to inserts
+ ... optional more elements to insert
 
 
 #######################################
@@ -618,6 +645,7 @@ if no files are scanned and $3 was true
 		success(0)   if file exist and one patten matches (if $2 is false)
 		             if file exist and all patten matche  (if $2 is true)
 	return false if no complete pattern match was found or the file not exists
+	exits if TTTT_patternList is empty or not existent
 
 
 #######################################
@@ -697,7 +725,7 @@ if no files are scanned and $3 was true
  Function printErrorAndExit
  	prints an error message and exits
 	$1 the error message to print
-	$2 the exit code
+	$2 optional exit code, default is 60
 	returns: never
 
 
@@ -851,7 +879,7 @@ if no files are scanned and $3 was true
 
 #######################################
 		trim
- Function trim removes leading trailing whitespace characters
+ Function trim removes leading and trailing whitespace characters
 	$1	the input string
 	returns the result string in TTTT_trim
 

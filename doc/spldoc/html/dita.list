@@ -1,12 +1,12 @@
-#Wed Apr 03 11:12:05 CEST 2019
+#Mon Sep 02 15:40:16 CEST 2019
 copytosourcelist=
-hreftargetslist=dita/tk$streamsx.testframe/ix$Namespace.xml,dita/toolkits/ix$Namespace.xml,dita/toolkits/ix$Operator.xml,dita/tk$streamsx.testframe/spl$com.ibm.streamsx.testframe$Utils.xml,dita/tk$streamsx.testframe/ns$com.ibm.streamsx.testframe.xml,dita/toolkits/toolkits.xml,dita/tk$streamsx.testframe/tk$streamsx.testframe.xml,dita/tk$streamsx.testframe/ix$Operator.xml
+hreftargetslist=dita/tk$streamsx.testframe/ix$Function.xml,dita/tk$streamsx.testframe/ix$Namespace.xml,dita/toolkits/ix$Function.xml,dita/toolkits/ix$Namespace.xml,dita/toolkits/ix$Operator.xml,dita/tk$streamsx.testframe/spl$com.ibm.streamsx.testframe$Utils.xml,dita/tk$streamsx.testframe/ns$com.ibm.streamsx.testframe.xml,dita/toolkits/toolkits.xml,dita/tk$streamsx.testframe/tk$streamsx.testframe.xml,dita/tk$streamsx.testframe/ix$Operator.xml
 fullditatopicfile=fullditatopic.list
 fullditamapandtopicfile=fullditamapandtopic.list
-fullditatopiclist=dita/tk$streamsx.testframe/ix$Namespace.xml,dita/toolkits/ix$Namespace.xml,dita/toolkits/ix$Operator.xml,dita/tk$streamsx.testframe/spl$com.ibm.streamsx.testframe$Utils.xml,dita/tk$streamsx.testframe/ns$com.ibm.streamsx.testframe.xml,dita/toolkits/toolkits.xml,dita/tk$streamsx.testframe/tk$streamsx.testframe.xml,dita/tk$streamsx.testframe/ix$Operator.xml
-fullditamapandtopiclist=dita/toolkits.ditamap,dita/tk$streamsx.testframe/ix$Namespace.xml,dita/toolkits/ix$Namespace.xml,dita/toolkits/ix$Operator.xml,dita/tk$streamsx.testframe/spl$com.ibm.streamsx.testframe$Utils.xml,dita/tk$streamsx.testframe/ns$com.ibm.streamsx.testframe.xml,dita/toolkits/toolkits.xml,dita/tk$streamsx.testframe/tk$streamsx.testframe.xml,dita/tk$streamsx.testframe/ix$Operator.xml
+fullditatopiclist=dita/tk$streamsx.testframe/ix$Function.xml,dita/tk$streamsx.testframe/ix$Namespace.xml,dita/toolkits/ix$Function.xml,dita/toolkits/ix$Namespace.xml,dita/toolkits/ix$Operator.xml,dita/tk$streamsx.testframe/spl$com.ibm.streamsx.testframe$Utils.xml,dita/tk$streamsx.testframe/ns$com.ibm.streamsx.testframe.xml,dita/toolkits/toolkits.xml,dita/tk$streamsx.testframe/tk$streamsx.testframe.xml,dita/tk$streamsx.testframe/ix$Operator.xml
+fullditamapandtopiclist=dita/toolkits.ditamap,dita/tk$streamsx.testframe/ix$Function.xml,dita/tk$streamsx.testframe/ix$Namespace.xml,dita/toolkits/ix$Function.xml,dita/toolkits/ix$Namespace.xml,dita/toolkits/ix$Operator.xml,dita/tk$streamsx.testframe/spl$com.ibm.streamsx.testframe$Utils.xml,dita/tk$streamsx.testframe/ns$com.ibm.streamsx.testframe.xml,dita/toolkits/toolkits.xml,dita/tk$streamsx.testframe/tk$streamsx.testframe.xml,dita/tk$streamsx.testframe/ix$Operator.xml
 hrefditatopicfile=hrefditatopic.list
-hrefditatopiclist=dita/tk$streamsx.testframe/ix$Namespace.xml,dita/toolkits/ix$Namespace.xml,dita/toolkits/ix$Operator.xml,dita/tk$streamsx.testframe/spl$com.ibm.streamsx.testframe$Utils.xml,dita/tk$streamsx.testframe/ns$com.ibm.streamsx.testframe.xml,dita/toolkits/toolkits.xml,dita/tk$streamsx.testframe/tk$streamsx.testframe.xml,dita/tk$streamsx.testframe/ix$Operator.xml
+hrefditatopiclist=dita/tk$streamsx.testframe/ix$Function.xml,dita/tk$streamsx.testframe/ix$Namespace.xml,dita/toolkits/ix$Function.xml,dita/toolkits/ix$Namespace.xml,dita/toolkits/ix$Operator.xml,dita/tk$streamsx.testframe/spl$com.ibm.streamsx.testframe$Utils.xml,dita/tk$streamsx.testframe/ns$com.ibm.streamsx.testframe.xml,dita/toolkits/toolkits.xml,dita/tk$streamsx.testframe/tk$streamsx.testframe.xml,dita/tk$streamsx.testframe/ix$Operator.xml
 user.input.file=dita/toolkits.ditamap
 subtargetsfile=subtargets.list
 fullditamapfile=fullditamap.list
@@ -23,11 +23,11 @@ conreflist=
 resourceonlyfile=resourceonly.list
 imagefile=image.list
 resourceonlylist=
-imagelist=image/tk$streamsx.testframe/op$com.ibm.streamsx.testframe$FileSink1.svg
+imagelist=image/tk$streamsx.testframe/op$com.ibm.streamsx.testframe$Echo.svg,image/tk$streamsx.testframe/op$com.ibm.streamsx.testframe$FileSink1.svg
 htmlfile=html.list
 htmllist=
 canditopicsfile=canditopics.list
-canditopicslist=dita/tk$streamsx.testframe/ix$Namespace.xml,dita/toolkits/ix$Namespace.xml,dita/toolkits/ix$Operator.xml,dita/tk$streamsx.testframe/spl$com.ibm.streamsx.testframe$Utils.xml,dita/tk$streamsx.testframe/ns$com.ibm.streamsx.testframe.xml,dita/toolkits/toolkits.xml,dita/tk$streamsx.testframe/tk$streamsx.testframe.xml,dita/tk$streamsx.testframe/ix$Operator.xml
+canditopicslist=dita/tk$streamsx.testframe/ix$Function.xml,dita/tk$streamsx.testframe/ix$Namespace.xml,dita/toolkits/ix$Function.xml,dita/toolkits/ix$Namespace.xml,dita/toolkits/ix$Operator.xml,dita/tk$streamsx.testframe/spl$com.ibm.streamsx.testframe$Utils.xml,dita/tk$streamsx.testframe/ns$com.ibm.streamsx.testframe.xml,dita/toolkits/toolkits.xml,dita/tk$streamsx.testframe/tk$streamsx.testframe.xml,dita/tk$streamsx.testframe/ix$Operator.xml
 keyreffile=keyref.list
 subjectschemefile=subjectscheme.list
 keyreflist=
