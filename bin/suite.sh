@@ -35,8 +35,12 @@ handleSigint() {
 		printWarning "SIGINT #1: Test Suite will be stopped. To interrupt running test cases press ^C again"
 	elif [[ $TTTI_interruptReceived -eq 2 ]]; then
 		printWarning "SIGINT #2: Test cases will be stopped"
-	elif [[ $TTTI_interruptReceived -gt 3 ]]; then
-		printWarning "SIGINT: Abort Suite"
+	elif [[ $TTTI_interruptReceived -eq 3 ]]; then
+		local myname='unknown'
+		if isExisting 'TTRO_workDirSuite'; then
+			myname="$TTRO_workDirSuite"
+		fi
+		printWarning "SIGINT: Abort Suite: $myname"
 		exit $errSigint
 	else
 		printErrorAndExit "SIGINT: received - wrong TTTI_interruptReceived=$TTTI_interruptReceived" $errRt
@@ -427,7 +431,7 @@ checkJobTimeouts() {
 						tempjobspec="%${TTTI_tjobid[$i]}"
 					fi
 					printWarning "Timeout Kill jobspec=${tempjobspec} with SIG${TTTI_sigspec} i=${i} pid=${TTTI_tpid[$i]} case=${TTTI_tcase[$i]} variant=${TTTI_tvariant[$i]}"
-					#SIGINT and SIGHUP seems not to work can not install handler for both signals in case.sh
+					#SIGINT and SIGHUP do not work; can not install handler for both signals in case.sh
 					if kill -s $TTTI_sigspec "${tempjobspec}"; then
 						echo "timeout" > "${TTTI_tcaseWorkDir[$i]}/TIMEOUT"
 					else
@@ -775,7 +779,7 @@ while [[ -z $TTTI_allJobsGone ]]; do
 	if checkExclusiveRequest; then TTTI_currentParralelJobsEffective=1; else TTTI_currentParralelJobsEffective="$TTTI_currentParralelJobs"; fi
 	while [[ ( -n $TTTI_nextJobIndexToStart && ( $TTTI_numberJobsRunning -ge $TTTI_currentParralelJobsEffective ) || ( ${#TTTI_freeSlots[*]} -eq 0 ) ) || ( -z $TTTI_nextJobIndexToStart && -z $TTTI_allJobsGone ) ]]; do
 		isDebug && printDebug "Loop cond numberJobsRunning='$TTTI_numberJobsRunning' currentParralelJobs='$TTTI_currentParralelJobs' allJobsGone='$TTTI_allJobsGone' nextJobIndexToStart='$TTTI_nextJobIndexToStart' currentParralelJobsEffective=$TTTI_currentParralelJobsEffective"
-		while ! TTTI_now="$(date +'%-s')"; do :; done #guard external command if sigint is received TODO: is signal received from this job too?
+		while ! TTTI_now="$(date +'%-s')"; do :; done #guard external command if sigint is received
 		checkJobTimeouts
 		getSystemLoad100
 		checkSystemLoad
