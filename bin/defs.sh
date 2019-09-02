@@ -17,5 +17,5 @@ declare -r TEST_CASE_FILE="TestCase.sh"
 declare -r TEST_ENVIRONMET_LOG="ENVIRONMENT.log"
 declare -r TEST_LOG="STDERROUT.log"
 
-declare -ri defaultTimeout=120
-declare -ri defaultAdditionalTime=45
+declare -ri defaultTimeout=240
+declare -ri defaultAdditionalTime=60

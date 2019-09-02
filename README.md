@@ -243,4 +243,5 @@ Version 3.9.1:
 - Corrections in sigint handling in test suite
 - Better printout format for job start-and job-end
 - Cleanup in job control logic
+- Default timeout changed to 240 sec; defauld additional time changed to 60 sec.
 
