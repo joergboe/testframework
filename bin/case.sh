@@ -32,15 +32,6 @@ function errorTrapFunc {
 }
 trap errorTrapFunc ERR
 
-# Function abortTrapFunc
-#	exits test case
-#abortTrapFunc() {
-#	printError "Abort trap received stop test case"
-#	caseFinalization
-#	errorExit
-#}
-#trap abortTrapFunc SIGABRT
-
 #includes
 source "${TTRO_scriptDir}/defs.sh"
 source "${TTRO_scriptDir}/util.sh"
@@ -85,6 +76,7 @@ export TTXX_searchPath
 
 #test finalization function
 function caseFinalization {
+	set +o errexit; set +o errtrace; set +o nounset
 	isDebug && printDebug "$FUNCNAME"
 	if [[ $TTTT_executionState == 'initializing' ]]; then
 		return 0
@@ -144,6 +136,7 @@ function caseFinalization {
 }
 
 function caseExitFunction {
+	set +o errexit; set +o errtrace; set +o nounset
 	printInfo "$FUNCNAME"
 	if ! TTTF_isSkip; then
 		caseFinalization

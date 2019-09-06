@@ -435,7 +435,12 @@ checkJobTimeouts() {
 						tempjobspec="${TTTI_tpid[$i]}"
 						printError "tpid $tempjobspec with no jobspec encountered"
 					else
-						tempjobspec="%${TTTI_tjobspec[$i]}"
+						#I now use always uses always the jobspec if available otherwise jobs stucks if a synchro or async job was started from case 
+						#if [[ "$TTRO_noParallelCases" -eq 1 ]]; then
+						#	tempjobspec="${TTTI_tpid[$i]}"
+						#else
+							tempjobspec="%${TTTI_tjobspec[$i]}"
+						#fi
 					fi
 					printWarning "Timeout Kill jobspec=${tempjobspec} with SIG${TTTI_sigspec} i=${i} pid=${TTTI_tpid[$i]} case=${TTTI_tcase[$i]} variant=${TTTI_tvariant[$i]}"
 					#SIGINT and SIGHUP do not work; can not install handler for both signals in case.sh
@@ -449,6 +454,7 @@ checkJobTimeouts() {
 			else
 				finalTime=$((${TTTI_tkilled[$i]}+$TTTT_casesAdditionalTime))
 				if [[ $TTTI_now -gt $finalTime ]]; then
+					#Forced kill uses always the jobspec if available
 					if [[ -z ${TTTI_tjobspec[$i]} ]]; then
 						tempjobspec="${TTTI_tpid[$i]}"
 						printError "tpid $tempjobspec with no jobspec encountered"
@@ -681,7 +687,7 @@ startNewJobs() {
 		local jobState=''
 		local thisJobspec=''
 		local psres="$errSigint"
-		while [[ $psres -eq $errSigint ]]; do
+		while [[ $psres -eq $errSigint ]]; do #repeat command if interrupted
 			psres=0;
 			jobsOutput=$(export LC_ALL='en_US.UTF-8'; jobs -l %+) || psres=$?
 		done
@@ -700,7 +706,7 @@ startNewJobs() {
 			jobState="${TTTT_trim%%[[:space:]]*}"
 			if [[ $part1 =~ \[(.*)\]\+ ]]; then
 				thisJobspec="${BASH_REMATCH[1]}"
-				echo " jobspec=%$thisJobspec pid=$newPidLead state=$jobState"
+				echo " jobspec=%$thisJobspec leadPid=$newPidLead state=$jobState"
 				checkDuplicateJobspec "$thisJobspec"
 			else
 				echo
