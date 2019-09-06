@@ -390,17 +390,24 @@ if isExisting 'TTPR_additionalTime'; then
 	TTTT_casesAdditionalTime="$TTPR_additionalTime"
 fi
 
-declare -a TTTI_tjobspec=()	#the job id of process group (jobspec)
-declare -a TTTI_tpid=()		#pid of the case job this is the crucical value of the structure
+declare -a TTTI_tjobspec=()		#the job id of process group (jobspec)
+declare -a TTTI_tpid=()			#pid of the case job this is the crucical value of the structure
 declare -a TTTI_tcase=()		#the name of the running case
-declare -a TTTI_tvariant=()	#the variant of the running case
+declare -a TTTI_tvariant=()		#the variant of the running case
 declare -a TTTI_tcasePath=()	#the input dir of the running case
 declare -a TTTI_tstartTime=()
 declare -a TTTI_ttimeout=()
 declare -a TTTI_tendTime=()
 declare -a TTTI_tkilled=()
 declare -a TTTI_tcaseWorkDir=()
-declare -a TTTI_freeSlots=()	# the list of the free slots in txxxx arrays
+declare -a TTTI_freeSlots=()	# the list of the free slots (indexes) in above arrays
+#init the work structure for maxParralelJobs
+for ((TTTI_i=0; TTTI_i<TTTI_maxParralelJobs; TTTI_i++)); do
+	TTTI_tjobspec[$TTTI_i]=""; TTTI_tpid[$TTTI_i]=""; TTTI_tcase[$TTTI_i]=""; TTTI_tvariant[$TTTI_i]=""; TTTI_tcasePath[$TTTI_i]=""
+	TTTI_tstartTime[$TTTI_i]=""; TTTI_ttimeout[$TTTI_i]=""; TTTI_tstartTime[$TTTI_i]=""; TTTI_tendTime[$TTTI_i]=""
+	TTTI_tkilled[$TTTI_i]=""; TTTI_tcaseWorkDir[$TTTI_i]=""
+	TTTI_freeSlots+=( $TTTI_i )
+done
 declare TTTI_allJobsGone=""
 declare TTTI_texclusiveExecution=''
 declare TTTI_highLoad=''	#true if the system is in high load state
@@ -752,14 +759,6 @@ checkExclusiveRequest() {
 	fi
 	return 1
 }
-
-#init the work structure for maxParralelJobs
-for ((TTTI_i=0; TTTI_i<TTTI_maxParralelJobs; TTTI_i++)); do
-	TTTI_tjobspec[$TTTI_i]=""; TTTI_tpid[$TTTI_i]=""; TTTI_tcase[$TTTI_i]=""; TTTI_tvariant[$TTTI_i]=""; TTTI_tcasePath[$TTTI_i]=""
-	TTTI_tstartTime[$TTTI_i]=""; TTTI_ttimeout[$TTTI_i]=""; TTTI_tstartTime[$TTTI_i]=""; TTTI_tendTime[$TTTI_i]=""
-	TTTI_tkilled[$TTTI_i]=""; TTTI_tcaseWorkDir[$TTTI_i]=""
-	TTTI_freeSlots+=( $TTTI_i )
-done
 
 #print special summary
 TTTI_tempSummayName="${TTRO_workDirSuite}/part1.tmp"
