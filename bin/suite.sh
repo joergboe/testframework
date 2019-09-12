@@ -437,9 +437,9 @@ checkJobTimeouts() {
 					else
 						#I now use always uses always the jobspec if available otherwise jobs stucks if a synchro or async job was started from case 
 						#if [[ "$TTRO_noParallelCases" -eq 1 ]]; then
-						#	tempjobspec="${TTTI_tpid[$i]}"
+							tempjobspec="${TTTI_tpid[$i]}"
 						#else
-							tempjobspec="%${TTTI_tjobspec[$i]}"
+						#	tempjobspec="%${TTTI_tjobspec[$i]}"
 						#fi
 					fi
 					printWarning "Timeout Kill jobspec=${tempjobspec} with SIG${TTTI_sigspec} i=${i} pid=${TTTI_tpid[$i]} case=${TTTI_tcase[$i]} variant=${TTTI_tvariant[$i]}"
@@ -520,7 +520,7 @@ handleJobEnd() {
 					elif [[ $tmp2 == 'Running' ]]; then
 						isDebug && printDebug "Job is Running $tmp3"
 					else
-						printError "Invalid job state $tmp2 jobspec=%$tmp3"
+						printError "jobs returns invalid job state $tmp2 jobspec=%$tmp3"
 						thisJobRuns=''
 						jobState="$tmp2"
 					fi

@@ -129,6 +129,9 @@ function caseFinalization {
 			fi
 		fi
 		printInfo "$TTTT_executedTestFinSteps Case Test Finalization steps executed"
+		#kill childs
+		isDebug && ps -f
+		TTTF_killchilds "$$"
 	else
 		isDebug && printDebug "No execution caseFinalization case $TTRO_case variant '$TTRO_variantCase'"
 	fi
@@ -144,11 +147,6 @@ function caseExitFunction {
 }
 trap caseExitFunction EXIT
 
-#handleSigUsr1() {
-#	echo "SIGUSR1"
-#}
-#trap handleSigUsr1 USR1
-#trap -p
 #
 # success exit / failure exit and error exit
 # do not use this functions directly

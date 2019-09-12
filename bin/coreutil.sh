@@ -402,6 +402,45 @@ function TTTF_checkCats {
 }
 readonly -f TTTF_checkCats
 
+# Kill all childs
+#	$1 parent pid
+#	$2 optional signal  (term if none)
+TTTF_killchilds() {
+	local pid=$1
+	local sig=${2:--TERM}
+	isDebug && printDebug "$FUNCNAME pid=$pid sig=$sig"
+	local myChild
+    for myChild in $(ps -o pid --no-headers --ppid ${pid}); do
+        TTTF_killtree ${myChild} ${sig}
+    done
+    return 0
+}
+readonly -f TTTF_killchilds
+
+# Kill the process tree
+#	$1 pid
+#	$2 optional signal (term if none)
+TTTF_killtree() {
+    local pid=$1
+    local sig=${2:--TERM}
+    isDebug && printDebug "$FUNCNAME pid=$pid sig=$sig"
+    local killOk='true'
+    kill -STOP ${pid} 2>/dev/null || killOk='' # needed to stop quickly forking parent
+    local child
+    for child in $(ps -o pid --no-headers --ppid ${pid}); do
+        TTTF_killtree ${child} ${sig}
+    done
+    kill ${sig} ${pid} 2>/dev/null || killOk=''
+    kill -CONT ${pid} 2>/dev/null || killOk=''
+    if [[ $killOk ]]; then
+		printInfo "killed pid=$pid sig=$sig"
+	else
+		isVerbose && printVerbose "something went wrong during kill of pid=$pid"
+	fi
+    return 0
+}
+readonly -f TTTF_killtree
+
 #
 # Create the global index.html
 # $1 the file to create
