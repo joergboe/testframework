@@ -14,10 +14,10 @@ STEPS=(
 myTest() {
   case "$TTRO_variantCase" in
     append1)
-      declare -a -g myarr=( aa bb cc )
+      myarr=( aa bb cc )
       arrayAppend 'myarr' "dd";;
     append2)
-      declare -a -g myarr=( )
+      myarr=( )
       arrayAppend 'myarr' 'aa' 'bb' 'cc' "dd";;
   esac
 }

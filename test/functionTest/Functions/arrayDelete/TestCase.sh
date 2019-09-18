@@ -16,16 +16,16 @@ STEPS=(
 myTest() {
   case "$TTRO_variantCase" in
     delete1)
-      declare -a -g myarr=( 'a a' "b b" 'xxx' 'c c' 'dd ' )
+      myarr=( 'a a' "b b" 'xxx' 'c c' 'dd ' )
       arrayDelete 'myarr' 2;;
     deleteAtStart)
-      declare -a -g myarr=( 'xxx' 'a a' "b b" 'c c' 'dd ' )
+      myarr=( 'xxx' 'a a' "b b" 'c c' 'dd ' )
       arrayDelete 'myarr' 0;;
     deleteAtEnd)
-      declare -a -g myarr=( 'a a' "b b" 'c c' 'dd ' 'xxx' )
+      myarr=( 'a a' "b b" 'c c' 'dd ' 'xxx' )
       arrayDelete 'myarr' 4;;
     pasteEnd)
-      declare -a -g myarr=( 'a a' "b b" 'c c' 'dd ' )
+      myarr=( 'a a' "b b" 'c c' 'dd ' )
       arrayDelete 'myarr' 4;;
   esac
 }

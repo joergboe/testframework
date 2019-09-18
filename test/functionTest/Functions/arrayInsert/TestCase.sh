@@ -17,20 +17,20 @@ STEPS=(
 myTest() {
   case "$TTRO_variantCase" in
     insert1)
-      declare -a -g myarr=( 'a a' 'c c' 'dd ' )
+      myarr=( 'a a' 'c c' 'dd ' )
       arrayInsert 'myarr' 1 "b b";;
     insert2)
-      declare -a -g myarr=( 'a a' 'dd ' )
+      myarr=( 'a a' 'dd ' )
       arrayInsert 'myarr' 1 "b b" 'c c';;
     insertAtStart)
-      declare -a -g myarr=( 'c c' 'dd ' )
+      myarr=( 'c c' 'dd ' )
       arrayInsert 'myarr' 0 "a a" 'b b';;
     insertAtEnd)
-      declare -a -g myarr=( 'a a' 'b b' )
+      myarr=( 'a a' 'b b' )
       arrayInsert 'myarr' 2 "c c" 'dd ';;
     pasteEnd)
-    declare -a -g myarr=( 'a a' 'b b' )
-    arrayInsert 'myarr' 3 "c c" 'dd ';;
+      myarr=( 'a a' 'b b' )
+      arrayInsert 'myarr' 3 "c c" 'dd ';;
   esac
 }
 
