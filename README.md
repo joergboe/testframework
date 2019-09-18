@@ -245,3 +245,7 @@ Version 3.9.1:
 - Cleanup in job control logic
 - Default timeout changed to 240 sec; defauld additional time changed to 60 sec.
 
+Version 3.9.2:
+- Reset errexit- and nounset option is disabled in test cases finalization phase
+- Test case now kills child jobs when case is finished
+- Correction in jobcontrol when jobs are fast finished (checkDuplicateJobspec)
