@@ -352,7 +352,7 @@ TTTF_fixPropsVars
 TTTT_executionState='execution'
 
 # check for duplicate jobspec in running jobs list
-# set jobspec to delete if duplicate was started
+# set jobspec to 'delete' if duplicate was actually started
 function checkDuplicateJobspec {
 	local i
 	local js
@@ -361,8 +361,8 @@ function checkDuplicateJobspec {
 			js="${TTTI_tjobspec[$i]}"
 			#echo "Check index $i list entry $js - value to be inserted $1"
 			if [[ -n $js ]]; then #and as a jobspec assigned
-				if [[ $js -eq $1 ]]; then
-					printError "Jobspec $1 is already in running jobs list at index i=$i ! Delete the jobspec"
+				if [[ "$js" == "$1" ]]; then #compare string literally
+					printWarning "Jobspec $1 is already in running jobs list at index i=$i ! jobspec='delete'"
 					TTTI_tjobspec[$i]='delete'
 				fi
 			fi
@@ -390,8 +390,12 @@ if isExisting 'TTPR_additionalTime'; then
 	TTTT_casesAdditionalTime="$TTPR_additionalTime"
 fi
 
-declare -a TTTI_tjobspec=()		#the job id of process group (jobspec)
-declare -a TTTI_tpid=()			#pid of the case job this is the crucical value of the structure
+#the job id of process group (jobspec) or 'error' if the jobs ends to fast and no jobspec is reported from the jobs command
+#or 'delete' if the jobspec was re-used from jobcontrol (means the job has ended)
+declare -a TTTI_tjobspec=()
+#pid of the job leader (case.sh) this is the crucical value of the structure
+#or the pid of the rightmost pipe element if no jobspec was encountered 'error'
+declare -a TTTI_tpid=()
 declare -a TTTI_tcase=()		#the name of the running case
 declare -a TTTI_tvariant=()		#the variant of the running case
 declare -a TTTI_tcasePath=()	#the input dir of the running case
@@ -427,20 +431,16 @@ checkJobTimeouts() {
 	isDebug && printDebug "check for timed out jobs"
 	local i tempjobspec finalTime
 	for ((i=0; i<TTTI_maxParralelJobs; i++)); do
-		#if [[ ( -n ${TTTI_tpid[$i]} ) && ( -n ${TTTI_tjobspec[$i]} ) ]]; then
 		if [[ -n ${TTTI_tpid[$i]} ]]; then
 			if [[ -z ${TTTI_tkilled[$i]} ]]; then # the job was not yet killed
 				if [[ ( ( ${TTTI_tendTime[$i]} -lt $TTTI_now ) && ( -z $TTXX_shell ) ) || ( $TTTI_interruptReceived -gt 1 ) ]]; then
+					if [[ ( ${TTTI_tjobspec[$i]} = 'delete' ) || ( ${TTTI_tjobspec[$i]} = 'error' ) ]]; then printErrorAndExit "A jobspec ${TTTI_tjobspec[$i]} must not have timed out i=${i} pid=${TTTI_tpid[$i]}"; fi
 					if [[ -z ${TTTI_tjobspec[$i]} ]]; then
-						tempjobspec="${TTTI_tpid[$i]}"
-						printError "tpid $tempjobspec with no jobspec encountered"
+						#tempjobspec="${TTTI_tpid[$i]}"
+						printErrorAndExit "no jobspec encountered  i=${i} pid=${TTTI_tpid[$i]}"
 					else
-						#I now use always uses always the jobspec if available otherwise jobs stucks if a synchro or async job was started from case 
-						#if [[ "$TTRO_noParallelCases" -eq 1 ]]; then
-							tempjobspec="${TTTI_tpid[$i]}"
-						#else
-						#	tempjobspec="%${TTTI_tjobspec[$i]}"
-						#fi
+						#always uses always the pid of the job leader
+						tempjobspec="${TTTI_tpid[$i]}"
 					fi
 					printWarning "Timeout Kill jobspec=${tempjobspec} with SIG${TTTI_sigspec} i=${i} pid=${TTTI_tpid[$i]} case=${TTTI_tcase[$i]} variant=${TTTI_tvariant[$i]}"
 					#SIGINT and SIGHUP do not work; can not install handler for both signals in case.sh
@@ -454,10 +454,11 @@ checkJobTimeouts() {
 			else
 				finalTime=$((${TTTI_tkilled[$i]}+$TTTT_casesAdditionalTime))
 				if [[ $TTTI_now -gt $finalTime ]]; then
+					if [[ ( ${TTTI_tjobspec[$i]} = 'delete' ) || ( ${TTTI_tjobspec[$i]} = 'error' ) ]]; then printErrorAndExit "A jobspec ${TTTI_tjobspec[$i]} must not have timed out i=${i} pid=${TTTI_tpid[$i]}"; fi
 					#Forced kill uses always the jobspec if available
 					if [[ -z ${TTTI_tjobspec[$i]} ]]; then
-						tempjobspec="${TTTI_tpid[$i]}"
-						printError "tpid $tempjobspec with no jobspec encountered"
+						#tempjobspec="${TTTI_tpid[$i]}"
+						printErrorAndExit "no jobspec encountered  i=${i} pid=${TTTI_tpid[$i]}"
 					else
 						tempjobspec="%${TTTI_tjobspec[$i]}"
 					fi
@@ -487,7 +488,9 @@ handleJobEnd() {
 			isDebug && printDebug "check wether job is still running i=$i pid=$pid jobspec=%$jobspec"
 			local thisJobRuns='true'
 			local jobState=''
-			if [[ ( "$jobspec" == "error" ) || ( "$jobspec" == "delete" ) ]]; then
+			if [[ -z "$jobspec" ]]; then
+				printErrorAndExit "no jobspec encountered  i=${i} pid=${pid}";
+			elif [[ ( "$jobspec" == "error" ) || ( "$jobspec" == "delete" ) ]]; then
 				printWarning "Check (expired) job running i=$i jobspec=$jobspec pid=$pid"
 				if ps --pid "$pid"; then
 					printErrorAndExit "Check (expired) job running i=$i jobspec=$jobspec pid=$pid true"
@@ -682,15 +685,18 @@ startNewJobs() {
 			local newPid=$!
 		fi
 		#jobsOutput=$(LC_ALL=en_US jobs %+)  ... this does not work in rhel 6 (bash 4.1.2)
+		#sleep 0.5; jobs #discard jobs test
 		local jobsOutput=''
 		local newPidLead=''
 		local jobState=''
 		local thisJobspec=''
 		local psres="$errSigint"
+		# !! we need jobspc to find out the pid of the job leader (when a pipe was started)
 		while [[ $psres -eq $errSigint ]]; do #repeat command if interrupted
 			psres=0;
 			jobsOutput=$(export LC_ALL='en_US.UTF-8'; jobs -l %+) || psres=$?
 		done
+		#extract jobspec and newPidLead from jobs output if available
 		if [[ ( $psres -eq 0 ) && ( -n "$jobsOutput" ) ]]; then
 			echo "$jobsOutput" > "$cworkdir/JOBS"
 			echo "Full Job list" >> "$cworkdir/JOBS"
@@ -707,15 +713,18 @@ startNewJobs() {
 			if [[ $part1 =~ \[(.*)\]\+ ]]; then
 				thisJobspec="${BASH_REMATCH[1]}"
 				echo " jobspec=%$thisJobspec leadPid=$newPidLead state=$jobState"
-				checkDuplicateJobspec "$thisJobspec"
+				checkDuplicateJobspec "$thisJobspec" # set jobspecs to 'delete' if the same jobspec is found twice. This may happen when jobs are fast finalized
 			else
 				echo
 				printErrorAndExit "No jobindex extract from jobs output '$jobsOutput'" $errRt
 			fi
 		else
+			#set jobspec 'error' and newPidLead from $! if no jobs output is available
+			#this may happen if async command returns very fast and the following instructions discards jobs buffer
 			newPidLead="$newPid"
 			thisJobspec='error'
 		fi
+		#sleep 0.5; jobs # uncomment if you want to activate duplicate job specs
 		TTTI_tpid[$freeSlot]="$newPidLead"
 		TTTI_tjobspec[$freeSlot]="$thisJobspec"
 		TTTI_tcase[$freeSlot]="$caseName"
