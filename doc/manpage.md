@@ -328,6 +328,8 @@ nullglob: bash allows patterns which match no files to expand to a null string, 
 globstar: The pattern ** used in a path-name expansion context will match all files and zero or more directories and
 sub-directories. If the pattern is followed by a /, only directories and sub-directories match
 
+Note: The options errexit, errtrace and nounset are disabled during test case finalization.
+
 If a test case requires the execution of a command that fails intentionally, you should use one of the functions:
 echoExecuteAndIntercept          - echo command and parameters; execute command guarded; return value in TTTT_result
 echoExecuteAndIntercept2,
