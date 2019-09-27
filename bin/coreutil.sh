@@ -408,9 +408,10 @@ readonly -f TTTF_checkCats
 TTTF_killchilds() {
 	local pid=$1
 	local sig=${2:--TERM}
-	isDebug && printDebug "$FUNCNAME pid=$pid sig=$sig"
+	isDebug && printDebug "$FUNCNAME pid='$pid' sig=$sig"
 	local myChild
-    for myChild in $(ps -o pid --no-headers --ppid ${pid}); do
+	local mylist="$(ps -o pid --no-headers --ppid ${pid} || : )"
+    for myChild in $mylist; do
         TTTF_killtree ${myChild} ${sig}
     done
     return 0
@@ -423,11 +424,11 @@ readonly -f TTTF_killchilds
 TTTF_killtree() {
     local pid=$1
     local sig=${2:--TERM}
-    isDebug && printDebug "$FUNCNAME pid=$pid sig=$sig"
+    isDebug && printDebug "$FUNCNAME pid='$pid' sig=$sig"
     local killOk='true'
     kill -STOP ${pid} 2>/dev/null || killOk='' # needed to stop quickly forking parent
     local child
-    for child in $(ps -o pid --no-headers --ppid ${pid}); do
+    for child in $(ps -o pid --no-headers --ppid ${pid} || : ); do
         TTTF_killtree ${child} ${sig}
     done
     kill ${sig} ${pid} 2>/dev/null || killOk=''
