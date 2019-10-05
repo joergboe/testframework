@@ -265,7 +265,7 @@ for TTTI_name_xyza in 'TTRO_prepsCase' 'PREPS'; do
 				fi
 				if [[ -n $TTTT_failureOccurred ]]; then
 					printError "Failure condition during case preparation: $TTTT_failureOccurred"
-					errexit
+					errorExit
 				fi
 			done
 		else
@@ -280,7 +280,7 @@ for TTTI_name_xyza in 'TTRO_prepsCase' 'PREPS'; do
 				fi
 				if [[ -n $TTTT_failureOccurred ]]; then
 					printError "Failure condition during case preparation: $TTTT_failureOccurred"
-					errexit
+					errorExit
 				fi
 			done
 		fi
@@ -295,7 +295,7 @@ if isFunction 'testPreparation'; then
 		testPreparation
 		if [[ -n $TTTT_failureOccurred ]]; then
 			printError "Failure condition during case preparation: testPreparation"
-			errexit
+			errorExit
 		fi
 	fi
 fi
