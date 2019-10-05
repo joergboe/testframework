@@ -224,7 +224,6 @@ function manpage () {
 	a plain assignment is sufficient. A re-write of an read-only variable will cause a script/test failure.
 
 
-
 	## Trueness and Falseness
 	=========================
 	Logical variables with the semantics of an boolean are considered 'true' if these variables are set to something different than
@@ -347,7 +346,7 @@ function manpage () {
 	globstar: The pattern ** used in a path-name expansion context will match all files and zero or more directories and
 	sub-directories. If the pattern is followed by a /, only directories and sub-directories match
 
-	Note: The options errexit, errtrace and nounset are disabled during test case finalization.
+	Note: The options errexit and nounset are disabled during test case and tes suite finalization.
 
 	If a test case requires the execution of a command that fails intentionally, you should use one of the functions:
 	echoExecuteAndIntercept          - echo command and parameters; execute command guarded; return value in TTTT_result

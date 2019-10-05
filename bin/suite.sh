@@ -887,6 +887,7 @@ unset timeout variantCount variantList
 #test suite finalization
 TTTT_executionState='finalization'
 declare -i TTTI_executedTestFinSteps=0
+set +o errexit; set +o nounset
 if isFunction 'testFinalization'; then
 	if isExisting 'FINS' || isExisting 'TTRO_finSuite'; then
 		printErrorAndExit "You must not use FINS or TTRO_finSuite variable together with testFinalization function" $errRt
