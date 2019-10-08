@@ -442,6 +442,96 @@ TTTF_killtree() {
 }
 readonly -f TTTF_killtree
 
+# Execute the preparation-, execution-, and finalization-steps in
+# case and suite
+#	$1 script: Case/Suite
+#	$2 name: used for printout
+#	$3 varName: PREPS/STEPS/FINS is then name of the new variable
+#	$4 oldVarName: the name of the old style variable
+#	$5 funcname: the name of the function to execute
+#	$6 breakOnFailure - loop ends if failure was seen
+#	$7 failureIsError - print error and return 1
+#	$8 supressVarName - the name of the supress variable or empty. If var exists and is true, the steps are suppressed
+#	$9 counterName - the name of the counter variable
+TTTF_executeSteps() {
+	isDebug && printDebug "$FUNCNAME $*"
+
+	local -r script="$1"
+	local -r name="$2"
+	local -r varName="$3"
+	local -r oldVarName="$4"
+	local -r funcname="$5"
+	local -r breakOnFailure="$6"
+	local -r failureIsError="$7"
+	local -r supressVarName="$8"
+	local -r counterName="$9"
+	
+	local TTTI_name_xyza
+	for TTTI_name_xyza in "$oldVarName" "$varName"; do
+		if isExisting "$TTTI_name_xyza"; then
+			if isArray "$TTTI_name_xyza"; then
+				local TTTI_l_xyza
+				eval "TTTI_l_xyza=\${#$TTTI_name_xyza[@]}"
+				local TTTI_i_xyza
+				for (( TTTI_i_xyza=0; TTTI_i_xyza<TTTI_l_xyza; TTTI_i_xyza++)); do
+					local TTTI_step_xyza
+					eval "TTTI_step_xyza=\${$TTTI_name_xyza[$TTTI_i_xyza]}"
+					if isExistingAndTrue "$supressVarName"; then
+						printInfo "Suppress $script $name: $TTTI_step_xyza"
+					else
+						printInfo "Execute $script $name: $TTTI_step_xyza"
+						eval "$counterName=\$(($counterName+1))"
+						eval "$TTTI_step_xyza"
+					fi
+					if [[ -n $failureIsError && -n $TTTT_failureOccurred ]]; then
+						printError "Failure condition during $script $name: $TTTT_failureOccurred"
+						return 1
+					fi
+					if [[ -n $breakOnFailure && -n $TTTT_failureOccurred ]]; then
+						break 2
+					fi
+				done
+			else
+				local TTTI_x_xyza
+				for TTTI_x_xyza in ${!TTTI_name_xyza}; do
+					if isExistingAndTrue "$supressVarName"; then
+						printInfo "Suppress $script $name: $TTTI_x_xyza"
+					else
+						printInfo "Execute $script $name: $TTTI_x_xyza"
+						eval "$counterName=\$(($counterName+1))"
+						eval "${TTTI_x_xyza}"
+					fi
+					if [[ -n $failureIsError && -n $TTTT_failureOccurred ]]; then
+						printError "Failure condition during $script $name: $TTTT_failureOccurred"
+						return 1
+					fi
+					if [[ -n $breakOnFailure && -n $TTTT_failureOccurred ]]; then
+						break 2
+					fi
+				done
+			fi
+		fi
+	done
+	if isFunction "$funcname"; then
+		if isExistingAndTrue "$supressVarName"; then
+			printInfo "Suppress $script $name: $funcname"
+		else
+			printInfo "Execute $script $name: $funcname"
+			eval "$counterName=\$(($counterName+1))"
+			eval "$funcname"
+			if [[ -n $failureIsError && -n $TTTT_failureOccurred ]]; then
+				printError "Failure condition during $script $name: $funcname"
+				return 1
+			fi
+		fi
+	fi
+	TTTF_fixPropsVars
+
+	printInfo "${!counterName} $script $name steps executed"
+
+}
+readonly -f TTTF_executeSteps
+
 #
 # Create the global index.html
 # $1 the file to create
