@@ -303,49 +303,7 @@ isVerbose && printVerbose "Execute Suite $TTRO_suite variant='$TTRO_variantSuite
 #execute test suite preparation
 TTTT_executionState='preparation'
 declare -i TTTI_executedTestPrepSteps=0
-for TTTI_name_xyza in 'TTRO_prepsSuite' 'PREPS'; do
-	if isExisting "$TTTI_name_xyza"; then
-		if isArray "$TTTI_name_xyza"; then
-			if isDebug; then
-				TTTI_v=$(declare -p "$TTTI_name_xyza")
-				printDebug "$TTTI_v"
-			fi
-			eval "TTTI_l_xyza=\${#$TTTI_name_xyza[@]}"
-			for (( TTTI_i_xyza=0; TTTI_i_xyza<TTTI_l_xyza; TTTI_i_xyza++)); do
-				eval "TTTI_step_xyza=\${$TTTI_name_xyza[$TTTI_i_xyza]}"
-				if isExistingAndTrue 'TTPR_noPrepsSuite'; then
-					printInfo "Suppress Suite Preparation: $TTTI_step_xyza"
-				else
-					printInfo "Execute Suite Preparation: $TTTI_step_xyza"
-					TTTI_executedTestPrepSteps=$((TTTI_executedTestPrepSteps+1))
-					eval "$TTTI_step_xyza"
-				fi
-			done
-		else
-			isDebug && printDebug "$TTTI_name_xyza=${!TTTI_name_xyza}"
-			for TTTI_x_xyza in ${!TTTI_name_xyza}; do
-				if isExistingAndTrue 'TTPR_noPrepsSuite'; then
-					printInfo "Suppress Suite Preparation: $TTTI_x_xyza"
-				else
-					printInfo "Execute Suite Preparation: $TTTI_x_xyza"
-					TTTI_executedTestPrepSteps=$((TTTI_executedTestPrepSteps+1))
-					eval "${TTTI_x_xyza}"
-				fi
-			done
-		fi
-	fi
-done
-if isFunction 'testPreparation'; then
-	if isExistingAndTrue 'TTPR_noPrepsSuite'; then
-		printInfo "Suppress Suite Preparation: testPreparation"
-	else
-		printInfo "Execute Suite Preparation: testPreparation"
-		TTTI_executedTestPrepSteps=$((TTTI_executedTestPrepSteps+1))
-		testPreparation
-	fi
-fi
-printInfo "$TTTI_executedTestPrepSteps Test Suite Preparation steps executed"
-TTTF_fixPropsVars
+TTTF_executeSteps 'Suite' 'Preparation' 'PREPS' 'TTRO_prepsSuite' 'testPreparation' '' '' 'TTPR_noPrepsSuite' 'TTTI_executedTestPrepSteps'
 
 #-------------------------------------------------
 #test case execution
@@ -888,53 +846,7 @@ unset timeout variantCount variantList
 TTTT_executionState='finalization'
 declare -i TTTI_executedTestFinSteps=0
 set +o errexit; set +o nounset
-if isFunction 'testFinalization'; then
-	if isExisting 'FINS' || isExisting 'TTRO_finSuite'; then
-		printErrorAndExit "You must not use FINS or TTRO_finSuite variable together with testFinalization function" $errRt
-	fi
-fi
-for TTTI_name_xyza in 'TTRO_finSuite' 'FINS'; do
-	if isExisting "$TTTI_name_xyza"; then
-		if isArray "$TTTI_name_xyza"; then
-			if isDebug; then
-				TTTI_v=$(declare -p "$TTTI_name_xyza")
-				printDebug "$TTTI_v"
-			fi
-			eval "TTTI_l_xyza=\${#$TTTI_name_xyza[@]}"
-			for (( TTTI_i_xyza=0; TTTI_i_xyza<TTTI_l_xyza; TTTI_i_xyza++)); do
-				eval "TTTI_step_xyza=\${$TTTI_name_xyza[$TTTI_i_xyza]}"
-				if isExistingAndTrue 'TTPR_noFinsSuite'; then
-					printInfo "Suppress Suite Finalization: $TTTI_step_xyza"
-				else
-					printInfo "Execute Suite Finalization: $TTTI_step_xyza"
-					TTTI_executedTestFinSteps=$((TTTI_executedTestFinSteps+1))
-					eval "$TTTI_step_xyza"
-				fi
-			done
-		else
-			isDebug && printDebug "$TTTI_name_xyza=${!TTTI_name_xyza}"
-			for TTTI_x_xyza in ${!TTTI_name_xyza}; do
-				if isExistingAndTrue 'TTPR_noFinsSuite'; then
-					printInfo "Suppress Suite Finalization: $TTTI_x_xyza"
-				else
-					printInfo "Execute Suite Finalization: $TTTI_x_xyza"
-					TTTI_executedTestFinSteps=$((TTTI_executedTestFinSteps+1))
-					eval "${TTTI_x_xyza}"
-				fi
-			done
-		fi
-	fi
-done
-if isFunction 'testFinalization'; then
-	if isExistingAndTrue 'TTPR_noFinsSuite'; then
-		printInfo "Suppress Suite Finalization: testFinalization"
-	else
-		printInfo "Execute Suite Finalization: testFinalization"
-		TTTI_executedTestFinSteps=$((TTTI_executedTestFinSteps+1))
-		testFinalization
-	fi
-fi
-printInfo "$TTTI_executedTestFinSteps Test Suite Finalisation steps executed"
+TTTF_executeSteps 'Suite' 'Finalization' 'FINS' 'TTRO_finSuite' 'testFinalization' '' '' 'TTPR_noFinsSuite' 'TTTI_executedTestFinSteps'
 
 #-------------------------------------------------------
 #put results to results file for information purose only
