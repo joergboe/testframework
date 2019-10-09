@@ -465,7 +465,8 @@ TTTF_executeSteps() {
 	local -r failureIsError="$7"
 	local -r supressVarName="$8"
 	local -r counterName="$9"
-	
+
+	local -a commandArray=();
 	local TTTI_name_xyza
 	for TTTI_name_xyza in "$oldVarName" "$varName"; do
 		if isExisting "$TTTI_name_xyza"; then
@@ -476,59 +477,43 @@ TTTF_executeSteps() {
 				for (( TTTI_i_xyza=0; TTTI_i_xyza<TTTI_l_xyza; TTTI_i_xyza++)); do
 					local TTTI_step_xyza
 					eval "TTTI_step_xyza=\${$TTTI_name_xyza[$TTTI_i_xyza]}"
-					if isExistingAndTrue "$supressVarName"; then
-						printInfo "Suppress $script $name: $TTTI_step_xyza"
-					else
-						printInfo "Execute $script $name: $TTTI_step_xyza"
-						eval "$counterName=\$(($counterName+1))"
-						eval "$TTTI_step_xyza"
-					fi
-					if [[ -n $failureIsError && -n $TTTT_failureOccurred ]]; then
-						printError "Failure condition during $script $name: $TTTT_failureOccurred"
-						return 1
-					fi
-					if [[ -n $breakOnFailure && -n $TTTT_failureOccurred ]]; then
-						break 2
-					fi
+					commandArray+=( "$TTTI_step_xyza" )
 				done
 			else
 				local TTTI_x_xyza
 				for TTTI_x_xyza in ${!TTTI_name_xyza}; do
-					if isExistingAndTrue "$supressVarName"; then
-						printInfo "Suppress $script $name: $TTTI_x_xyza"
-					else
-						printInfo "Execute $script $name: $TTTI_x_xyza"
-						eval "$counterName=\$(($counterName+1))"
-						eval "${TTTI_x_xyza}"
-					fi
-					if [[ -n $failureIsError && -n $TTTT_failureOccurred ]]; then
-						printError "Failure condition during $script $name: $TTTT_failureOccurred"
-						return 1
-					fi
-					if [[ -n $breakOnFailure && -n $TTTT_failureOccurred ]]; then
-						break 2
-					fi
+					commandArray+=( "$TTTI_x_xyza" )
 				done
 			fi
 		fi
 	done
 	if isFunction "$funcname"; then
-		if isExistingAndTrue "$supressVarName"; then
-			printInfo "Suppress $script $name: $funcname"
-		else
-			printInfo "Execute $script $name: $funcname"
-			eval "$counterName=\$(($counterName+1))"
-			eval "$funcname"
-			if [[ -n $failureIsError && -n $TTTT_failureOccurred ]]; then
-				printError "Failure condition during $script $name: $funcname"
-				return 1
-			fi
-		fi
+		commandArray+=( "$funcname" )
 	fi
+	
+	local cmd
+	local i
+	for ((i=0; i<${#commandArray[*]}; i++)); do
+		cmd="${commandArray[$i]}"
+		if isExistingAndTrue "$supressVarName"; then
+			printInfo "Suppress $script $name: $cmd"
+		else
+			printInfo "Execute $script $name: $cmd"
+			eval "$counterName=\$(($counterName+1))"
+			eval "$cmd"
+		fi
+		if [[ -n $failureIsError && -n $TTTT_failureOccurred ]]; then
+			printError "Failure condition during $script $name: $TTTT_failureOccurred"
+			return 1
+		fi
+		if [[ -n $breakOnFailure && -n $TTTT_failureOccurred ]]; then
+			break
+		fi
+	done
+	
 	TTTF_fixPropsVars
 
 	printInfo "${!counterName} $script $name steps executed"
-
 }
 readonly -f TTTF_executeSteps
 
