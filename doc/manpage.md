@@ -211,7 +211,6 @@ In script code use function setVar to define such a variable. To re-write a glob
 a plain assignment is sufficient. A re-write of an read-only variable will cause a script/test failure.
 
 
-
 ## Trueness and Falseness
 Logical variables with the semantics of an boolean are considered 'true' if these variables are set to something different than
 the empty value (null). An empty (null) variable or an unset variable is considered 'false'. Care must be taken if a
@@ -258,7 +257,7 @@ we use here the empty value an consider it as unset property.
                           the error is logged and the execution is stopped. The result of the case is not affected.
 - FINS                  - The space separated list or an array of test finalization commands.
 
-- TTPR_timeout          - The default test case timeout in seconds. default is 120 sec. This variable must be defined in the
+- TTPR_timeout          - The default test case timeout in seconds. default is 240 sec. This variable must be defined in the
                           description section of test case file or anywhere in the Test Suite or Test Property file. A definition
                           in the script section of a Test Case has no effect.
 - TTPR_additionalTime    - The extra wait time after the test case time out. If the test case does not end after this
@@ -328,7 +327,7 @@ nullglob: bash allows patterns which match no files to expand to a null string, 
 globstar: The pattern ** used in a path-name expansion context will match all files and zero or more directories and
 sub-directories. If the pattern is followed by a /, only directories and sub-directories match
 
-Note: The options errexit, errtrace and nounset are disabled during test case finalization.
+Note: The options errexit and nounset are disabled during test case and tes suite finalization.
 
 If a test case requires the execution of a command that fails intentionally, you should use one of the functions:
 echoExecuteAndIntercept          - echo command and parameters; execute command guarded; return value in TTTT_result
