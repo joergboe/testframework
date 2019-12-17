@@ -518,7 +518,7 @@ handleJobEnd() {
 					fi
 				fi
 				echo "$tmpCaseAndVariant : $caseElapsedTime" >> "${TTRO_workDirSuite}/CASE_EXECUTE"
-				printInfon "END: jobspec=%$jobspec i=$i running=$TTTI_numberJobsRunning case='${tmpCase}' variant='${tmpVariant}' maxJobs=$TTTI_currentParralelJobsEffective systemLoad=$TTTT_systemLoad pid=$pid state=$jobState"
+				printInfon "END:   jobspec=%$jobspec i=$i running=$TTTI_numberJobsRunning case='${tmpCase}' variant='${tmpVariant}' maxJobs=$TTTI_currentParralelJobsEffective systemLoad=$TTTT_systemLoad pid=$pid state=$jobState"
 				TTTI_tpid[$i]=""
 				TTTI_tjobspec[$i]=""
 				TTTI_texclusiveExecution=''

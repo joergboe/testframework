@@ -249,3 +249,8 @@ Version 3.9.2:
 - Reset errexit- and nounset option is disabled in test cases finalization phase
 - Test case now kills child jobs when case is finished
 - Correction in jobcontrol when jobs are fast finished (checkDuplicateJobspec)
+
+Version 3.9.3
+- errexit and nounset now also disabled in suite finalization
+- Sort output for job START and END
+- Code cleanups
