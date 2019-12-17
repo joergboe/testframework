@@ -85,7 +85,7 @@ function setSkip {
 	else
 		setVar 'TTPRN_skip' 'unspecified'
 	fi
-	printInfo "Set SKIP reason $TTPRN_skip"
+	printInfo "$FUNCNAME : $TTPRN_skip"
 }
 readonly -f setSkip
 

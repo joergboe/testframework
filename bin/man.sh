@@ -274,7 +274,7 @@ function manpage () {
 	                          the error is logged and the execution is stopped. The result of the case is not affected.
 	- FINS                  - The space separated list or an array of test finalization commands.
 
-	- TTPR_timeout          - The default test case timeout in seconds. default is 120 sec. This variable must be defined in the
+	- TTPR_timeout          - The default test case timeout in seconds. default is 240 sec. This variable must be defined in the
 	                          description section of test case file or anywhere in the Test Suite or Test Property file. A definition
 	                          in the script section of a Test Case has no effect.
 	- TTPR_additionalTime    - The extra wait time after the test case time out. If the test case does not end after this

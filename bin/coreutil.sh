@@ -653,7 +653,7 @@ function TTTF_addCaseEntry {
 				echo -e "$part1\nFAILURE\n${reason}\n" >> "$8"
 			fi;;
 		SKIP )
-			echo "<li><a href=\"$6\"><b>$mycasename</b></a> - <a href=\"$5\">InputDdir</a><br><span style=\"color: blue\">$4</span> : $reason-Time elapsed: $7</li>" >> "$1"
+			echo "<li><a href=\"$6\"><b>$mycasename</b></a> - <a href=\"$5\">InputDdir</a><br><span style=\"color: blue\">$4</span> : $reason - Time elapsed: $7</li>" >> "$1"
 			if [[ -n $TTXX_summary  ]]; then
 				echo -e "$part1\nSKIPPED\n${reason}\n" >> "$8"
 			fi;;
