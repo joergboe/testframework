@@ -427,6 +427,9 @@ TTTF_killtree() {
     isDebug && printDebug "$FUNCNAME pid='$pid' sig=$sig"
     local killOk='true'
     kill -STOP ${pid} 2>/dev/null || killOk='' # needed to stop quickly forking parent
+    # print command to be stopped
+    local processinfo=$(ps -q ${pid} -o args= || :)
+    printInfo "kill ${pid} : ${processinfo}"
     local child
     for child in $(ps -o pid --no-headers --ppid ${pid} || : ); do
         TTTF_killtree ${child} ${sig}
