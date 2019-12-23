@@ -12,5 +12,7 @@ myPrep() {
 	echo "if 'y' was pressed during execution of case Case0ReadFromConsole"
 	echo "Test case error (timout) for case Case1EndlessSync"
 	echo
+	echo "Finally check wheter no job 'endless.sh' is running after execution"
+	echo "of the test framework"
 	promptYesNo
 }
