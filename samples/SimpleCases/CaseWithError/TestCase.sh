@@ -14,7 +14,7 @@ function mytest {
 		echo "----- The called function returned failure code $? -----"
 	fi
 	echo "----- If this function not guarded, the test case exits -----"
-	myFailedFunction
+	echoAndExecute myFailedFunction
 	#this statement is nopt reached
 	return 0
 }

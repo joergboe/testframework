@@ -320,7 +320,7 @@ function manpage () {
 	- TTTT_xxxx            - More variables used in utils
 
 
-	## Special Script Execution options
+	## Special Script Execution Options
 	===================================
 	To maintain the correctness of the test execution all scripts are executed with special options set:
 
@@ -346,7 +346,7 @@ function manpage () {
 	globstar: The pattern ** used in a path-name expansion context will match all files and zero or more directories and
 	sub-directories. If the pattern is followed by a /, only directories and sub-directories match
 
-	Note: The options errexit and nounset are disabled during test case and tes suite finalization.
+	Note: The options errexit and nounset are disabled during test case and test suite finalization.
 
 	If a test case requires the execution of a command that fails intentionally, you should use one of the functions:
 	echoExecuteAndIntercept          - echo command and parameters; execute command guarded; return value in TTTT_result
@@ -369,14 +369,40 @@ function manpage () {
 
 	## Test Case Result Failures and Errors
 	=======================================
-	To signal an failure in a test case set the failure condition with function setFailure. This prevents further
-	test step functions from execution.
+	All test case preparation steps must return success. If an case preparation step returns a non zero 
+	value, the execution stopps immediately and the all case finalization steps are 
+	executed. The case is reported as an error case.
+	
+	All test case steps must return success. If an case step returns a non zero 
+	value, the execution stopps immediately and all case finalization steps are 
+	executed. The case is reported as error case.
+	
+	During test case step excution one can set an arbitrary failure text with function setFailure 'failure test'. 
+	This prevents further test steps from execution and the finalization steps are 
+	executed. The case is reported as failure case. (The triggering of an failure during test case preparation is 
+	possible but not intended.)
 
 	If a test case function is returns a non zero return code the case is counted as error.
 
-	To signal the success of a test case just leave the function with success 'return 0'.
+	To signal the success of a test case just leave all test preparation steps and test steps with success 'return 0'.
 
-	The test frame environment atempts to execute the test finalization functions in case of error and in case of failure.
+	The test frame environment attempts to execute the test finalization functions in case of error and in case of failure. 
+	During execution of case finalization, the bash options errexit and nounset are unset. Thus errors during command execution 
+	are ignored and access to non existing variables return the null value. Failure conditions set during finalization are ignored.
+
+	## Test Suite Result and Errors
+	=======================================
+	All test suite preparation steps must return success. If an suite preparation step returns a non zero 
+	value, the execution stopps immediately and the all suite finalization steps are 
+	executed. The suite is reported as an error suite.
+	
+	All test cases of ther suite are executed, failures and errors are counted.
+	
+	The test frame environment attempts to execute the test suite finalization functions in any case. 
+	During execution of case finalization, the bash options errexit and nounset are unset. Thus errors during command execution 
+	are ignored and access to non existing variables return the null value.
+	
+	Failure conditions set during test suite execution is not possible and triggers an error.
 
 	## Skip Test Cases - Category Control
 	=====================================

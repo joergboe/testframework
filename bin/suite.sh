@@ -303,7 +303,11 @@ isVerbose && printVerbose "Execute Suite $TTRO_suite variant='$TTRO_variantSuite
 #execute test suite preparation
 TTTT_executionState='preparation'
 declare -i TTTI_executedTestPrepSteps=0
-TTTF_executeSteps 'Suite' 'Preparation' 'PREPS' 'TTRO_prepsSuite' 'testPreparation' '' '' 'TTPR_noPrepsSuite' 'TTTI_executedTestPrepSteps'
+TTTF_executeSteps 'Suite' 'Preparation' 'PREPS' 'TTRO_prepsSuite' 'testPreparation' 'true' 'TTPR_noPrepsSuite' 'TTTI_executedTestPrepSteps'
+if isExistingAndTrue TTTT_failureOccurred; then
+	printError "Failure during test preparation encountered: $TTTT_failureOccurred"
+fi
+
 
 #-------------------------------------------------
 #test case execution
@@ -846,7 +850,7 @@ unset timeout variantCount variantList
 TTTT_executionState='finalization'
 declare -i TTTI_executedTestFinSteps=0
 set +o errexit; set +o nounset
-TTTF_executeSteps 'Suite' 'Finalization' 'FINS' 'TTRO_finSuite' 'testFinalization' '' '' 'TTPR_noFinsSuite' 'TTTI_executedTestFinSteps'
+TTTF_executeSteps 'Suite' 'Finalization' 'FINS' 'TTRO_finSuite' 'testFinalization' '' 'TTPR_noFinsSuite' 'TTTI_executedTestFinSteps'
 
 #-------------------------------------------------------
 #put results to results file for information purose only

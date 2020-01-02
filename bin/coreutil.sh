@@ -453,11 +453,11 @@ readonly -f TTTF_killtree
 #	$4 oldVarName: the name of the old style variable
 #	$5 funcname: the name of the function to execute
 #	$6 breakOnFailure - loop ends if failure was seen
-#	$7 failureIsError - print error and return 1
-#	$8 supressVarName - the name of the supress variable or empty. If var exists and is true, the steps are suppressed
-#	$9 counterName - the name of the counter variable
+#	$7 supressVarName - the name of the supress variable or empty. If var exists and is true, the steps are suppressed
+#	$8 counterName - the name of the counter variable
 TTTF_executeSteps() {
 	isDebug && printDebug "$FUNCNAME $*"
+	[[ $# -eq 8 ]] || printErrorAndExit "$FUNCNAME no params is wrong $#"
 
 	local -r script="$1"
 	local -r name="$2"
@@ -465,10 +465,10 @@ TTTF_executeSteps() {
 	local -r oldVarName="$4"
 	local -r funcname="$5"
 	local -r breakOnFailure="$6"
-	local -r failureIsError="$7"
-	local -r supressVarName="$8"
-	local -r counterName="$9"
+	local -r supressVarName="$7"
+	local -r counterName="$8"
 
+	# prepare the array with all commands to execute
 	local -a commandArray=();
 	local TTTI_name_xyza
 	for TTTI_name_xyza in "$oldVarName" "$varName"; do
@@ -505,11 +505,7 @@ TTTF_executeSteps() {
 			eval "$counterName=\$(($counterName+1))"
 			eval "$cmd"
 		fi
-		if [[ -n $failureIsError && -n $TTTT_failureOccurred ]]; then
-			printError "Failure condition during $script $name: $TTTT_failureOccurred"
-			return 1
-		fi
-		if [[ -n $breakOnFailure && -n $TTTT_failureOccurred ]]; then
+		if [[ -n $breakOnFailure ]] && isExistingAndTrue 'TTTT_failureOccurred'; then
 			break
 		fi
 	done

@@ -86,7 +86,7 @@ function caseFinalization {
 	if [[ -z $TTTT_caseFinalized ]]; then
 		TTTT_caseFinalized='true'
 		
-		TTTF_executeSteps 'Case' 'Finalization' 'FINS' 'TTRO_finsCase' 'testFinalization' '' '' 'TTPR_noFinsCase' 'TTTT_executedTestFinSteps'
+		TTTF_executeSteps 'Case' 'Finalization' 'FINS' 'TTRO_finsCase' 'testFinalization' '' 'TTPR_noFinsCase' 'TTTT_executedTestFinSteps'
 
 		#kill childs
 		isDebug && ps -f
@@ -203,13 +203,14 @@ fi
 
 #test preparation
 TTTT_executionState='preparation'
-if ! TTTF_executeSteps 'Case' 'Preparation' 'PREPS' 'TTRO_prepsCase' 'testPreparation' '' 'true' 'TTPR_noPrepsCase' 'TTTT_executedTestPrepSteps'; then
-	errorExit
+TTTF_executeSteps 'Case' 'Preparation' 'PREPS' 'TTRO_prepsCase' 'testPreparation' 'true' 'TTPR_noPrepsCase' 'TTTT_executedTestPrepSteps'
+if [[ -n $TTTT_failureOccurred ]]; then
+	printWarning "Failure during test preparation encountered: $TTTT_failureOccurred"
 fi
 
 #test execution
 TTTT_executionState='execution'
-TTTF_executeSteps 'Case' 'Test Step' 'STEPS' 'TTRO_stepsCase' 'testStep' 'true' '' '' 'TTTT_executedTestSteps'
+TTTF_executeSteps 'Case' 'Test Step' 'STEPS' 'TTRO_stepsCase' 'testStep' 'true' '' 'TTTT_executedTestSteps'
 if [[ $TTTT_executedTestSteps -eq 0 ]]; then
 	printError "No test Case step defined"
 	errorExit
