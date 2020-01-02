@@ -728,8 +728,8 @@ function submitJobVariable {
 			printErrorAndExit "Job was started but not joblog was found: $out_f" $errRt
 		fi
 	else
-		TTTT_jobno=''
 		rcode=$?
+		TTTT_jobno=''
 		return $rcode
 	fi
 }
