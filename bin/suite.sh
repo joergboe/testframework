@@ -849,7 +849,8 @@ unset timeout variantCount variantList
 #test suite finalization
 TTTT_executionState='finalization'
 declare -i TTTI_executedTestFinSteps=0
-set +o errexit; set +o nounset
+#unset the errtrace too to avoid unnecessary error traps
+set +o errexit; set +o nounset;  set +o errtrace
 TTTF_executeSteps 'Suite' 'Finalization' 'FINS' 'TTRO_finSuite' 'testFinalization' '' 'TTPR_noFinsSuite' 'TTTI_executedTestFinSteps'
 
 #-------------------------------------------------------

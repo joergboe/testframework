@@ -78,7 +78,8 @@ export TTXX_searchPath
 
 #test finalization function
 function caseFinalization {
-	set +o errexit; set +o nounset
+	#unset the errtrace too to avoid unnecessary error traps
+	set +o errexit; set +o nounset; set +o errtrace
 	isDebug && printDebug "$FUNCNAME"
 	if [[ $TTTT_executionState == 'initializing' ]]; then
 		return 0
@@ -98,7 +99,7 @@ function caseFinalization {
 }
 
 function caseExitFunction {
-	set +o errexit; set +o nounset
+	set +o errexit; set +o nounset; set +o errtrace
 	printInfo "$FUNCNAME"
 	if ! TTTF_isSkip; then
 		caseFinalization
@@ -211,7 +212,7 @@ fi
 #test execution
 TTTT_executionState='execution'
 TTTF_executeSteps 'Case' 'Test Step' 'STEPS' 'TTRO_stepsCase' 'testStep' 'true' '' 'TTTT_executedTestSteps'
-if [[ $TTTT_executedTestSteps -eq 0 ]]; then
+if [[ ( $TTTT_executedTestSteps -eq 0 ) && -z $TTTT_failureOccurred ]]; then
 	printError "No test Case step defined"
 	errorExit
 fi

@@ -497,6 +497,9 @@ TTTF_executeSteps() {
 	local cmd
 	local i
 	for ((i=0; i<${#commandArray[*]}; i++)); do
+		if [[ -n $breakOnFailure ]] && isExistingAndTrue 'TTTT_failureOccurred'; then
+			break
+		fi
 		cmd="${commandArray[$i]}"
 		if isExistingAndTrue "$supressVarName"; then
 			printInfo "Suppress $script $name: $cmd"
@@ -505,12 +508,8 @@ TTTF_executeSteps() {
 			eval "$counterName=\$(($counterName+1))"
 			eval "$cmd"
 		fi
-		if [[ -n $breakOnFailure ]] && isExistingAndTrue 'TTTT_failureOccurred'; then
-			break
-		fi
+		TTTF_fixPropsVars
 	done
-	
-	TTTF_fixPropsVars
 
 	printInfo "${!counterName} $script $name steps executed"
 }

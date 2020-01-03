@@ -396,7 +396,10 @@ function manpage () {
 	value, the execution stopps immediately and the all suite finalization steps are 
 	executed. The suite is reported as an error suite.
 	
-	All test cases of ther suite are executed, failures and errors are counted.
+	All test cases of the suite are executed, failures and errors are counted. Depending on the setup, 
+	the test case execution may happen in parallel.
+	
+	All sub suites are executed, errors are counted.
 	
 	The test frame environment attempts to execute the test suite finalization functions in any case. 
 	During execution of case finalization, the bash options errexit and nounset are unset. Thus errors during command execution 
