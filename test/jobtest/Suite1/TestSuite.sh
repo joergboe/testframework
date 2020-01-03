@@ -4,7 +4,8 @@ PREPS=myPrep
 
 myPrep() {
 	echo "expected result is in parallel mode:"
-	echo "executed=4 failures=0 errors=1 skipped=0"
+	echo "executed=4 failures=0 errors=2 skipped=0"
+	echo "Test case error for case Case0ReadFromConsole"
 	echo "Test case error (timout) for case Case1EndlessSync"
 	echo
 	echo "in serial mode:"
