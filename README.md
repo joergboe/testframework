@@ -258,3 +258,7 @@ Version 3.9.3:
 Version 3.9.4:
 - Test Case tear down: make killtree more verbose
 
+Version 3.9.5:
+- Fix: Errors during Case preparation are not counted as an error
+- Avoid unnecessary error traps during Case/Suite finalization
+- Update SimpleCases sample to demonstrate failure propagation
