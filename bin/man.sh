@@ -179,7 +179,7 @@ function manpage () {
 	## Test Case exclusive execution property
 	=========================================
 	If the preamble contains a line
-	#--exclusiveExecution=true
+	#--exclusive=true
 	the test case is always executed as a single case and no parallel execution is done.
 
 	## Reserved Variable Name Ranges

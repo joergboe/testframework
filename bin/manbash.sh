@@ -77,15 +77,18 @@ Words  of  the  form $'string' are treated specially.  The word expands to strin
 Arrays
 ======
 
-An expression like:
+defines an indexed array use:
 name=(value1 value2 value3) 
-defines an indexed array
+or with declare
+declare -a name=()
 
 To append a value to an indexed array use:
 name+=(valuen)
 
 To define a associative array use:
 declare -A name=()
+or with initialization
+declare -A aa=( [key1]=value1 [key2]=value2 )
 
 To set a specific element use:
 name[index]=value
