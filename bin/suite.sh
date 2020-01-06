@@ -26,7 +26,8 @@ declare -r TTTI_sigspec='TERM'
 #start time
 declare -r TTTT_suiteStartTime=$(date -u +%s)
 #state
-declare TTTT_executionState='initializing'
+TTTT_executionState='initializing'
+TTTT_suiteFinalized=''
 
 # Function handle SIGINT
 handleSigint() {
@@ -119,7 +120,36 @@ if [[ $TTRO_suiteIndex -ne 0 ]]; then
 	TTXX_searchPath="$TTRO_inputDirSuite $TTXX_searchPath"
 	export TTXX_searchPath
 fi
+# TODO: it that required here?
 TTTF_fixPropsVars
+############################
+declare -i TTTI_executedTestFinSteps=0
+#test finalization function
+suiteFinalization() {
+	#unset the errtrace too to avoid unnecessary error traps
+	set +o errexit; set +o nounset; set +o errtrace
+	isDebug && printDebug "$FUNCNAME"
+	if [[ $TTTT_executionState == 'initializing' ]]; then
+		return 0
+	fi
+	if [[ -z $TTTT_suiteFinalized ]]; then
+		TTTT_suiteFinalized='true'
+
+		TTTF_executeSteps 'Suite' 'Finalization' 'FINS' 'TTRO_finsSuite' 'testFinalization' '' 'TTPR_noFinsSuite' 'TTTI_executedTestFinSteps'
+	else
+		isDebug && printDebug "No execution suiteFinalization suite $TTRO_suite variant '$TTRO_variantSuite'"
+	fi
+	return 0
+}
+
+suiteExitFunction() {
+	set +o errexit; set +o nounset; set +o errtrace
+	printInfo "$FUNCNAME"
+	if ! TTTF_isSkip; then
+		suiteFinalization
+	fi
+}
+trap suiteExitFunction EXIT
 
 # enter working dir
 cd "$TTRO_workDirSuite"
@@ -848,10 +878,7 @@ unset timeout variantCount variantList
 
 #test suite finalization
 TTTT_executionState='finalization'
-declare -i TTTI_executedTestFinSteps=0
-#unset the errtrace too to avoid unnecessary error traps
-set +o errexit; set +o nounset;  set +o errtrace
-TTTF_executeSteps 'Suite' 'Finalization' 'FINS' 'TTRO_finSuite' 'testFinalization' '' 'TTPR_noFinsSuite' 'TTTI_executedTestFinSteps'
+suiteFinalization
 
 #-------------------------------------------------------
 #put results to results file for information purose only
