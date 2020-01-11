@@ -668,14 +668,14 @@ fi
 
 #print result lists
 printInfo  "**** END Collection collection='$TTRO_collection' END ********************"
-for x in CASE_EXECUTE CASE_SKIP CASE_FAILURE CASE_ERROR CASE_SUCCESS SUITE_EXECUTE SUITE_SKIP SUITE_ERROR; do
+for x in CASE_EXECUTE CASE_SUCCESS CASE_SKIP CASE_FAILURE CASE_ERROR SUITE_EXECUTE SUITE_SKIP SUITE_ERROR; do
 	tmp="${TTRO_workDir}/${x}"
 	eval "${x}Count=0"
-	if isVerbose || [[ $x == *_FAILURE || $x == *_ERROR ]]; then echo "**** $x List : ****"; fi
+	if isVerbose || [[ $x == *_SUCCESS || $x == *_SKIP || $x == *_FAILURE || $x == *_ERROR ]]; then echo; echo "**** $x List : ************************"; fi
 	if [[ -e ${tmp} ]]; then
 		{
 			while read; do
-				if isVerbose || [[ $x == *_FAILURE || $x == *_ERROR ]]; then echo "$REPLY "; fi
+				if isVerbose || [[ $x == *_SUCCESS || $x == *_SKIP || $x == *_FAILURE || $x == *_ERROR ]]; then echo "$REPLY "; fi
 				if [[ $REPLY != \#* ]]; then
 					eval "${x}Count=\$((\${x}Count+1))"
 				fi
