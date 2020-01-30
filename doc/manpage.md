@@ -170,7 +170,7 @@ The individual test case timeout is used if the value is greater than TTPR_timeo
 
 ## Test Case exclusive execution property
 If the preamble contains a line
-#--exclusiveExecution=true
+#--exclusive=true
 the test case is always executed as a single case and no parallel execution is done.
 
 ## Reserved Variable Name Ranges
