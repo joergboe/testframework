@@ -262,3 +262,7 @@ Version 3.9.5:
 - Fix: Errors during Case preparation are not counted as an error
 - Avoid unnecessary error traps during Case/Suite finalization
 - Update SimpleCases sample to demonstrate failure propagation
+
+Version 3.9.6:
+- The final result printout is now more verbose
+- In case of test suite exits, the finalization steps are now executed unconditional
