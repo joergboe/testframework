@@ -688,8 +688,7 @@ done
 
 #Print suite errors and collection
 if [[ $SUITE_ERRORCount -gt 0 ]]; then
-	printError "Errors in $SUITE_ERRORCount suites:"
-	cat "$TTRO_workDir/SUITE_ERROR"
+	printError "Errors in $SUITE_ERRORCount suites!"
 fi
 
 indexfilename="${TTRO_workDir}/index.html"
