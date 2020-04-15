@@ -266,3 +266,6 @@ Version 3.9.5:
 Version 3.9.6:
 - The final result printout is now more verbose
 - In case of test suite exits, the finalization steps are now executed unconditional
+
+Version 3.9.7:
+- Remove duplicate printout of error suites in final summary
