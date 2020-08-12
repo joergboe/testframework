@@ -269,3 +269,7 @@ Version 3.9.6:
 
 Version 3.9.7:
 - Remove duplicate printout of error suites in final summary
+
+Version 3.9.8:
+- Function waitForFinAndHealth returns immediately if a failure was set during waitForJobHealth
+
