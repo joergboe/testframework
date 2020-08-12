@@ -1083,6 +1083,7 @@ export -f waitForJobHealth
 TTRO_help_waitForFinAndHealth='
 # Function waitForFinAndHealth
 #	waits until a job becomes healthy and
+#	returns if failure is set after waitForJobHealth
 #	waits until the final file appears and the job remains healthy
 #	set failure condition if job changes state from healthy to non healthy
 #	$TTPR_waitForJobHealth - the maximum time to wait until the job becomes healthy
@@ -1091,6 +1092,9 @@ TTRO_help_waitForFinAndHealth='
 #	returns success if the file was found'
 function waitForFinAndHealth {
 	waitForJobHealth
+	if isExistingAndTrue 'TTTT_failureOccurred'; then
+		return 0
+	fi
 	while ! [[ -e "$TT_waitForFileName" ]]; do
 		printInfo "Wait for file to appear $TT_waitForFileName"
 		sleep "$TT_waitForFileInterval"
