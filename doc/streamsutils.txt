@@ -599,6 +599,7 @@
 		waitForFinAndHealth
  Function waitForFinAndHealth
 	waits until a job becomes healthy and
+	returns if failure is set after waitForJobHealth
 	waits until the final file appears and the job remains healthy
 	set failure condition if job changes state from healthy to non healthy
 	$TTPR_waitForJobHealth - the maximum time to wait until the job becomes healthy
