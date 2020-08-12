@@ -1,0 +1,11 @@
+composite Main {
+	graph
+		stream<rstring filename> S1 = DirectoryScan() {
+			param
+				directory: "xx";
+			output S1: filename = FileName();
+		}
+
+	config
+		restartable: false;
+}
